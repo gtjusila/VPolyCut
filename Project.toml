@@ -1,0 +1,4 @@
+[deps]
+MathOptInterface = "b8f27783-ece8-5eb3-8dc8-9495eed66fee"
+Polyhedra = "67491407-f73d-577b-9b50-8179a7c68029"
+SCIP = "82193955-e24f-5292-bf16-6f2c5261a85f"
