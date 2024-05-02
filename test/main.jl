@@ -3,6 +3,7 @@ import Polyhedra
 import SCIP
 import MathOptInterface as MOI
 
+
 include("../src/VPolyCut.jl")
 include("./utils.jl")
 
@@ -10,7 +11,7 @@ include("./utils.jl")
 rm(joinpath("temp"), force=true, recursive=true)
 mkdir(joinpath(pwd(),"temp"))
 
-@testset "Simplex" begin
+@testset "Simplex" begin 
     # Create a new model
     optimizer = SCIP.Optimizer()
     inner = optimizer.inner

@@ -3,28 +3,11 @@ using Random
 using LinearAlgebra
 using Printf
 
+include("constants.jl")
 include("VPolySeparator.jl")
 include("debug_utils.jl")
 include("CornerPolyhedron.jl")
-
-DEPTH_LIMIT = 2
-EPSILON = 1e-6
-
-DEBUG_PRINT_ORIGINAL_CORNER_POLYHEDRON = true
-DEBUG_BRANCH_AND_BOUND = true
-
-WRITE_PATH = joinpath(pwd(),"temp")
-
-function printCurrentLPSolution(sepa::VPolySeparator)
-    cols_ = sepa.lp_cols
-    n_ = sepa.col_num
-    current_solution = zeros(n_)
-    for i=1:n_
-        var = SCIP.LibSCIP.SCIPcolGetVar(cols_[i])
-        current_solution[i] = SCIP.LibSCIP.SCIPvarGetLPSol(var)
-    end
-    return current_solution
-end
+include("BranchAndBound.jl")
 
 function printCut(coef,b)
     str = ""
@@ -35,181 +18,34 @@ function printCut(coef,b)
     return str 
 end
 
-function printLPtableau(sepa::VPolySeparator)
-    n_ =  sepa.col_num
-    m_ =  sepa.row_num
-    ray_collection_ = Vector{Vector{Int64}}(undef,0) 
-    
-    # Determine Basic Indices
-    basis_indices_ = zeros(Cint,m_)
-    SCIP.@SCIP_CALL SCIP.SCIPgetLPBasisInd(sepa.scipd, pointer(basis_indices_))
-    println(basis_indices_)
-    #Collect Tableau Rows
-    tableau_ = Dict()
-    for (k, index) in enumerate(basis_indices_)
-        if index >= 0
-            tableau_[index + 1] = zeros(m_ + n_)
-            SCIP.@SCIP_CALL SCIP.LibSCIP.SCIPgetLPBInvRow(sepa.scipd, k-1, pointer(tableau_[index + 1],n_+1), C_NULL, C_NULL)
-            SCIP.@SCIP_CALL SCIP.LibSCIP.SCIPgetLPBInvARow(sepa.scipd, k-1, pointer(tableau_[index + 1],n_+1), pointer(tableau_[index + 1]),C_NULL, C_NULL)
-            println(tableau_[index + 1])
-        end
-    end
-end
-
-function get_point_ray_collection(sepa::VPolySeparator, points, ray,fixed)
-    # If SCIP is not in Probing Mode then start probing model
-    if SCIP.SCIPinProbing(sepa.scipd) == 0
-        if DEBUG_BRANCH_AND_BOUND
-            println("====================")
-            println("Starting Probing Mode")
-            println("====================")
-        end
-        SCIP.@SCIP_CALL SCIP.SCIPstartProbing(sepa.scipd)
-    else
-        #This is a child node and we can collect stuff here
-        infeasible = Ref{SCIP.SCIP_Bool}(0)
-        SCIP.@SCIP_CALL SCIP.SCIPconstructLP(sepa.scipd,infeasible)
-        if infeasible[] != 0
-            @warn "Cutoff during LP Construction"
-            return
-        end 
-        error = Ref{SCIP.SCIP_Bool}(C_NULL) 
-        infeasible = Ref{SCIP.SCIP_Bool}(0)
-        SCIP.@SCIP_CALL SCIP.SCIPsolveProbingLP(sepa.scipd, -1,error, infeasible)
-        if error[] != 0
-            if DEBUG_BRANCH_AND_BOUND
-                println("Error During LP Solve")
-            end
-            return
-        end
-        if infeasible[] != 0
-            if DEBUG_BRANCH_AND_BOUND
-                println("====================")
-                println("LP Infeasible")
-                println("====================")
-            end
-            return
-        end
-        name = randstring(3)
-        SCIP.SCIPwriteLP(sepa.scipd,joinpath(WRITE_PATH, name*".lp"))
-        println("LP written as "*name)
-    end
-    #Simple Step: Select the first somewhat fractional variable
-    cols = sepa.lp_cols
-    n = sepa.col_num
-    var = nothing
-    sol = nothing 
-    k = -1
-    for i=1:n 
-        # Loop through each variable
-        var_ = SCIP.SCIPcolGetVar(cols[i])
-        sol_ = SCIP.SCIPvarGetLPSol(var_)
-        if SCIP.SCIPvarIsIntegral(var_)==1 && (sol_ - floor(sol_) > EPSILON) && !(var_ in fixed)
-            #Only Consider The Split if var is integral and the current solution is non integral
-            k = i 
-            push!(fixed,var_)
-            var = var_
-            sol = sol_
-            break
-        end
-    end
-    depth = SCIP.SCIPgetProbingDepth(sepa.scipd)
-    if depth >= DEPTH_LIMIT || isnothing(var)
-        po, ra = get_corner_polyhedron(sepa.scipd)
-        if DEBUG_BRANCH_AND_BOUND
-            println("====================")
-            println("Leaf Reached. Collecting point and rays")
-            println("Point is "*string(po))
-            println("Rays are "*string(ra))
-            println("====================")
-        end
-        push!(points,po)
-        for r in ra
-            push!(ray,r)
-        end
-        if length(ra) != length(po)
-            @warn "Too few ray"
-            printLPtableau(sepa)
-            SCIP.@SCIP_CALL SCIP.SCIPwriteLP(sepa.scipd, joinpath(WRITE_PATH,"badray"*string(sepa.called)*".lp"))
-        end
-        return 
-    end
-    #Now Upper bound
-    lower = ceil(sol)
-    upper = floor(sol)
-    solution = printCurrentLPSolution(sepa) #[CLEAN] only for debugging
-    if DEBUG_BRANCH_AND_BOUND
-        println("====================")
-        println("Branching")
-        println("Current LP Solution: " * string(solution))
-        println("Index of branching variable: "*string(k))
-        println("Node Depth: "*string(depth)) 
-        println("Changing Lower Bound to: "*string(lower))
-        println("====================")
-    end
-    SCIP.@SCIP_CALL SCIP.SCIPnewProbingNode(sepa.scipd)
-    SCIP.@SCIP_CALL SCIP.SCIPchgVarLbProbing(sepa.scipd, var, lower)
-    get_point_ray_collection(sepa, points, ray, fixed)
-    SCIP.@SCIP_CALL SCIP.SCIPbacktrackProbing(sepa.scipd, depth)
-    if DEBUG_BRANCH_AND_BOUND
-        println("====================")
-        println("Reverted Lower Bound ")
-        println("Current LP Solution: " * string(solution))
-        println("Index of branching variable: "*string(k))
-        println("Node Depth: "*string(depth)) 
-        println("Changing Upper Bound to: "*string(upper))
-        println("====================")
-    end
-    SCIP.@SCIP_CALL SCIP.SCIPnewProbingNode(sepa.scipd)
-    SCIP.@SCIP_CALL SCIP.SCIPchgVarUbProbing(sepa.scipd, var, upper)
-    
-    if abs(upper) <= EPSILON
-        add_probing_bound_via_row(sepa, var, upper = upper)
-    else
-        SCIP.@SCIP_CALL SCIP.SCIPchgVarUbProbing(sepa.scipd, var, upper)
-    end
-    
-    get_point_ray_collection(sepa, points, ray, fixed)
-    if abs(upper) <= 0.5 
-        infeasible = Ref{SCIP.SCIP_Bool}(0)
-        SCIP.@SCIP_CALL SCIP.SCIPconstructLP(sepa.scipd,infeasible)
-        SCIP.@SCIP_CALL SCIP.SCIPwriteLP(sepa.scipd,joinpath(WRITE_PATH, "xlp.lp"))
-    end
-    SCIP.@SCIP_CALL SCIP.SCIPbacktrackProbing(sepa.scipd, depth)
-    if DEBUG_BRANCH_AND_BOUND
-        println("====================")
-        println("Node Processing Ended")
-        println("Current LP Solution: " * string(solution))
-        println("Index of branching variable: "*string(k))
-        println("Node Depth: "*string(depth)) 
-        println("====================")
-    end
-end
-
 function SCIP.exec_lp(sepa::VPolySeparator)
-    #Only limit 1 call 
-    if sepa.called >=1
+    # Only limit 1 call 
+    if sepa.called >= CALL_LIMIT
         return SCIP.SCIP_DIDNOTRUN
     end
     sepa.called +=1
+
     # Precondition
     if SCIP.SCIPisLPSolBasic(sepa.scipd) == false
         @warn "Solution is non basic"
         return SCIP.SCIP_DIDNOTRUN
-    end
-    if SCIP.SCIPgetLPSolstat(sepa.scipd) != SCIP.SCIP_LPSOLSTAT_OPTIMAL
+    elseif SCIP.SCIPgetLPSolstat(sepa.scipd) != SCIP.SCIP_LPSOLSTAT_OPTIMAL
         @warn "LP is not optimal"
         return SCIP.SCIP_DIDNOTRUN
-    end
-    if !(SCIP.SCIPgetStage(sepa.scipd) == SCIP.SCIP_STAGE_SOLVING)
+    elseif !(SCIP.SCIPgetStage(sepa.scipd) == SCIP.SCIP_STAGE_SOLVING)
         @warn "SCIP not solving"
         return SCIP.SCIP_DIDNOTRUN
     end
-    # Write LP of current node file
+     
+    # STEP 1: Get Corner Polyhedron of current LP solution
+    lp_sol = nothing
+    lp_rays = nothing 
+    lp_sol, lp_rays = get_corner_polyhedron(sepa.scipd)
+    
+    # [CLEAN] For Debug Write LP of current node file THIS STEP MUST BE DONE AFTER getting the corner polyhedron since otherwise LP SOLSTAT will be affected
     name = string(sepa.called)
     SCIP.@SCIP_CALL SCIP.SCIPwriteMIP(sepa.scipd, joinpath(WRITE_PATH,name*".mip"),true, false, true)
-    # Get Current LP solution 
-    lp_sol, lp_rays = get_corner_polyhedron(sepa.scipd)
+    
     if DEBUG_PRINT_ORIGINAL_CORNER_POLYHEDRON
         println("====================")
         println("Seperator Called")
@@ -217,24 +53,33 @@ function SCIP.exec_lp(sepa::VPolySeparator)
         println("LP Rays are "*string(lp_rays))
         println("====================")
     end
+
+    # [CLEAN] Might actually not need this
     dim = length(lp_sol)
     if length(lp_rays) != dim
         @warn "Not enough ray"
         return SCIP.SCIP_DIDNOTRUN 
     end
-    ray_matrix = stack(lp_rays)
-    #Okay So now we get point ray collection
+    
+    #STEP 2: get a v-polyhedral description of the disjunctive hull
     points_collection = []
     rays_collection = []
     fixed = Set()
-    get_point_ray_collection(sepa,points_collection, rays_collection,fixed)
-    @info "FInish collecting" 
+
+    SCIP.@SCIP_CALL SCIP.SCIPstartProbing(sepa.scipd)
+    get_point_ray_collection(sepa.scipd,points_collection, rays_collection,fixed)
+    SCIP.@SCIP_CALL SCIP.SCIPendProbing(sepa.scipd)
+
+    @info "Finish collecting" 
     @info points_collection 
     @info rays_collection
 
     #Start Constructing PRLP
     lpi = Ref{Ptr{SCIP.SCIP_LPI}}(C_NULL)
     SCIP.@SCIP_CALL SCIP.SCIPlpiCreate(lpi, C_NULL, "Seperating LP", SCIP.SCIP_OBJSEN_MINIMIZE)
+
+    # Get the basis matrix for the basic space
+    ray_matrix = stack(lp_rays) 
 
     # Add Variables
     SCIP.@SCIP_CALL SCIP.SCIPlpiAddCols(lpi[],dim,ones(dim),-SCIP.SCIPinfinity(sepa.scipd)*ones(dim),SCIP.SCIPinfinity(sepa.scipd)*ones(dim),C_NULL, 0,C_NULL, C_NULL, C_NULL )

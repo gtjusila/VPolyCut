@@ -3,122 +3,89 @@
 # along with the helper function to get Tableau Information
 #
 import SCIP
+include("utils.jl")
 
 function get_corner_polyhedron(scip::SCIP.SCIPData)
     """
     Get Corner Polyhedron Information From LP Solver from the given scip pointer
     """
-    
-    # C Style Allocation
-    row_num = Ref{Cint}(0)
-    lp_rows = Ref{Ptr{Ptr{SCIP.SCIP_Row}}}(C_NULL)
-    col_num = Ref{Cint}(0)
-    lp_cols = Ref{Ptr{Ptr{SCIP.SCIP_Col}}}(C_NULL)
-    
-    # Get Necessary SCIP Data 
-    SCIP.@SCIP_CALL SCIP.SCIPgetLPRowsData(scip, lp_rows, row_num)
-    SCIP.@SCIP_CALL SCIP.SCIPgetLPColsData(scip, lp_cols, col_num)
-
-    # Reformat into julia style data type
-    row_num = row_num[]
-    col_num = col_num[]
-    lp_rows = unsafe_wrap(Vector{Ptr{SCIP.SCIP_Row}},lp_rows[],row_num)
-    lp_cols = unsafe_wrap(Vector{Ptr{SCIP.SCIP_Col}},lp_cols[],col_num)
+    @assert SCIP.SCIPgetLPSolstat(scip) == SCIP.SCIP_LPSOLSTAT_OPTIMAL
+    # Get Information from SCIP 
+    lp_cols,col_num = get_lp_column_information(scip)
+    lp_rows,row_num = get_lp_row_information(scip) 
+    basis_indices = get_lp_basis_information(scip)
 
     # Initiate a vector to collect corner polyhedron ray
-    ray_collection_ = Vector{Vector{Int64}}(undef,0) 
+    ray_collection = Vector{Vector{Int64}}(undef,0) 
     
-    # Determine Basic Indices
-    basis_indices_ = zeros(Cint,row_num)
-    SCIP.@SCIP_CALL SCIP.SCIPgetLPBasisInd(scip, pointer(basis_indices_))
-    get_dense_tableau_rows(scip); 
-    #Collect Tableau Rows
-    tableau_ = Dict()
-    for (k, index) in enumerate(basis_indices_)
-        if index >= 0
-            tableau_[index + 1] = zeros(row_num + col_num)
-            SCIP.@SCIP_CALL SCIP.LibSCIP.SCIPgetLPBInvRow(scip, k-1, pointer(tableau_[index + 1],col_num+1), C_NULL, C_NULL)
-            SCIP.@SCIP_CALL SCIP.LibSCIP.SCIPgetLPBInvARow(scip, k-1, pointer(tableau_[index + 1],col_num+1), pointer(tableau_[index + 1]),C_NULL, C_NULL)
-        end
-    end
-
-    # Get LP Columns 
-    cols_ = lp_cols
+    # Get Tableau
+    tableau = get_dense_tableau_rows(scip) 
 
     #=
     Generate Rays from non basic variable
     If variable is non basic i.e. the upper or lower bound is attained then one can push the variable against the bound
     =#
-    for i=1:col_num 
+    for (j, col) in enumerate(lp_cols) 
         # SCIP Basic Vartiables
-        if (SCIP.SCIPcolGetBasisStatus(cols_[i]) == SCIP.SCIP_BASESTAT_UPPER)
+        if (SCIP.SCIPcolGetBasisStatus(col) == SCIP.SCIP_BASESTAT_UPPER)
             factor_ = 1.0; 
-        elseif (SCIP.SCIPcolGetBasisStatus(cols_[i]) == SCIP.SCIP_BASESTAT_LOWER)
+        elseif (SCIP.SCIPcolGetBasisStatus(col) == SCIP.SCIP_BASESTAT_LOWER)
             factor_ = -1.0;
-        elseif (SCIP.SCIPcolGetBasisStatus(cols_[i]) == SCIP.SCIP_BASESTAT_ZERO)
-            #Safekeeping: Should Never Happen 
-            return SCIP.SCIP_DIDNOTRUN
-        else
+        elseif (SCIP.SCIPcolGetBasisStatus(col) == SCIP.SCIP_BASESTAT_ZERO)
+            #Safekeeping: Should Never Happen unless polyhedron is not pointed
+            throw("SCIP_BASESTAT_ZERO encountered") 
+        elseif (SCIP.SCIPcolGetBasisStatus(col) == SCIP.SCIP_BASESTAT_BASIC)
+            # variable is in the basis 
             continue
+        else
+            throw("SCIP_BASESTAT Status Undefined")
         end
 
+        # Construct ray r_j
         ray_ = zeros(col_num)
-        ray_[i] = -factor_
-        for j in keys(tableau_)
-            ray_[j] = factor_*tableau_[j][i]
+        ray_[j] = -factor_
+        for (k, index) in enumerate(basis_indices)
+            if index >= 0
+                ray_[index+1] =  factor_*tableau[k][j]
+            end
         end
-        push!(ray_collection_, ray_)
+        
+        push!(ray_collection, ray_)
     end
 
     # Generate Rays from slack variable
-    rows_ = lp_rows 
-    
-    for i=1:row_num
+    for (i, row) in enumerate(lp_rows) 
         #Go through each row
-        if( SCIP.LibSCIP.SCIProwGetBasisStatus(rows_[i]) == SCIP.SCIP_BASESTAT_LOWER)
-            factor = 1.0
-        elseif (SCIP.LibSCIP.SCIProwGetBasisStatus(rows_[i]) == SCIP.SCIP_BASESTAT_UPPER)
-            factor = - 1.0
-        elseif (SCIP.LibSCIP.SCIProwGetBasisStatus(rows_[i]) ==  SCIP.SCIP_BASESTAT_ZERO)
-            return SCIP.SCIP_DIDNOTRUN
-        else
+        if( SCIP.LibSCIP.SCIProwGetBasisStatus(row) == SCIP.SCIP_BASESTAT_LOWER)
+            factor_ = 1.0
+        elseif (SCIP.LibSCIP.SCIProwGetBasisStatus(row) == SCIP.SCIP_BASESTAT_UPPER)
+            factor_ = - 1.0
+        elseif (SCIP.LibSCIP.SCIProwGetBasisStatus(row) ==  SCIP.SCIP_BASESTAT_ZERO)
+            # Same as above
+            throw("SCIP_BASESTAT_ZERO encountered")
+        elseif (SCIP.LibSCIP.SCIProwGetBasisStatus(row) == SCIP.SCIP_BASESTAT_BASIC)
+            # Row is basic
             continue
+        else
+            throw("SCIP_BASESTAT Status Undefined")
         end
 
+        # Construct ray r_j
         ray_ = zeros(col_num)
         ray_non_zero = false
-        for j in keys(tableau_)
-            ray_[j] = factor*tableau_[j][col_num+i]
-            ray_non_zero |= (tableau_[j][col_num+i] != 0)
+        for (j, index) in enumerate(basis_indices)
+            if (index >= 0) && (tableau[j][col_num+i] != 0)
+                ray_[index+1] =  factor_*tableau[j][col_num+i]
+                ray_non_zero =  true
+            end
         end
 
         if ray_non_zero
-            push!(ray_collection_, ray_)
+            push!(ray_collection, ray_)
         end
     end
 
-    current_solution = zeros(col_num)
-    for i=1:col_num
-        var = SCIP.LibSCIP.SCIPcolGetVar(cols_[i])
-        current_solution[i] = SCIP.LibSCIP.SCIPvarGetLPSol(var)
-    end
+    current_solution = get_lp_solution_vector(scip; col_num = col_num, lp_cols = lp_cols) 
 
-    return current_solution,ray_collection_
-end
-
-# [CLEAN] Instead Of Getting All of the tableau rows we can also just get the tableau rows corresponding
-# to basic non slack variable. But for debugging and understanding purposes we get all tableau rows here
-# in production this should be cleaned
-function get_dense_tableau_rows(scip)
-    tableau = Dict{Int64, Vector{SCIP.SCIP_Real}}()
-    m = SCIP.SCIPgetNLPRows(scip) # Tableau will have M rows
-    n = SCIP.SCIPgetNLPCols(scip) # LP have N Columns
-    for i=1:m
-        # Allocate Memory to store tableau entries
-        row_ = zeros(SCIP.SCIP_Real,m+n)
-        SCIP.@SCIP_CALL SCIP.SCIPgetLPBInvARow(scip,i-1,C_NULL,row_,C_NULL, C_NULL)
-        tableau[i] = row_
-    end
-    println(string(tableau))
-    return
+    return current_solution,ray_collection
 end
