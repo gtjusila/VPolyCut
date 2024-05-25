@@ -51,24 +51,12 @@ function get_lp_basis_information(scip)
     return basis_indices
 end
 
-function basis_status_to_string(basis_status)
-    if (basis_status == SCIP.SCIP_BASESTAT_UPPER)
-        return "SCIP_BASESTAT_UPPER" 
-    elseif (basis_status == SCIP.SCIP_BASESTAT_LOWER)
-        return "SCIP_BASESTAT_LOWER"
-    elseif (basis_status == SCIP.SCIP_BASESTAT_ZERO)
-        return "SCIP_BASESTAT_ZERO"
-    elseif (basis_status == SCIP.SCIP_BASESTAT_BASIC)
-        return "SCIP_BASESTAT_BASIC"
-    end
-end
-
 function print_col_status(scip)
     lp_cols, col_num = get_lp_column_information(scip)
     for (i,col) in enumerate(lp_cols)
         status = SCIP.SCIPcolGetBasisStatus(col)
         reduced_cost = SCIP.SCIPgetColRedcost(scip,col)
-        println("Column "*string(i)*" status "*basis_status_to_string(status)*" reduced cost "* string(reduced_cost))
+        println("Column "*string(i)*" status "*string(status)*" reduced cost "* string(reduced_cost))
     end
 end
 
@@ -76,7 +64,7 @@ function print_row_status(scip)
     lp_rows, row_num = get_lp_row_information(scip)
     for (i,row) in enumerate(lp_rows)
         status = SCIP.SCIProwGetBasisStatus(row)
-        println("Row "*string(i)*" status "*basis_status_to_string(status))
+        println("Row "*string(i)*" status "*string(status))
     end
 end
 
@@ -114,7 +102,6 @@ function get_lp_dual_solution(scip)
 end
 
 function print_lp_information(scip)
-    
     
     println("====================")
     println("Printing LP Information\n") 

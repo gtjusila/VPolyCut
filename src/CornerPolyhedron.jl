@@ -16,7 +16,7 @@ function get_corner_polyhedron(scip::SCIP.SCIPData)
     basis_indices = get_lp_basis_information(scip)
 
     # Initiate a vector to collect corner polyhedron ray
-    ray_collection = Vector{Vector{Int64}}(undef,0) 
+    ray_collection = Vector{Vector{SCIP.SCIP_Real}}(undef,0) 
     
     # Get Tableau
     tableau = get_dense_tableau_rows(scip) 

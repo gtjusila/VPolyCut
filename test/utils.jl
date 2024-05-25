@@ -1,7 +1,11 @@
 import MathOptInterface as MOI
 import Polyhedra
 
-function hrep_to_constraint(hpoly,model,x)
+function hrep_to_constraint(hpoly::Polyhedra.HRepresentation,model::MOI.ModelLike,x::Vector{MOI.VariableIndex})
+    """
+    This function convert an h-polyhedron into constraints and add them to the model.
+    The variable x must have the same dimension as the polyhedron. This is not checked.
+    """
     # Add Halfspaces
     for i in Polyhedra.halfspaces(hpoly)
         MOI.add_constraint(
@@ -26,28 +30,7 @@ function hrep_to_constraint(hpoly,model,x)
     end 
 end
 
-function sepa_set_scip_parameters(setter::Function)
-    
-    # Disable SCIP Magic For Testing
-    setter("display/verblevel", 5)
-
-    setter("presolving/maxrounds", 0)
-    setter("misc/usesymmetry", 0)
-
-    setter("propagating/maxroundsroot",0)
-    setter("propagating/maxrounds",0) 
-    setter("conflict/enable",false)
-    setter("constraints/linear/propfreq",-1)
-    setter("constraints/linear/tightenboundsfreq",-1)
-    setter("limits/nodes",1) #Only Do root nodes
-
-    setter("separating/minefficacy", 0)
-    setter("separating/minefficacyroot", 0)
-    setter("cutselection/hybrid/minortho", 0)
-    setter("cutselection/hybrid/minorthoroot", 0)
-    setter("separating/poolfreq", 1)
-
-    # These parameters come from `SCIP> set sepa emph off`
+function turn_off_scip_separators(setter::Function)
     setter("separating/disjunctive/freq", -1)
     setter("separating/impliedbounds/freq", -1)
     setter("separating/gomory/freq", -1)
@@ -75,9 +58,12 @@ function sepa_set_scip_parameters(setter::Function)
     setter("constraints/logicor/sepafreq", -1)
     setter("constraints/cumulative/sepafreq", -1)
     setter("constraints/nonlinear/sepafreq", -1)
+    setter("separating/mixing/freq", -1)
+    setter("separating/rlt/freq", -1)
     setter("constraints/indicator/sepafreq", -1)
+end
 
-    # These parameters come from `SCIP> set heuristics off`
+function turn_off_scip_heuristics(setter::Function)
     setter("heuristics/padm/freq", -1)
     setter("heuristics/ofins/freq", -1)
     setter("heuristics/trivialnegation/freq", -1)
@@ -119,5 +105,24 @@ function sepa_set_scip_parameters(setter::Function)
     setter("heuristics/subnlp/freq", -1)
     setter("heuristics/mpec/freq", -1)
     setter("heuristics/multistart/freq", -1)
-    setter("heuristics/trysol/freq", -1)
+    setter("heuristics/trysol/freq", -1) 
+end
+
+function turn_off_scip_miscellaneous(setter::Function)    
+    """
+    Turn Off Presolving, propagation, conflict analysis and symmetry
+    """
+    setter("misc/usesymmetry", 0)
+    setter("presolving/maxrounds", 0)
+    setter("propagating/maxroundsroot",0)
+    setter("propagating/maxrounds",0) 
+    setter("conflict/enable",false)
+end
+
+function allow_zero_power_cut(setter::Function)
+    setter("separating/minefficacy", 0)
+    setter("separating/minefficacyroot", 0)
+    setter("cutselection/hybrid/minortho", 0)
+    setter("cutselection/hybrid/minorthoroot", 0)
+    setter("separating/poolfreq", 1)
 end

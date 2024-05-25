@@ -4,7 +4,7 @@ using LinearAlgebra
 using JuMP
 
 # Constants
-DEPTH_LIMIT = 2
+DEPTH_LIMIT = 100 
 EPSILON = 1e-6
 
 # Debug Flag
