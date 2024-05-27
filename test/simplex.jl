@@ -22,6 +22,7 @@ function run_test_simplex()
     allow_zero_power_cut(setter)
     setter("display/verblevel",5)
     setter("misc/debugsol",solution_path) # Add Debug Solution
+    SCIP.SCIPenableDebugSol(inner.scip[]) 
  
     # The Actual Testcase
     poly1_v = Polyhedra.vrep(
@@ -34,13 +35,14 @@ function run_test_simplex()
     # Add Variables and Constraints to the SCIP model
     n = Polyhedra.fulldim(poly1) # How many variables are there?
     x = MOI.add_variables(optimizer,n)
-    for i=1:length(x)
-        MOI.set(optimizer, MOI.VariableName(), x[i],"x_$i")
+    for (i,x_) in enumerate(x)
+        # Name the variable
+        MOI.set(optimizer, MOI.VariableName(), x_,"x_$i")
     end
     hrep_to_constraint(poly1, optimizer,x)
-    MOI.add_constraints(optimizer, x, MOI.Integer())
-
-    #Add All Ones Coefficient in the Objective
+    MOI.add_constraints(optimizer, x, MOI.Integer()) #Integrality Constraints
+    
+    #Set All Ones Coefficient in the Objective
     p = ones(n)
     MOI.set(
         optimizer,
@@ -53,31 +55,14 @@ function run_test_simplex()
     MOI.set(optimizer, MOI.ObjectiveSense(), MOI.MAX_SENSE)
 
     # Add our separator to scip
-    sepa = IntersectionSeparator(scipd= inner, debug_sol_path=joinpath(@__DIR__,"simplex.sol"))
+    sepa = IntersectionSeparator(scipd= inner, debug_sol_path=solution_path)
     SCIP.include_sepa(inner.scip[], inner.sepas, sepa)
     SCIP.SCIPenableVarHistory(sepa.scipd)
+    
     # solve the problem
     SCIP.@SCIP_CALL SCIP.SCIPsolve(inner.scip[])
 
     @info "Number of separator calls" sepa.called
-    @test sepa.called >= 1
-
-    foo = open("transstat.txt", "w")
-    file = Libc.FILE(foo) 
-    SCIP.SCIPprintExpressionHandlerStatistics(sepa.scipd,file)
-
-    # Get Vars Data
-    vars = Ref{Ptr{Ptr{SCIP.SCIP_Var}}}(C_NULL)
-    nvars = Ref{Cint}(0)
-    SCIP.@SCIP_CALL SCIP.SCIPgetVarsData(sepa.scipd, vars, nvars, C_NULL, C_NULL, C_NULL,C_NULL)
-    vars = unsafe_wrap(Vector{Ptr{SCIP.SCIP_Var}},vars[],nvars[])
-    foo = open("sol.txt", "w")
-    file = Libc.FILE(foo) 
-    SCIP.@SCIP_CALL SCIP.SCIPprintBestSol(sepa.scipd, file, 0)
-    for var in vars
-        bound_change = SCIP.SCIPvarGetNBdchgInfosUb(var)
-        println("Bound is changed $bound_change times")
-    end
 end
 
 # Run The Actual Test Case
