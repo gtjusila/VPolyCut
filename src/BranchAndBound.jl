@@ -133,7 +133,8 @@ end
 
 function get_best_branching_candidate(scip; fixed = [])
 
-    cols,n = get_lp_column_information(scip)
+    cols = get_lp_columns(scip)
+    n = length(cols)
     var = nothing
     sol = nothing 
     k = -1

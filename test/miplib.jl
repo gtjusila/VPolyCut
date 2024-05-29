@@ -6,7 +6,7 @@ import MathOptInterface as MOI
 include("./utils.jl")
 include("./intersection.jl")
 
-@testset "MIPLIB" begin 
+function run_test_miplib() 
 
     # STEP 1: Create a new model, Setup parameter and read problem
     optimizer = SCIP.Optimizer()
@@ -17,7 +17,7 @@ include("./intersection.jl")
     turn_off_scip_separators(setter)
     allow_zero_power_cut(setter)
     setter("display/verblevel",5)
-    #setter("limits/nodes",1)
+    setter("limits/nodes",1)
     setter("separating/maxstallroundsroot",1000) 
 
     SCIP.@SCIP_CALL SCIP.SCIPreadProb(inner.scip[],joinpath(@__DIR__,"data","gen-ip054.mps"),C_NULL)
@@ -47,3 +47,5 @@ include("./intersection.jl")
     end
     #println(solution)
 end
+
+run_test_miplib()

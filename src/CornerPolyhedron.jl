@@ -10,8 +10,9 @@ function get_corner_polyhedron(scip::SCIP.SCIPData)
     Get Corner Polyhedron Information From LP Solver from the given scip pointer
     """
     @assert SCIP.SCIPgetLPSolstat(scip) == SCIP.SCIP_LPSOLSTAT_OPTIMAL
-    # Get Information from SCIP 
-    lp_cols,col_num = get_lp_column_information(scip)
+    # Get Information from SCIP
+    lp_cols = get_lp_columns(scip)
+    col_num = length(lp_cols)
     lp_rows,row_num = get_lp_row_information(scip) 
     basis_indices = get_lp_basis_information(scip)
 

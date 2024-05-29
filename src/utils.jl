@@ -1,7 +1,7 @@
 # Some Common Functions Needed By All Function
 using Random
 
-function get_lp_column_information(scip::SCIP.SCIPData)
+function get_lp_columns(scip::SCIP.SCIPData)
     
     col_num = Ref{Cint}(0)
     lp_cols = Ref{Ptr{Ptr{SCIP.SCIP_Col}}}(C_NULL)
@@ -11,7 +11,7 @@ function get_lp_column_information(scip::SCIP.SCIPData)
     col_num = col_num[]
     lp_cols = unsafe_wrap(Vector{Ptr{SCIP.SCIP_Col}},lp_cols[],col_num)
 
-    return lp_cols,col_num
+    return lp_cols
 end
 
 function get_lp_row_information(scip::SCIP.SCIPData)
@@ -28,10 +28,12 @@ function get_lp_row_information(scip::SCIP.SCIPData)
     return lp_rows,row_num
 end
 
-function get_lp_solution_vector(scip; col_num::Int32 = Int32(0), lp_cols::Vector{Ptr{SCIP.SCIP_Col}} = Vector{Ptr{SCIP.SCIP_Col}}(undef,0))
+function get_lp_solution_vector(scip; col_num::Int64 = Int64(0), lp_cols::Vector{Ptr{SCIP.SCIP_Col}} = Vector{Ptr{SCIP.SCIP_Col}}(undef,0))
     # If data is not given then first fetch data from scip
+    col_num = Int32(col_num)
     if col_num == 0 || length(lp_cols) == 0
-         lp_cols,col_num = get_lp_column_information(scip) 
+        lp_cols = get_lp_columns(scip) 
+        col_num = length(lp_cols)
     end
     
     # Get the solution
@@ -52,7 +54,8 @@ function get_lp_basis_information(scip)
 end
 
 function print_col_status(scip)
-    lp_cols, col_num = get_lp_column_information(scip)
+    lp_cols = get_lp_columns(scip)
+    col_num = length(lp_cols)
     for (i,col) in enumerate(lp_cols)
         status = SCIP.SCIPcolGetBasisStatus(col)
         reduced_cost = SCIP.SCIPgetColRedcost(scip,col)
@@ -101,6 +104,12 @@ function get_lp_dual_solution(scip)
     return dual_solution
 end
 
+"""
+The function receive as input an scip pointer and return a vector of pointers to variable currently in the LP
+"""
+function get_lp_variables(scip::SCIP.SCIPData)::Vector{Ptr{SCIP.SCIP_Var}}
+    cols 
+end
 function print_lp_information(scip)
     
     println("====================")
@@ -163,3 +172,30 @@ function print_lp_information(scip)
     println("LP written as "*name*".lp")
     println("====================")
 end 
+
+"""
+Given a vector of SCIP variable returns the index of an integer variable with highest pseudobranch score
+"""
+function getFirstFractionalIndex(vars::Vector{SCIP.SCIP_Var})
+    
+    # Initialize
+    split_index = -1
+
+    # Get Relevant SCIP Data
+    n =  SCIP.LibSCIP.SCIPgetNLPCols(scipd)
+    cols = SCIP.LibSCIP.SCIPgetLPCols(scipd)
+    cols = unsafe_wrap(Vector{Ptr{SCIP.LibSCIP.SCIP_COL}},cols,n)
+    
+    # Determine Splitting Variable
+    for i=1:n 
+        # Loop through each variable
+        var = SCIP.LibSCIP.SCIPcolGetVar(cols[i])
+        sol = SCIP.LibSCIP.SCIPvarGetLPSol(var)
+        if SCIP.SCIPvarIsIntegral(var)==1 && (sol - (floor(sol)) > 0.2) && (ceil(sol) - sol > 0.2)
+            #Only Consider The Split if var is integral and the current solution is non integral
+            split_index = i
+        end
+    end
+
+    return split_index
+end

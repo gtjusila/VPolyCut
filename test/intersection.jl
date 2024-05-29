@@ -1,7 +1,8 @@
 import SCIP
 using LinearAlgebra
 using JuMP
-CALL_LIMIT = 1000
+
+CALL_LIMIT = 1
 EPSILON = 1e-10
 WRITE_PATH = joinpath(pwd(),"temp")
 
@@ -17,26 +18,10 @@ DEBUG_PRINT_INTERSECTION_POINTS = false
     scipd::SCIP.SCIPData 
 end
 
-function printCut(coef,b)
-    str = ""
-    for (index,i) in enumerate(coef)
-        if abs(i) <= 1e-12
-            if abs(i) >= 1e-20
-                @warn "Numerics"
-            end
-           continue
-        end 
-        str = str*" $i"*"x$index"
-    end
-    str = str*" ≥ $b"
-    return str 
-end
-
 function decideSplitIndex(scipd::SCIP.SCIPData)
     
     # Initialize
     split_index = -1
-    split_variable_pointer = nothing
 
     # Get Relevant SCIP Data
     n =  SCIP.LibSCIP.SCIPgetNLPCols(scipd)
@@ -51,7 +36,6 @@ function decideSplitIndex(scipd::SCIP.SCIPData)
         if SCIP.SCIPvarIsIntegral(var)==1 && (sol - (floor(sol)) > 0.2) && (ceil(sol) - sol > 0.2)
             #Only Consider The Split if var is integral and the current solution is non integral
             split_index = i
-            split_variable_pointer = var
         end
     end
 
@@ -172,7 +156,8 @@ function check_in_corner_polyhedron(vertex, rays, point)
 end
 
 function verify_reference_solution_in_disjunction(sepa::IntersectionSeparator,reference_solution, split_index)
-    lp_cols, col_num = get_lp_column_information(sepa.scipd)
+    lp_cols = get_lp_columns(sepa.scipd)
+    col_num = length(lp_cols)
     split_var = SCIP.SCIPcolGetVar(lp_cols[split_index])
     split_var_value = SCIP.SCIPvarGetSol(split_var,1)
     reference = SCIP.SCIPgetSolVal(sepa.scipd, reference_solution[], split_var)
@@ -312,7 +297,7 @@ function SCIP.exec_lp(sepa::IntersectionSeparator)
         return SCIP.SCIP_DIDNOTRUN
     end
     SCIP.@SCIP_CALL SCIP.SCIPcreateRowSepa(sepa.scipd, row, sepa.scipd.sepas[sepa], "",nnonz,pointer(cols__),pointer(vals__),b,SCIP.SCIPinfinity(sepa.scipd), true,false, false) 
-    
+    #=
     if !isempty(sepa.debug_sol_path)
         println("Debug Solution Available")
         reference_sol = Ref{Ptr{SCIP.SCIP_Sol}}()
@@ -342,11 +327,21 @@ function SCIP.exec_lp(sepa::IntersectionSeparator)
             verify_reference_solution_in_disjunction(sepa,reference_sol,split_index)
         end
     end
-    
+    =#
     #SCIP.@SCIP_CALL SCIP.SCIPprintRow(sepa.scipd, row[], C_NULL)
     
-    SCIP.@SCIP_CALL SCIP.SCIPaddRow(sepa.scipd,row[],true, infeasible)
-
-    #println(printCut(sol,b))
+    SCIP.@SCIP_CALL SCIP.SCIPaddRow(sepa.scipd,row[],true, infeasible)  
+    #=
+    if !isempty(sepa.debug_sol_path)
+        println("Debug Solution Available")
+        reference_sol = Ref{Ptr{SCIP.SCIP_Sol}}()
+        partial = Ref{SCIP.SCIP_Bool}(0)
+        error = Ref{SCIP.SCIP_Bool}(0)
+        SCIP.@SCIP_CALL SCIP.SCIPcreateSol(sepa.scipd,reference_sol, C_NULL)
+        SCIP.@SCIP_CALL SCIP.SCIPreadSolFile(sepa.scipd, sepa.debug_sol_path, reference_sol[],SCIP.SCIP_Bool(false),partial, error)
+        SCIP.@SCIP_CALL SCIP.SCIPtrySol(sepa.scipd, reference_sol[],1,1,1,1,1,partial)   
+        println(partial[] != 0)     
+    end
+    =#
     return SCIP.SCIP_SEPARATED
 end
