@@ -2,7 +2,7 @@ import SCIP
 using LinearAlgebra
 using JuMP
 
-CALL_LIMIT = 1
+CALL_LIMIT = 100
 EPSILON = 1e-10
 WRITE_PATH = joinpath(pwd(),"temp")
 
@@ -220,7 +220,8 @@ function SCIP.exec_lp(sepa::IntersectionSeparator)
     end
     
     # STEP 2: Decide Splitting Variable
-    split_index = decideSplitIndex(sepa.scipd)
+    vars = get_lp_variables(sepa.scipd)
+    split_index = get_first_fractional_index(vars) 
     println(lp_sol[split_index])
 
     if split_index == -1 
@@ -247,7 +248,9 @@ function SCIP.exec_lp(sepa::IntersectionSeparator)
         @warn "LP Solver Does Not Support Primal Solve"
         return SCIP.SCIP_DIDNOTRUN
     end
+
     SCIP.@SCIP_CALL SCIP.SCIPlpiSolvePrimal(lpi[])
+    
     if SCIP.SCIPlpiIsPrimalInfeasible(lpi[]) == 1
         @warn "LP Solver Failed TO Solve Cut Generation LP: LP Infeasible"
         return SCIP.SCIP_DIDNOTFIND
@@ -257,7 +260,7 @@ function SCIP.exec_lp(sepa::IntersectionSeparator)
         return SCIP.SCIP_DIDNOTFIND
     end
     if SCIP.SCIPlpiIsOptimal(lpi[]) == 0
-        @warn  "LP Solver Failed TO Solve Cut Generation LP: LP Not optimzal" 
+        @warn "LP Solver Failed TO Solve Cut Generation LP: LP Not optimzal" 
         return SCIP.SCIP_DIDNOTFIND
     end
     
@@ -331,7 +334,7 @@ function SCIP.exec_lp(sepa::IntersectionSeparator)
     #SCIP.@SCIP_CALL SCIP.SCIPprintRow(sepa.scipd, row[], C_NULL)
     
     SCIP.@SCIP_CALL SCIP.SCIPaddRow(sepa.scipd,row[],true, infeasible)  
-    #=
+    
     if !isempty(sepa.debug_sol_path)
         println("Debug Solution Available")
         reference_sol = Ref{Ptr{SCIP.SCIP_Sol}}()
@@ -342,6 +345,6 @@ function SCIP.exec_lp(sepa::IntersectionSeparator)
         SCIP.@SCIP_CALL SCIP.SCIPtrySol(sepa.scipd, reference_sol[],1,1,1,1,1,partial)   
         println(partial[] != 0)     
     end
-    =#
+    
     return SCIP.SCIP_SEPARATED
 end

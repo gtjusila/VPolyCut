@@ -108,7 +108,14 @@ end
 The function receive as input an scip pointer and return a vector of pointers to variable currently in the LP
 """
 function get_lp_variables(scip::SCIP.SCIPData)::Vector{Ptr{SCIP.SCIP_Var}}
-    cols 
+    vars = Ptr{SCIP.SCIP_Var}[]
+
+    cols = get_lp_columns(scip)
+    for col in cols
+        push!(vars,SCIP.SCIPcolGetVar(col))
+    end
+
+    return vars
 end
 function print_lp_information(scip)
     
@@ -176,20 +183,14 @@ end
 """
 Given a vector of SCIP variable returns the index of an integer variable with highest pseudobranch score
 """
-function getFirstFractionalIndex(vars::Vector{SCIP.SCIP_Var})
+function get_first_fractional_index(vars::Vector{Ptr{SCIP.SCIP_Var}})
     
     # Initialize
     split_index = -1
 
-    # Get Relevant SCIP Data
-    n =  SCIP.LibSCIP.SCIPgetNLPCols(scipd)
-    cols = SCIP.LibSCIP.SCIPgetLPCols(scipd)
-    cols = unsafe_wrap(Vector{Ptr{SCIP.LibSCIP.SCIP_COL}},cols,n)
-    
     # Determine Splitting Variable
-    for i=1:n 
+    for (i, var) in enumerate(vars) 
         # Loop through each variable
-        var = SCIP.LibSCIP.SCIPcolGetVar(cols[i])
         sol = SCIP.LibSCIP.SCIPvarGetLPSol(var)
         if SCIP.SCIPvarIsIntegral(var)==1 && (sol - (floor(sol)) > 0.2) && (ceil(sol) - sol > 0.2)
             #Only Consider The Split if var is integral and the current solution is non integral

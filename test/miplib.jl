@@ -31,21 +31,7 @@ function run_test_miplib()
     # Do the actual solve
     SCIP.@SCIP_CALL SCIP.SCIPsolve(inner.scip[])
 
-    #Write stats
-    foo = open("stat.txt", "w")
-    file = Libc.FILE(foo) 
-    #SCIP.SCIPprintSeparatorStatistics(sepa.scipd,file)
-    
-    vars = Ref{Ptr{Ptr{SCIP.SCIP_VAR}}}(C_NULL)
-    nvars = Ref{Cint}(C_NULL)
-    SCIP.@SCIP_CALL SCIP.SCIPgetVarsData(inner.scip[],vars,nvars,C_NULL,C_NULL,C_NULL,C_NULL)
-    vars = unsafe_wrap(Vector{Ptr{SCIP.SCIP_Var}},vars[],nvars[])
-    nvars = nvars[]
-    solution = zeros(nvars)
-    for i=1:nvars
-        solution[i] = SCIP.SCIPvarGetSol(vars[i], 0)
-    end
-    #println(solution)
 end
+
 
 run_test_miplib()
