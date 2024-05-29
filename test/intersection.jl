@@ -2,13 +2,13 @@ import SCIP
 using LinearAlgebra
 using JuMP
 
-CALL_LIMIT = 100
-EPSILON = 1e-10
 WRITE_PATH = joinpath(pwd(),"temp")
 
 include("../src/CornerPolyhedron.jl")
 include("../src/utils.jl")
+include("../src/lpi_utils.jl")
 
+CALL_LIMIT = 1
 DEBUG_PRINT_ORIGINAL_CORNER_POLYHEDRON = false 
 DEBUG_PRINT_INTERSECTION_POINTS = false
 
@@ -18,31 +18,7 @@ DEBUG_PRINT_INTERSECTION_POINTS = false
     scipd::SCIP.SCIPData 
 end
 
-function decideSplitIndex(scipd::SCIP.SCIPData)
-    
-    # Initialize
-    split_index = -1
-
-    # Get Relevant SCIP Data
-    n =  SCIP.LibSCIP.SCIPgetNLPCols(scipd)
-    cols = SCIP.LibSCIP.SCIPgetLPCols(scipd)
-    cols = unsafe_wrap(Vector{Ptr{SCIP.LibSCIP.SCIP_COL}},cols,n)
-    
-    # Determine Splitting Variable
-    for i=1:n 
-        # Loop through each variable
-        var = SCIP.LibSCIP.SCIPcolGetVar(cols[i])
-        sol = SCIP.LibSCIP.SCIPvarGetLPSol(var)
-        if SCIP.SCIPvarIsIntegral(var)==1 && (sol - (floor(sol)) > 0.2) && (ceil(sol) - sol > 0.2)
-            #Only Consider The Split if var is integral and the current solution is non integral
-            split_index = i
-        end
-    end
-
-    return split_index
-end
-
-function computeIntersectionPoints(current_solution, split_index, ray_collection)
+function compute_intersection_points(current_solution, split_index, ray_collection)
     
     intersection_points = []
     pararrel_ray = []
@@ -51,88 +27,86 @@ function computeIntersectionPoints(current_solution, split_index, ray_collection
         low = floor(current_solution[split_index])
         up = ceil(current_solution[split_index])  
         epsilon = 0 
+        
         if ray[split_index] < -EPSILON
+            # Ray will hit lower bound
             epsilon = (low - current_solution[split_index])/ray[split_index]
         elseif ray[split_index] > EPSILON
+            # Ray will hit upper bound
             epsilon = (up - current_solution[split_index])/ray[split_index]
         else
+            # Ray is parallel_ray to the split
             push!(pararrel_ray,ray)
-            continue;
+            continue
         end
+
+        # Ray will intersect bound so add to intersection point set
         push!(intersection_points, current_solution + epsilon*ray)
     end
+
     return (intersection_points,pararrel_ray)
 end
 
-function constructSeperatingLP(sepa, dim, lp_sol, intersection_points, parallel_ray)
+function solve_separating_lp(lp_solution, intersection_points, pararrel_rays)
+
+    dim = length(lp_solution)    
+    seperating_lp = Model(SCIP.Optimizer)
+    set_attribute(seperating_lp, "display/verblevel", 0)
+
+    @variable(seperating_lp, x[1:dim])
+    @variable(seperating_lp, z[1:dim])
+
+    for point in intersection_points
+        @constraint(seperating_lp, sum(x[i]*point[i] for i=1:dim) >= 1)
+    end
+
+    for ray in pararrel_rays
+        @constraint(seperating_lp, sum(x[i]*ray[i] for i=1:dim) >= 0)
+    end
+
+    @constraint(seperating_lp, x  <= z)
+    @constraint(seperating_lp, -x <= z)
+
+    @objective(seperating_lp, Min, sum(z))
     
+    optimize!(seperating_lp)
+    #println(seperating_lp)
+end
+
+function constructSeperatingLP(sepa, dim, lp_sol, intersection_points, parallel_ray)
+
     lpi = Ref{Ptr{SCIP.SCIP_LPI}}(C_NULL)
     
     SCIP.@SCIP_CALL SCIP.SCIPlpiCreate(lpi, C_NULL, "Seperating LP", SCIP.SCIP_OBJSEN_MINIMIZE)
 
     # Add Variables
     SCIP.@SCIP_CALL SCIP.SCIPlpiAddCols(lpi[],dim,zeros(dim),-10000*ones(dim),10000*ones(dim),C_NULL, 0,C_NULL, C_NULL, C_NULL )
+    
+    # Point constraint
     for (idx,point) in enumerate(intersection_points)
-        lhs = [1.0]
-        rhs = [1.0]
-        point = point - lp_sol
-        buffer = zeros(dim)
-        ind = zeros(Cint,dim)
-        nnonz = 0
-        j = 1
-        for i in 1:dim 
-            if abs(point[i]) > 10e-6
-                nnonz +=1
-                buffer[j] = point[i]
-                ind[j] = i-1
-                j+=1
-            end
-        end
-        beg = [0]
-        if nnonz >0
-            SCIP.@SCIP_CALL SCIP.SCIPlpiAddRows(lpi[],1,pointer(lhs),pointer(rhs),C_NULL,nnonz, pointer(beg),pointer(ind), pointer(buffer))
-        end
+       add_row_to_lp(lpi[]; alpha = (point-lp_sol), lhs = 1.0, rhs = 1.0, row_name = "point"*string(idx))
     end
 
-    for ray in parallel_ray
-        lhs = [0.0001]
-        rhs = [SCIP.SCIPinfinity(sepa.scipd)]
-        buffer = zeros(dim)
-        ind = zeros(Cint,dim)
-        nnonz = 0
-        j = 1
-        for i in 1:dim 
-            if abs(ray[i]) > 10e-6
-                nnonz +=1
-                buffer[j] = ray[i]
-                ind[j] = i-1
-                j+=1
-            end
-        end
-        beg = [0]
-        if nnonz >0
-            SCIP.@SCIP_CALL SCIP.SCIPlpiAddRows(lpi[],1,pointer(lhs),pointer(rhs),C_NULL,nnonz, pointer(beg),pointer(ind), pointer(buffer))
-        end 
+    # Ray constraint
+    for (idx,ray) in enumerate(parallel_ray)
+        add_row_to_lp(lpi[]; alpha = ray, lhs = EPSILON, row_name = "ray"*string(idx))
     end
 
     SCIP.@SCIP_CALL SCIP.SCIPlpiAddCols(lpi[],dim,ones(dim),-10000*ones(dim),10000*ones(dim),C_NULL, 0,C_NULL, C_NULL, C_NULL)
+    
     for i=1:dim
-        lhs = [-SCIP.SCIPinfinity(sepa.scipd)]
-        rhs = [0.0]
-        nnonz = 2
-        beg = [0]
-        ind = zeros(Cint,2*dim)
-        buffer = zeros(2*dim)
-        ind[1] = i-1
-        ind[2] =  i-1+dim
-        buffer[1] = -1
-        buffer[2] = -1
-        SCIP.@SCIP_CALL SCIP.SCIPlpiAddRows(lpi[],1,pointer(lhs),pointer(rhs),C_NULL,nnonz,pointer(beg),pointer(ind),pointer(buffer)) 
-        buffer[1] = 1
-        buffer[2] = -1
-        SCIP.@SCIP_CALL SCIP.SCIPlpiAddRows(lpi[],1,pointer(lhs),pointer(rhs),C_NULL,nnonz,pointer(beg),pointer(ind),pointer(buffer)) 
+        alpha = zeros(SCIP.SCIP_Real, 2*dim)
+
+        alpha[i] = -1.0
+        alpha[i+dim] = -1.0
+        add_row_to_lp(lpi[]; alpha = alpha, rhs = 0.0)
+
+        alpha[i] = 1.0
+        alpha[i+dim] = -1.0
+        add_row_to_lp(lpi[]; alpha = alpha, rhs = 0.0) 
     end
 
+    SCIP.@SCIP_CALL SCIP.SCIPlpiWriteLP(lpi[],"test.lp")
     return lpi
 end
 
@@ -229,7 +203,7 @@ function SCIP.exec_lp(sepa::IntersectionSeparator)
         return SCIP.SCIP_DIDNOTFIND
     end
 
-    intersection_points, parallel_ray = computeIntersectionPoints(lp_sol, split_index, lp_rays)
+    intersection_points, parallel_ray = compute_intersection_points(lp_sol, split_index, lp_rays)
     
     if DEBUG_PRINT_INTERSECTION_POINTS
         println("====================")
@@ -331,10 +305,10 @@ function SCIP.exec_lp(sepa::IntersectionSeparator)
         end
     end
     =#
-    #SCIP.@SCIP_CALL SCIP.SCIPprintRow(sepa.scipd, row[], C_NULL)
+    SCIP.@SCIP_CALL SCIP.SCIPprintRow(sepa.scipd, row[], C_NULL)
     
     SCIP.@SCIP_CALL SCIP.SCIPaddRow(sepa.scipd,row[],true, infeasible)  
-    
+    #=
     if !isempty(sepa.debug_sol_path)
         println("Debug Solution Available")
         reference_sol = Ref{Ptr{SCIP.SCIP_Sol}}()
@@ -345,6 +319,6 @@ function SCIP.exec_lp(sepa::IntersectionSeparator)
         SCIP.@SCIP_CALL SCIP.SCIPtrySol(sepa.scipd, reference_sol[],1,1,1,1,1,partial)   
         println(partial[] != 0)     
     end
-    
+    =#
     return SCIP.SCIP_SEPARATED
 end
