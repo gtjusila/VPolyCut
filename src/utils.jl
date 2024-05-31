@@ -192,7 +192,7 @@ function get_first_fractional_index(vars::Vector{Ptr{SCIP.SCIP_Var}})
     for (i, var) in enumerate(vars) 
         # Loop through each variable
         sol = SCIP.LibSCIP.SCIPvarGetLPSol(var)
-        if SCIP.SCIPvarIsIntegral(var)==1 && (sol - (floor(sol)) > 0.2) && (ceil(sol) - sol > 0.2)
+        if SCIP.SCIPvarIsIntegral(var)==1 && (sol - (floor(sol)) > 0.01) && (ceil(sol) - sol > 0.01)
             #Only Consider The Split if var is integral and the current solution is non integral
             split_index = i
         end

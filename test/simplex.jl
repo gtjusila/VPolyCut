@@ -31,7 +31,7 @@ function run_test_simplex()
         ]
     )
     poly1 = Polyhedra.doubledescription(poly1_v)
-    
+    GC.enable(false)
     # Add Variables and Constraints to the SCIP model
     n = Polyhedra.fulldim(poly1) # How many variables are there?
     x = MOI.add_variables(optimizer,n)
@@ -53,7 +53,7 @@ function run_test_simplex()
         ),
     )
     MOI.set(optimizer, MOI.ObjectiveSense(), MOI.MAX_SENSE)
-
+    SCIP.@SCIP_CALL SCIP.SCIPwriteOrigProblem(inner.scip[],"box.mps",C_NULL, true)
     # Add our separator to scip
     sepa = IntersectionSeparator(scipd= inner, debug_sol_path=solution_path)
     SCIP.include_sepa(inner.scip[], inner.sepas, sepa)

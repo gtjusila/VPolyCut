@@ -8,16 +8,19 @@ include("../src/CornerPolyhedron.jl")
 include("../src/utils.jl")
 include("../src/lpi_utils.jl")
 
-CALL_LIMIT = 1
+CALL_LIMIT = 1000
 DEBUG_PRINT_ORIGINAL_CORNER_POLYHEDRON = false 
 DEBUG_PRINT_INTERSECTION_POINTS = false
 
 @kwdef mutable struct IntersectionSeparator <: SCIP.AbstractSeparator
     called::Int64 = 0
-    debug_sol_path::String = "" 
     scipd::SCIP.SCIPData 
 end
 
+"""
+Given a current solution, a split index, and a ray collection compute intersection points
+and pararrel_rays
+"""
 function compute_intersection_points(current_solution, split_index, ray_collection)
     
     intersection_points = []
@@ -47,34 +50,12 @@ function compute_intersection_points(current_solution, split_index, ray_collecti
     return (intersection_points,pararrel_ray)
 end
 
-function solve_separating_lp(lp_solution, intersection_points, pararrel_rays)
+"""
+Construct the seperating lp return a reference to a pointer to the LPI
+"""
+function constructSeperatingLP(lp_sol, intersection_points, parallel_ray)
 
-    dim = length(lp_solution)    
-    seperating_lp = Model(SCIP.Optimizer)
-    set_attribute(seperating_lp, "display/verblevel", 0)
-
-    @variable(seperating_lp, x[1:dim])
-    @variable(seperating_lp, z[1:dim])
-
-    for point in intersection_points
-        @constraint(seperating_lp, sum(x[i]*point[i] for i=1:dim) >= 1)
-    end
-
-    for ray in pararrel_rays
-        @constraint(seperating_lp, sum(x[i]*ray[i] for i=1:dim) >= 0)
-    end
-
-    @constraint(seperating_lp, x  <= z)
-    @constraint(seperating_lp, -x <= z)
-
-    @objective(seperating_lp, Min, sum(z))
-    
-    optimize!(seperating_lp)
-    #println(seperating_lp)
-end
-
-function constructSeperatingLP(sepa, dim, lp_sol, intersection_points, parallel_ray)
-
+    dim = length(lp_sol)
     lpi = Ref{Ptr{SCIP.SCIP_LPI}}(C_NULL)
     
     SCIP.@SCIP_CALL SCIP.SCIPlpiCreate(lpi, C_NULL, "Seperating LP", SCIP.SCIP_OBJSEN_MINIMIZE)
@@ -84,12 +65,14 @@ function constructSeperatingLP(sepa, dim, lp_sol, intersection_points, parallel_
     
     # Point constraint
     for (idx,point) in enumerate(intersection_points)
-       add_row_to_lp(lpi[]; alpha = (point-lp_sol), lhs = 1.0, rhs = 1.0, row_name = "point"*string(idx))
+        @assert(length(point) == dim)
+        add_row_to_lpi(lpi[]; alpha = (point-lp_sol), lhs = 1.0, rhs = 1.0, row_name = "point"*string(idx))
     end
 
     # Ray constraint
     for (idx,ray) in enumerate(parallel_ray)
-        add_row_to_lp(lpi[]; alpha = ray, lhs = EPSILON, row_name = "ray"*string(idx))
+        @assert(length(parallel_ray) == dim)
+        add_row_to_lpi(lpi[]; alpha = ray, lhs = EPSILON, row_name = "ray"*string(idx))
     end
 
     SCIP.@SCIP_CALL SCIP.SCIPlpiAddCols(lpi[],dim,ones(dim),-10000*ones(dim),10000*ones(dim),C_NULL, 0,C_NULL, C_NULL, C_NULL)
@@ -99,68 +82,21 @@ function constructSeperatingLP(sepa, dim, lp_sol, intersection_points, parallel_
 
         alpha[i] = -1.0
         alpha[i+dim] = -1.0
-        add_row_to_lp(lpi[]; alpha = alpha, rhs = 0.0)
+        add_row_to_lpi(lpi[]; alpha = alpha, rhs = 0.0)
 
         alpha[i] = 1.0
         alpha[i+dim] = -1.0
-        add_row_to_lp(lpi[]; alpha = alpha, rhs = 0.0) 
+        add_row_to_lpi(lpi[]; alpha = alpha, rhs = 0.0) 
     end
 
     SCIP.@SCIP_CALL SCIP.SCIPlpiWriteLP(lpi[],"test.lp")
+    
     return lpi
 end
 
-#[CLEAN] Debug Function
-
-function check_in_corner_polyhedron(vertex, rays, point)
-    model = Model(SCIP.Optimizer)
-    set_attribute(model, "display/verblevel",0)
-    @variable(model, l[i=1:length(rays)]>=-0.1)
-    @variable(model, z)
-    @constraint(model, l .>= z)
-    @objective(model, Max, z)
-    R = hcat(rays...)
-    @constraint(model, R*l + vertex .== point)
-    optimize!(model)
-    if !is_solved_and_feasible(model)
-        @warn "Reference Solution Not In Corner Polyhedron"
-    else
-        println("Solution Is In The Corner Polyhedron")
-    end
-end
-
-function verify_reference_solution_in_disjunction(sepa::IntersectionSeparator,reference_solution, split_index)
-    lp_cols = get_lp_columns(sepa.scipd)
-    col_num = length(lp_cols)
-    split_var = SCIP.SCIPcolGetVar(lp_cols[split_index])
-    split_var_value = SCIP.SCIPvarGetSol(split_var,1)
-    reference = SCIP.SCIPgetSolVal(sepa.scipd, reference_solution[], split_var)
-    println(string(split_var_value)*" vs "*string(reference))
-    
-    found = false
-    SCIP.@SCIP_CALL SCIP.SCIPstartProbing(sepa.scipd)
-    SCIP.@SCIP_CALL SCIP.SCIPnewProbingNode(sepa.scipd)
-    SCIP.@SCIP_CALL SCIP.SCIPchgVarUbProbing(sepa.scipd, split_var, floor(split_var_value))
-    println("Testing For Lower Than")
-    feasible = Ref{SCIP.SCIP_Bool}(0)
-    SCIP.@SCIP_CALL SCIP.SCIPcheckSol(sepa.scipd,reference_solution[], 1,1,1,0,1,feasible)
-    println(feasible[]==1)
-    found = found || (feasible[]==1)
-    SCIP.@SCIP_CALL SCIP.SCIPbacktrackProbing(sepa.scipd, 0)
-    SCIP.@SCIP_CALL SCIP.SCIPnewProbingNode(sepa.scipd)
-    SCIP.@SCIP_CALL SCIP.SCIPchgVarLbProbing(sepa.scipd,split_var, ceil(split_var_value))
-    println("Testing For Larger Than")
-    feasible = Ref{SCIP.SCIP_Bool}(0)
-    SCIP.@SCIP_CALL SCIP.SCIPcheckSol(sepa.scipd,reference_solution[], 1,1,1,0,1,feasible)
-    println(feasible[]==1)
-    found = found || (feasible[]==1) 
-    SCIP.@SCIP_CALL SCIP.SCIPendProbing(sepa.scipd)
-end
-
 function SCIP.exec_lp(sepa::IntersectionSeparator)
-    
-    # Check Preconditions
-    @assert(SCIP.SCIPgetStage(sepa.scipd) != sepa.scipd)
+
+    @assert(SCIP.SCIPgetStage(sepa.scipd) == SCIP.SCIP_STAGE_SOLVING)
     @assert(SCIP.SCIPisLPSolBasic(sepa.scipd) != 0)
     @assert(SCIP.SCIPgetLPSolstat(sepa.scipd) == SCIP.SCIP_LPSOLSTAT_OPTIMAL) 
 
@@ -169,7 +105,7 @@ function SCIP.exec_lp(sepa::IntersectionSeparator)
         return SCIP.SCIP_DIDNOTRUN
     end
     sepa.called +=1 
-    
+ 
     # STEP 1: Get Corner Polyhedron of current LP solution
     lp_sol = nothing
     lp_rays = nothing
@@ -196,13 +132,12 @@ function SCIP.exec_lp(sepa::IntersectionSeparator)
     # STEP 2: Decide Splitting Variable
     vars = get_lp_variables(sepa.scipd)
     split_index = get_first_fractional_index(vars) 
-    println(lp_sol[split_index])
-
     if split_index == -1 
         @warn "No Splitting Variable"
         return SCIP.SCIP_DIDNOTFIND
     end
 
+    println(lp_sol[split_index])
     intersection_points, parallel_ray = compute_intersection_points(lp_sol, split_index, lp_rays)
     
     if DEBUG_PRINT_INTERSECTION_POINTS
@@ -215,110 +150,30 @@ function SCIP.exec_lp(sepa::IntersectionSeparator)
     end
 
     # STEP 3: Construct and Solve Seperating LP
-    lpi = constructSeperatingLP(sepa, dim, lp_sol, intersection_points, parallel_ray) 
+    lpi = constructSeperatingLP(lp_sol, intersection_points, parallel_ray) 
 
-    # Solve The LP
-    if SCIP.SCIPlpiHasPrimalSolve() == 0
-        @warn "LP Solver Does Not Support Primal Solve"
-        return SCIP.SCIP_DIDNOTRUN
+    try
+        solve_lpi(lpi[])
+    catch
+        return SCIP.SCIP_DIDNOTFIND
     end
 
-    SCIP.@SCIP_CALL SCIP.SCIPlpiSolvePrimal(lpi[])
-    
-    if SCIP.SCIPlpiIsPrimalInfeasible(lpi[]) == 1
-        @warn "LP Solver Failed TO Solve Cut Generation LP: LP Infeasible"
-        return SCIP.SCIP_DIDNOTFIND
-    end
-    if SCIP.SCIPlpiIsPrimalUnbounded(lpi[]) == 1
-        @warn "LP Solver Failed TO Solve Cut Generation LP: LP Unbounded"
-        return SCIP.SCIP_DIDNOTFIND
-    end
-    if SCIP.SCIPlpiIsOptimal(lpi[]) == 0
-        @warn "LP Solver Failed TO Solve Cut Generation LP: LP Not optimzal" 
-        return SCIP.SCIP_DIDNOTFIND
-    end
-    
-    obj = Ref{SCIP.SCIP_Real}(0.0)
-    reference_sol = zeros(SCIP.SCIP_Real, 2*dim)
-    SCIP.@SCIP_CALL SCIP.SCIPlpiGetSol(lpi[], obj, pointer(reference_sol),C_NULL, C_NULL, C_NULL)
-    reference_sol = reference_sol[1:dim]
-    
-    #print(sol)
-    #println(length(sol))
-    b = dot(reference_sol,lp_sol) + 1
-    nnonz = 0
-    for s in reference_sol
-        if abs(s) >= EPSILON
-            nnonz +=1
-        end
-    end
+    separating_sol = get_lpi_solution_vector(lpi[]) 
+    separating_sol = separating_sol[1:dim]
+    b = dot(separating_sol,lp_sol) + 1
 
     row = Ref{Ptr{SCIP.SCIP_ROW}}(C_NULL)
-    cols = SCIP.LibSCIP.SCIPgetLPCols(sepa.scipd)
-    cols = unsafe_wrap(Vector{Ptr{SCIP.LibSCIP.SCIP_COL}},cols,dim)
-    cols__ = Array{Ptr{SCIP.SCIP_ROW}}(undef,nnonz)
-    vals__ = Array{SCIP.SCIP_Real}(undef,nnonz)
-    infeasible = Ref{SCIP.SCIP_Bool}()
-    cnt = 1 
-    for (index,s) in enumerate(reference_sol)
-        if abs(s) >= EPSILON
-            cols__[cnt] = cols[index]
-            vals__[cnt] = s
-            cnt += 1
-        end
+    SCIP.@SCIP_CALL SCIP.SCIPcreateEmptyRowSepa(sepa.scipd, row, sepa.scipd.sepas[sepa], "", b,SCIP.SCIPinfinity(sepa.scipd), true, false, false)      
+    vars = get_lp_variables(sepa.scipd)
+    infeasible = Ref{SCIP.SCIP_Bool}(0)
+
+    for (idx, sol) in enumerate(separating_sol)
+        if abs(sol) < EPSILON continue end
+        SCIP.@SCIP_CALL SCIP.SCIPaddVarToRow(sepa.scipd, row[], vars[idx],sol)
     end
-    
-    #println("Largest Coefficient"* string(maximum(abs.(sol))))
-    if maximum(abs.(reference_sol)) >= 11000
-        println("Coeffients Explotion")
-        return SCIP.SCIP_DIDNOTRUN
-    end
-    SCIP.@SCIP_CALL SCIP.SCIPcreateRowSepa(sepa.scipd, row, sepa.scipd.sepas[sepa], "",nnonz,pointer(cols__),pointer(vals__),b,SCIP.SCIPinfinity(sepa.scipd), true,false, false) 
-    #=
-    if !isempty(sepa.debug_sol_path)
-        println("Debug Solution Available")
-        reference_sol = Ref{Ptr{SCIP.SCIP_Sol}}()
-        partial = Ref{SCIP.SCIP_Bool}(0)
-        error = Ref{SCIP.SCIP_Bool}(0)
-        SCIP.@SCIP_CALL SCIP.SCIPcreateSol(sepa.scipd,reference_sol, C_NULL)
-        SCIP.@SCIP_CALL SCIP.SCIPreadSolFile(sepa.scipd, sepa.debug_sol_path, reference_sol[],SCIP.SCIP_Bool(false),partial, error)
-        solution_feasibility = SCIP.SCIPgetRowSolFeasibility(sepa.scipd, row[],reference_sol[])
-        println("Solution Feasibility: "*string(solution_feasibility))
-        
-        if solution_feasibility < -1 
-            # In the case of infeasibility
-            cols = SCIP.LibSCIP.SCIPgetLPCols(sepa.scipd)
-            cols = unsafe_wrap(Vector{Ptr{SCIP.LibSCIP.SCIP_COL}},cols,dim)
-            reference_lp = zeros(dim)
-            for i = 1:dim
-                var = SCIP.LibSCIP.SCIPcolGetVar(cols[i])
-                sol = SCIP.SCIPgetSolVal(sepa.scipd, reference_sol[],var)
-                name = unsafe_string(SCIP.SCIPvarGetName(var))
-                if sol >= EPSILON
-                    #println(name* " " * string(sol))
-                end
-                reference_lp[i] = sol
-            end
-            #println(reference_lp)
-            check_in_corner_polyhedron(lp_sol, lp_rays,reference_lp)
-            verify_reference_solution_in_disjunction(sepa,reference_sol,split_index)
-        end
-    end
-    =#
     SCIP.@SCIP_CALL SCIP.SCIPprintRow(sepa.scipd, row[], C_NULL)
-    
     SCIP.@SCIP_CALL SCIP.SCIPaddRow(sepa.scipd,row[],true, infeasible)  
-    #=
-    if !isempty(sepa.debug_sol_path)
-        println("Debug Solution Available")
-        reference_sol = Ref{Ptr{SCIP.SCIP_Sol}}()
-        partial = Ref{SCIP.SCIP_Bool}(0)
-        error = Ref{SCIP.SCIP_Bool}(0)
-        SCIP.@SCIP_CALL SCIP.SCIPcreateSol(sepa.scipd,reference_sol, C_NULL)
-        SCIP.@SCIP_CALL SCIP.SCIPreadSolFile(sepa.scipd, sepa.debug_sol_path, reference_sol[],SCIP.SCIP_Bool(false),partial, error)
-        SCIP.@SCIP_CALL SCIP.SCIPtrySol(sepa.scipd, reference_sol[],1,1,1,1,1,partial)   
-        println(partial[] != 0)     
-    end
-    =#
+
     return SCIP.SCIP_SEPARATED
+    
 end
