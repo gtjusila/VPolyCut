@@ -1,35 +1,81 @@
-import MathOptInterface as MOI
-import Polyhedra
+using SCIP
 
-function hrep_to_constraint(hpoly::Polyhedra.HRepresentation,model::MOI.ModelLike,x::Vector{MOI.VariableIndex})
-    """
-    This function convert an h-polyhedron into constraints and add them to the model.
-    The variable x must have the same dimension as the polyhedron. This is not checked.
-    """
-    # Add Halfspaces
-    for i in Polyhedra.halfspaces(hpoly)
-        MOI.add_constraint(
-            model,
-            MOI.ScalarAffineFunction(
-                MOI.ScalarAffineTerm.(i.a,x),
-                0.0,
-            ),
-            MOI.LessThan(i.β),
-        )
-    end
-   # Add Hyperplanes
-    for i in Polyhedra.hyperplanes(hpoly)
-        MOI.add_constraint(
-            model,
-            MOI.ScalarAffineFunction(
-                MOI.ScalarAffineTerm.(i.a,x),
-                0.0,
-            ),
-            MOI.EqualTo(i.β),
-        )
-    end 
+"""
+An experiment configuration object to store settings for an experiment. 
+
+# Field 
+- seperator::Bool Turn on separator? Default: True 
+- heuristics::Bool Turn on heuristics? Default: True
+- presolve::Bool Turn on presolve? Default: True
+- propagation::Bool Turn on propagation? Default: True
+- conflict::Bool Turn on conflict handling? Default: True
+- zero_cut::Bool Allow cut with zero power? Default: True 
+- symmetry::Bool Turn on symmetry handling? Default: True
+- debug::Bool use SCIP debug solution? Default: False
+- verbosity::Int Display verbosity level. Default: 5
+- vpolycut::Bool should V Polyhedral Cut be used? Default: True
+- node_limit::Int SCIP node limit. Default: -1
+"""
+@kwdef struct ExperimentConfiguration
+    separator::Bool = true
+    heuristics::Bool = true
+    presolve::Bool = true
+    propagation::Bool = true 
+    conflict::Bool = true 
+    zero_cut::Bool = true
+    symmetry::Bool = true
+    debug::Bool = false
+    verbosity::Int64 = 5 
+    vpolycut::Bool = true
+    node_limit::Int64 = -1
 end
 
+"""
+Solve `instance` with the given ExperimentConfiguration.
+Instance should be located on the folder test\\data\\instances
+Instance should be name instance.mps and if debug is turned on solution
+should be named instance.sol
+"""
+function run_experiment(instance::String, config::ExperimentConfiguration)
+    # STEP 1: Create a new model, Setup parameter and read problem
+    optimizer = SCIP.Optimizer()
+    inner = optimizer.inner
+
+    # STEP 2: Set parameter
+    
+    setter = (par, val) -> SCIP.set_parameter(inner, par, val)
+    turn_off_scip_heuristics(setter)
+    
+    if !config.separator turn_off_scip_separators(setter) end
+    if !config.heuristics turn_off_scip_heuristics(setter) end
+    if !config.presolve setter("presolving/maxrounds", 0) end
+    if !config.propagation setter("propagating/maxroundsroot",0) end
+    if !config.conflict setter("conflict/enable",false) end
+    if config.zero_cut allow_zero_power_cut(setter) end
+    if !config.symmetry setter("misc/usesymmetry", 0) end
+    setter("display/verblevel",config.verbosity) 
+    setter("limits/nodes",config.node_limit)
+
+    # STEP 3: Load problem with debug solution (if debug is turned on)
+    path = joinpath(@__DIR__,"data","instances",instance)
+    SCIP.@SCIP_CALL SCIP.SCIPreadProb(inner, path*".mps", C_NULL)
+    if config.debug
+        SCIP.set_parameter(inner,"misc/debugsol",joinpath(@__DIR__,"data","instances",instance*".sol"))
+        SCIP.SCIPenableDebugSol(inner)
+    end
+
+    # STEP 4: Include V-Polyhedral Cut
+    if config.vpolycut
+        sepa = IntersectionSeparator(scipd = inner)
+        SCIP.include_sepa(inner.scip[], inner.sepas, sepa; freq= 0)
+    end
+
+    SCIP.@SCIP_CALL SCIP.SCIPsolve(inner)
+end
+
+"""
+Settings from SCIP
+"""
 function turn_off_scip_separators(setter::Function)
     setter("separating/disjunctive/freq", -1)
     setter("separating/impliedbounds/freq", -1)
@@ -108,35 +154,10 @@ function turn_off_scip_heuristics(setter::Function)
     setter("heuristics/trysol/freq", -1) 
 end
 
-function turn_off_scip_miscellaneous(setter::Function)    
-    """
-    Turn Off Presolving, propagation, conflict analysis and symmetry
-    """
-    setter("misc/usesymmetry", 0)
-    setter("presolving/maxrounds", 0)
-    setter("propagating/maxroundsroot",0)
-    setter("propagating/maxrounds",0) 
-    setter("conflict/enable",false)
-end
-
 function allow_zero_power_cut(setter::Function)
     setter("separating/minefficacy", 0)
     setter("separating/minefficacyroot", 0)
     setter("cutselection/hybrid/minortho", 0)
     setter("cutselection/hybrid/minorthoroot", 0)
     setter("separating/poolfreq", 1)
-end
-
-@kwdef mutable struct RootCompletionEventHandler <: SCIP.AbstractEventHandler
-    scipd::SCIP.SCIPData
-    called = 0
-end
-
-function SCIP.eventexec(eventhandler::RootCompletionEventHandler)
-    eventhandler.called += 1
-    if eventhandler.called == 2 
-        @error "Root node Processing Completed"
-        SCIP.@SCIP_CALL SCIP.SCIPresetParams(eventhandler.scipd)
-        SCIP.set_parameter(eventhandler.scipd,"display/verblevel",4)
-    end
 end

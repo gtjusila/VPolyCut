@@ -4,8 +4,7 @@ import SCIP
 import MathOptInterface as MOI
 
 include("../src/VPolyCut.jl")
-include("./utils.jl")
-include("./intersection.jl")
+include("./helper_intersection.jl")
 
 function run_test_simplex() 
     
@@ -21,13 +20,15 @@ function run_test_simplex()
     turn_off_scip_separators(setter)
     allow_zero_power_cut(setter)
     setter("display/verblevel",5)
-    #setter("misc/debugsol",solution_path) # Add Debug Solution
+    
+    # Add Debug Solution
+    #setter("misc/debugsol",solution_path) 
     SCIP.SCIPenableDebugSol(inner.scip[]) 
  
     # The Actual Testcase
     poly1_v = Polyhedra.vrep(
         [
-            [0.0,0.0],[2.5,0.0],[2.50001,2.50001],[0,2.5]
+            [0.0,0.0],[2.5,0.0],[0,2.5]
         ]
     )
     poly1 = Polyhedra.doubledescription(poly1_v)
@@ -55,14 +56,11 @@ function run_test_simplex()
     MOI.set(optimizer, MOI.ObjectiveSense(), MOI.MAX_SENSE)
 
     # Add our separator to scip
-    SCIP.@SCIP_CALL SCIP.SCIPwriteOrigProblem(scip, "test_box.jl");
     sepa = IntersectionSeparator(scipd = inner, call_limit = 1)
     SCIP.include_sepa(inner.scip[], inner.sepas, sepa)
-    SCIP.SCIPenableVarHistory(sepa.scipd)
-    
+
     # solve the problem
     SCIP.@SCIP_CALL SCIP.SCIPsolve(inner.scip[])
-
 end
 
 # Run The Actual Test Case

@@ -8,8 +8,8 @@ include("../src/CornerPolyhedron.jl")
 include("../src/utils.jl")
 include("../src/lpi_utils.jl")
 
-DEBUG_PRINT_ORIGINAL_CORNER_POLYHEDRON = false 
-DEBUG_PRINT_INTERSECTION_POINTS = false
+DEBUG_PRINT_ORIGINAL_CORNER_POLYHEDRON = true 
+DEBUG_PRINT_INTERSECTION_POINTS = true 
 
 @kwdef mutable struct IntersectionSeparator <: SCIP.AbstractSeparator
     called::Int64 = 0

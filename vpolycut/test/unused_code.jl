@@ -44,3 +44,46 @@ function verify_reference_solution_in_disjunction(sepa::IntersectionSeparator,re
     found = found || (feasible[]==1) 
     SCIP.@SCIP_CALL SCIP.SCIPendProbing(sepa.scipd)
 end
+
+function hrep_to_constraint(hpoly::Polyhedra.HRepresentation,model::MOI.ModelLike,x::Vector{MOI.VariableIndex})
+    """
+    This function convert an h-polyhedron into constraints and add them to the model.
+    The variable x must have the same dimension as the polyhedron. This is not checked.
+    """
+    # Add Halfspaces
+    for i in Polyhedra.halfspaces(hpoly)
+        MOI.add_constraint(
+            model,
+            MOI.ScalarAffineFunction(
+                MOI.ScalarAffineTerm.(i.a,x),
+                0.0,
+            ),
+            MOI.LessThan(i.β),
+        )
+    end
+   # Add Hyperplanes
+    for i in Polyhedra.hyperplanes(hpoly)
+        MOI.add_constraint(
+            model,
+            MOI.ScalarAffineFunction(
+                MOI.ScalarAffineTerm.(i.a,x),
+                0.0,
+            ),
+            MOI.EqualTo(i.β),
+        )
+    end 
+end
+
+@kwdef mutable struct RootCompletionEventHandler <: SCIP.AbstractEventHandler
+    scipd::SCIP.SCIPData
+    called = 0
+end
+
+function SCIP.eventexec(eventhandler::RootCompletionEventHandler)
+    eventhandler.called += 1
+    if eventhandler.called == 2 
+        @error "Root node Processing Completed"
+        SCIP.@SCIP_CALL SCIP.SCIPresetParams(eventhandler.scipd)
+        SCIP.set_parameter(eventhandler.scipd,"display/verblevel",4)
+    end
+end
