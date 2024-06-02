@@ -8,12 +8,12 @@ include("../src/CornerPolyhedron.jl")
 include("../src/utils.jl")
 include("../src/lpi_utils.jl")
 
-CALL_LIMIT = 1000
 DEBUG_PRINT_ORIGINAL_CORNER_POLYHEDRON = false 
 DEBUG_PRINT_INTERSECTION_POINTS = false
 
 @kwdef mutable struct IntersectionSeparator <: SCIP.AbstractSeparator
     called::Int64 = 0
+    call_limit::Int64 = -1 
     scipd::SCIP.SCIPData 
 end
 
@@ -71,7 +71,7 @@ function constructSeperatingLP(lp_sol, intersection_points, parallel_ray)
 
     # Ray constraint
     for (idx,ray) in enumerate(parallel_ray)
-        @assert(length(parallel_ray) == dim)
+        @assert(length(ray) == dim)
         add_row_to_lpi(lpi[]; alpha = ray, lhs = EPSILON, row_name = "ray"*string(idx))
     end
 
@@ -90,18 +90,19 @@ function constructSeperatingLP(lp_sol, intersection_points, parallel_ray)
     end
 
     SCIP.@SCIP_CALL SCIP.SCIPlpiWriteLP(lpi[],"test.lp")
-    
     return lpi
 end
 
 function SCIP.exec_lp(sepa::IntersectionSeparator)
 
-    @assert(SCIP.SCIPgetStage(sepa.scipd) == SCIP.SCIP_STAGE_SOLVING)
-    @assert(SCIP.SCIPisLPSolBasic(sepa.scipd) != 0)
-    @assert(SCIP.SCIPgetLPSolstat(sepa.scipd) == SCIP.SCIP_LPSOLSTAT_OPTIMAL) 
+    scip = sepa.scipd
+
+    @assert(SCIP.SCIPgetStage(scip) == SCIP.SCIP_STAGE_SOLVING)
+    @assert(SCIP.SCIPisLPSolBasic(scip) != 0)
+    @assert(SCIP.SCIPgetLPSolstat(scip) == SCIP.SCIP_LPSOLSTAT_OPTIMAL) 
 
     # Only limit 1 call 
-    if sepa.called >= CALL_LIMIT
+    if sepa.call_limit > 0  && sepa.called >= sepa.call_limit
         return SCIP.SCIP_DIDNOTRUN
     end
     sepa.called +=1 
@@ -109,11 +110,12 @@ function SCIP.exec_lp(sepa::IntersectionSeparator)
     # STEP 1: Get Corner Polyhedron of current LP solution
     lp_sol = nothing
     lp_rays = nothing
-    lp_sol, lp_rays = get_corner_polyhedron(sepa.scipd)
+
+    lp_sol, lp_rays = get_corner_polyhedron(scip)
     
     # [CLEAN] For Debug Write LP of current node file THIS STEP MUST BE DONE AFTER getting the corner polyhedron since otherwise LP SOLSTAT will be affected
     name = string(sepa.called)
-    SCIP.@SCIP_CALL SCIP.SCIPwriteMIP(sepa.scipd, joinpath(WRITE_PATH,name*".mip"),true, false, true)
+    #SCIP.@SCIP_CALL SCIP.SCIPwriteMIP(scip, joinpath(WRITE_PATH,name*".mip"),true, false, true)
 
     if DEBUG_PRINT_ORIGINAL_CORNER_POLYHEDRON
         println("====================")
@@ -130,14 +132,14 @@ function SCIP.exec_lp(sepa::IntersectionSeparator)
     end
     
     # STEP 2: Decide Splitting Variable
-    vars = get_lp_variables(sepa.scipd)
+    vars = get_lp_variables(scip)
     split_index = get_first_fractional_index(vars) 
     if split_index == -1 
         @warn "No Splitting Variable"
         return SCIP.SCIP_DIDNOTFIND
     end
-
     println(lp_sol[split_index])
+    
     intersection_points, parallel_ray = compute_intersection_points(lp_sol, split_index, lp_rays)
     
     if DEBUG_PRINT_INTERSECTION_POINTS
@@ -158,22 +160,25 @@ function SCIP.exec_lp(sepa::IntersectionSeparator)
         return SCIP.SCIP_DIDNOTFIND
     end
 
-    separating_sol = get_lpi_solution_vector(lpi[]) 
+    separating_sol = get_lpi_solution_vector(lpi[])
+    SCIP.@SCIP_CALL SCIP.SCIPlpiFree(lpi)
+    
     separating_sol = separating_sol[1:dim]
     b = dot(separating_sol,lp_sol) + 1
 
     row = Ref{Ptr{SCIP.SCIP_ROW}}(C_NULL)
-    SCIP.@SCIP_CALL SCIP.SCIPcreateEmptyRowSepa(sepa.scipd, row, sepa.scipd.sepas[sepa], "", b,SCIP.SCIPinfinity(sepa.scipd), true, false, false)      
-    vars = get_lp_variables(sepa.scipd)
+    SCIP.@SCIP_CALL SCIP.SCIPcreateEmptyRowSepa(scip, row, scip.sepas[sepa], "", b,SCIP.SCIPinfinity(scip), true, false, false)      
+    vars = get_lp_variables(scip)
     infeasible = Ref{SCIP.SCIP_Bool}(0)
 
     for (idx, sol) in enumerate(separating_sol)
         if abs(sol) < EPSILON continue end
-        SCIP.@SCIP_CALL SCIP.SCIPaddVarToRow(sepa.scipd, row[], vars[idx],sol)
+        SCIP.@SCIP_CALL SCIP.SCIPaddVarToRow(scip, row[], vars[idx],sol)
     end
-    SCIP.@SCIP_CALL SCIP.SCIPprintRow(sepa.scipd, row[], C_NULL)
-    SCIP.@SCIP_CALL SCIP.SCIPaddRow(sepa.scipd,row[],true, infeasible)  
+    #SCIP.@SCIP_CALL SCIP.SCIPprintRow(scip, row[], C_NULL)
 
+    SCIP.@SCIP_CALL SCIP.SCIPaddRow(scip,row[],true, infeasible)  
+    SCIP.@SCIP_CALL  SCIP.SCIPreleaseRow(scip,row)
     return SCIP.SCIP_SEPARATED
     
 end

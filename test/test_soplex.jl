@@ -1,5 +1,5 @@
 using Test
-import Polyhedra
+
 import SCIP
 import MathOptInterface as MOI
 
@@ -79,6 +79,7 @@ function run_test_soplex()
     
     lpi = Ref{Ptr{SCIP.SCIP_LPI}}(C_NULL)
     SCIP.@SCIP_CALL SCIP.SCIPlpiCreate(lpi, C_NULL, "Test", SCIP.SCIP_OBJSEN_MINIMIZE)
+    SCIP.@SCIP_CALL SCIP.LibSCIP.SCIPlpiSetIntpar(lpi[],SCIP.LibSCIP.SCIP_LPPAR_PRESOLVING,0)
     SCIP.@SCIP_CALL SCIP.SCIPlpiReadLP(lpi[],joinpath(@__DIR__,"data","soplex_test.lp"))
     SCIP.@SCIP_CALL SCIP.SCIPlpiSolvePrimal(lpi[])
 

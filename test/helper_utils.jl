@@ -126,3 +126,17 @@ function allow_zero_power_cut(setter::Function)
     setter("cutselection/hybrid/minorthoroot", 0)
     setter("separating/poolfreq", 1)
 end
+
+@kwdef mutable struct RootCompletionEventHandler <: SCIP.AbstractEventHandler
+    scipd::SCIP.SCIPData
+    called = 0
+end
+
+function SCIP.eventexec(eventhandler::RootCompletionEventHandler)
+    eventhandler.called += 1
+    if eventhandler.called == 2 
+        @error "Root node Processing Completed"
+        SCIP.@SCIP_CALL SCIP.SCIPresetParams(eventhandler.scipd)
+        SCIP.set_parameter(eventhandler.scipd,"display/verblevel",4)
+    end
+end

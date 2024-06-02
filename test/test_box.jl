@@ -13,7 +13,7 @@ function run_test_simplex()
     optimizer = SCIP.Optimizer()
     
     # Set Up Parameter
-    solution_path = joinpath(@__DIR__,"data","simplex.sol")
+    #solution_path = joinpath(@__DIR__,"data","simplex.sol")
     inner = optimizer.inner
     setter = (par, val) -> SCIP.set_parameter(inner, par, val)
     turn_off_scip_miscellaneous(setter)
@@ -21,7 +21,7 @@ function run_test_simplex()
     turn_off_scip_separators(setter)
     allow_zero_power_cut(setter)
     setter("display/verblevel",5)
-    setter("misc/debugsol",solution_path) # Add Debug Solution
+    #setter("misc/debugsol",solution_path) # Add Debug Solution
     SCIP.SCIPenableDebugSol(inner.scip[]) 
  
     # The Actual Testcase
@@ -31,7 +31,7 @@ function run_test_simplex()
         ]
     )
     poly1 = Polyhedra.doubledescription(poly1_v)
-    GC.enable(false)
+
     # Add Variables and Constraints to the SCIP model
     n = Polyhedra.fulldim(poly1) # How many variables are there?
     x = MOI.add_variables(optimizer,n)
@@ -53,16 +53,14 @@ function run_test_simplex()
         ),
     )
     MOI.set(optimizer, MOI.ObjectiveSense(), MOI.MAX_SENSE)
-    SCIP.@SCIP_CALL SCIP.SCIPwriteOrigProblem(inner.scip[],"box.mps",C_NULL, true)
+
     # Add our separator to scip
-    sepa = IntersectionSeparator(scipd= inner, debug_sol_path=solution_path)
+    sepa = IntersectionSeparator(scipd = inner, call_limit = 1)
     SCIP.include_sepa(inner.scip[], inner.sepas, sepa)
     SCIP.SCIPenableVarHistory(sepa.scipd)
     
     # solve the problem
     SCIP.@SCIP_CALL SCIP.SCIPsolve(inner.scip[])
-
-    @info "Number of separator calls" sepa.called
 end
 
 # Run The Actual Test Case
