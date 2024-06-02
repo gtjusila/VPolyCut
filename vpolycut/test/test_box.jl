@@ -55,12 +55,14 @@ function run_test_simplex()
     MOI.set(optimizer, MOI.ObjectiveSense(), MOI.MAX_SENSE)
 
     # Add our separator to scip
+    SCIP.@SCIP_CALL SCIP.SCIPwriteOrigProblem(scip, "test_box.jl");
     sepa = IntersectionSeparator(scipd = inner, call_limit = 1)
     SCIP.include_sepa(inner.scip[], inner.sepas, sepa)
     SCIP.SCIPenableVarHistory(sepa.scipd)
     
     # solve the problem
     SCIP.@SCIP_CALL SCIP.SCIPsolve(inner.scip[])
+
 end
 
 # Run The Actual Test Case
