@@ -5,15 +5,20 @@
 import SCIP
 include("utils.jl")
 
-function get_corner_polyhedron(scip::SCIP.SCIPData)
+"""
+Returns the pair (lp_sol, lp_rays) where lp_sol is the current solution and lp_rays is a vector
+containing lp_rays each is of the form Vector{SCIP.SCIP_Real}
+"""
+function get_corner_polyhedron(scip::SCIP.SCIPData; epsilon::SCIP.SCIP_Real = 10*SCIP.SCIPepsilon(scip))
     """
     Get Corner Polyhedron Information From LP Solver from the given scip pointer
     """
     @assert SCIP.SCIPgetLPSolstat(scip) == SCIP.SCIP_LPSOLSTAT_OPTIMAL
+    
     # Get Information from SCIP
     lp_cols = get_lp_columns(scip)
     col_num = length(lp_cols)
-    lp_rows,row_num = get_lp_row_information(scip) 
+    lp_rows = get_lp_row_information(scip) 
     basis_indices = get_lp_basis_information(scip)
 
     # Initiate a vector to collect corner polyhedron ray
@@ -21,7 +26,7 @@ function get_corner_polyhedron(scip::SCIP.SCIPData)
     
     # Get Tableau
     tableau = get_dense_tableau_rows(scip) 
-
+    
     #=
     Generate Rays from non basic variable
     If variable is non basic i.e. the upper or lower bound is attained then one can push the variable against the bound
@@ -46,7 +51,7 @@ function get_corner_polyhedron(scip::SCIP.SCIPData)
         ray_ = zeros(col_num)
         ray_[j] = -factor_
         for (k, index) in enumerate(basis_indices)
-            if index >= 0
+            if index >= 0 
                 ray_[index+1] =  factor_*tableau[k][j]
             end
         end
@@ -75,7 +80,7 @@ function get_corner_polyhedron(scip::SCIP.SCIPData)
         ray_ = zeros(col_num)
         ray_non_zero = false
         for (j, index) in enumerate(basis_indices)
-            if (index >= 0) && (tableau[j][col_num+i] != 0)
+            if (index >= 0) && abs(tableau[j][col_num+i]) >= epsilon 
                 ray_[index+1] =  factor_*tableau[j][col_num+i]
                 ray_non_zero =  true
             end
@@ -86,7 +91,7 @@ function get_corner_polyhedron(scip::SCIP.SCIPData)
         end
     end
 
-    current_solution = get_lp_solution_vector(scip; col_num = col_num, lp_cols = lp_cols) 
+    current_solution = get_lp_solution_vector(scip) 
 
     return current_solution,ray_collection
 end

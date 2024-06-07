@@ -11,10 +11,14 @@ function run_test_miplib(instance::String)
     config = ExperimentConfiguration(
         debug = true,
         separator = false,
-        heuristics = false,
+        heuristics = true,
+        vpolycut = false,
+        gomory =  true,
+        vpolycut_limit = 20,
+        node_limit=1 
     )
     run_experiment(instance, config)
 
 end
 
-run_test_miplib("test_box")
+run_test_miplib("gen-ip054")

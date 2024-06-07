@@ -1,41 +1,37 @@
 # Some Common Functions Needed By All Function
 using Random
+using SCIP
 
-function get_lp_columns(scip::SCIP.SCIPData)
+abstract type AbstractSeparatorParameter end
+
+function get_lp_columns(scip::SCIP.SCIPData)::Vector{Ptr{SCIP.SCIP_Col}}
     
     col_num = Ref{Cint}(0)
     lp_cols = Ref{Ptr{Ptr{SCIP.SCIP_Col}}}(C_NULL)
     
     SCIP.@SCIP_CALL SCIP.SCIPgetLPColsData(scip, lp_cols, col_num)
-    
-    col_num = col_num[]
-    lp_cols = unsafe_wrap(Vector{Ptr{SCIP.SCIP_Col}},lp_cols[],col_num)
+    lp_cols = unsafe_wrap(Vector{Ptr{SCIP.SCIP_Col}},lp_cols[],col_num[])
 
     return lp_cols
 end
 
-function get_lp_row_information(scip::SCIP.SCIPData)
+function get_lp_row_information(scip::SCIP.SCIPData)::Vector{Ptr{SCIP.SCIP_Row}}
     
     row_num = Ref{Cint}(0)
     lp_rows = Ref{Ptr{Ptr{SCIP.SCIP_Row}}}(C_NULL)
     
     # Get Necessary SCIP Data 
     SCIP.@SCIP_CALL SCIP.SCIPgetLPRowsData(scip, lp_rows, row_num)
+    lp_rows = unsafe_wrap(Vector{Ptr{SCIP.SCIP_Row}},lp_rows[],row_num[])
 
-    row_num = row_num[]
-    lp_rows = unsafe_wrap(Vector{Ptr{SCIP.SCIP_Row}},lp_rows[],row_num)
-
-    return lp_rows,row_num
+    return lp_rows
 end
 
-function get_lp_solution_vector(scip; col_num::Int64 = Int64(0), lp_cols::Vector{Ptr{SCIP.SCIP_Col}} = Vector{Ptr{SCIP.SCIP_Col}}(undef,0))
+function get_lp_solution_vector(scip)
     # If data is not given then first fetch data from scip
-    col_num = Int32(col_num)
-    if col_num == 0 || length(lp_cols) == 0
-        lp_cols = get_lp_columns(scip) 
-        col_num = length(lp_cols)
-    end
-    
+    lp_cols = get_lp_columns(scip) 
+    col_num = length(lp_cols) 
+
     # Get the solution
     current_solution = zeros(col_num)
     for i=1:col_num
@@ -183,20 +179,28 @@ end
 """
 Given a vector of SCIP variable returns the index of an integer variable with highest pseudobranch score
 """
-function get_first_fractional_index(vars::Vector{Ptr{SCIP.SCIP_Var}})
+function get_most_fractional_index(vars::Vector{Ptr{SCIP.SCIP_Var}})
     
     # Initialize
     split_index = -1
-
+    highest = 0.01
     # Determine Splitting Variable
     for (i, var) in enumerate(vars) 
         # Loop through each variable
         sol = SCIP.LibSCIP.SCIPvarGetLPSol(var)
-        if SCIP.SCIPvarIsIntegral(var)==1 && (sol - (floor(sol)) > 0.01) && (ceil(sol) - sol > 0.01)
+        score = min(sol - floor(sol), ceil(sol) - sol)
+        if SCIP.SCIPvarIsIntegral(var)==1 && score > highest
             #Only Consider The Split if var is integral and the current solution is non integral
             split_index = i
+            highest = score
         end
     end
 
     return split_index
+end
+
+function get_objval_from_sol(scip::SCIP.SCIPData, sol::Ptr{SCIP.SCIP_Sol})
+    @assert( SCIP.SCIPsolIsPartial(sol) == false )
+    @assert( SCIP.SCIPsolIsOriginal(sol) == true )
+    
 end
