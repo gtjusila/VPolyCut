@@ -199,8 +199,23 @@ function get_most_fractional_index(vars::Vector{Ptr{SCIP.SCIP_Var}})
     return split_index
 end
 
-function get_objval_from_sol(scip::SCIP.SCIPData, sol::Ptr{SCIP.SCIP_Sol})
-    @assert( SCIP.SCIPsolIsPartial(sol) == false )
-    @assert( SCIP.SCIPsolIsOriginal(sol) == true )
-    
+"""
+Given a vector of SCIP variable returns the index of all integer variable with fractionality more than limit
+"""
+function get_all_fractional_indices(vars::Vector{Ptr{SCIP.SCIP_Var}}, limit::SCIP.SCIP_Real)::Vector{Int64}
+    # Initialize
+    frac_indices = []
+
+    # Determine Splitting Variable
+    for (i, var) in enumerate(vars) 
+        # Loop through each variable
+        sol = SCIP.LibSCIP.SCIPvarGetLPSol(var)
+        score = min(sol - floor(sol), ceil(sol) - sol)
+        if SCIP.SCIPvarIsIntegral(var)==1 && score > limit 
+            #Only Consider The Split if var is integral and the current solution is non integral
+            push!(frac_indices, i)
+        end
+    end
+
+    return frac_indices 
 end

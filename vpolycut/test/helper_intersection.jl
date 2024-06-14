@@ -11,6 +11,8 @@ include("../src/lpi_utils.jl")
 DEBUG_PRINT_ORIGINAL_CORNER_POLYHEDRON = false 
 DEBUG_PRINT_INTERSECTION_POINTS = false 
 
+const LPSol = Vector{SCIP.SCIP_Real}
+const LPRay = Vector{SCIP.SCIP_Real}
 """
 Parameter for intersection cut separator
 
@@ -114,6 +116,52 @@ function constructSeperatingLP(lp_sol, intersection_points, parallel_ray)
     return lpi
 end
 
+function find_cut_from_split(sepa::IntersectionSeparator, split_index::Int64, lp_sol::LPSol, lp_rays::Vector{LPRay})::Bool
+    scip = sepa.scipd
+    dim = length(lp_sol)
+    # STEP 3: Compute intersection Variable
+    intersection_points, parallel_ray = compute_intersection_points(lp_sol, split_index, lp_rays)
+    
+    if DEBUG_PRINT_INTERSECTION_POINTS
+        println("====================")
+        println("Intersection Points")
+        println(intersection_points)
+        println("Parallel Ray")
+        println(parallel_ray)
+        println("====================")
+    end
+
+    # STEP 3: Construct and Solve Seperating LP
+    lpi = constructSeperatingLP(lp_sol, intersection_points, parallel_ray) 
+
+    try
+        solve_lpi(lpi[])
+    catch
+        return false 
+    end
+
+    separating_sol = get_lpi_solution_vector(lpi[])
+    SCIP.@SCIP_CALL SCIP.SCIPlpiFree(lpi)
+    
+    separating_sol = separating_sol[1:dim]
+    b = dot(separating_sol,lp_sol) + 1
+
+    row = Ref{Ptr{SCIP.SCIP_ROW}}(C_NULL)
+    SCIP.@SCIP_CALL SCIP.SCIPcreateEmptyRowSepa(scip, row, scip.sepas[sepa], "", b,SCIP.SCIPinfinity(scip), true, false, false)      
+    vars = get_lp_variables(scip)
+    infeasible = Ref{SCIP.SCIP_Bool}(0)
+
+    for (idx, sol) in enumerate(separating_sol)
+        if abs(sol) < EPSILON continue end
+        SCIP.@SCIP_CALL SCIP.SCIPaddVarToRow(scip, row[], vars[idx],sol)
+    end
+    #SCIP.@SCIP_CALL SCIP.SCIPprintRow(scip, row[], C_NULL)
+
+    SCIP.@SCIP_CALL SCIP.SCIPaddRow(scip,row[],true, infeasible)  
+    SCIP.@SCIP_CALL SCIP.SCIPreleaseRow(scip,row)
+    
+    return true
+end
 # wrapper for writing to log files
 function SCIP.exec_lp(sepa::IntersectionSeparator)
     redirect_stdout(sepa.parameter.file_stream) do 
@@ -165,47 +213,20 @@ function _exec_lp(sepa::IntersectionSeparator)
     end
     
     println(lp_sol[split_index])
-
-    # STEP 3: Compute intersection Variable
-    intersection_points, parallel_ray = compute_intersection_points(lp_sol, split_index, lp_rays)
+    split_indices = get_all_fractional_indices(vars,0.001)
     
-    if DEBUG_PRINT_INTERSECTION_POINTS
-        println("====================")
-        println("Intersection Points")
-        println(intersection_points)
-        println("Parallel Ray")
-        println(parallel_ray)
-        println("====================")
+    @info length(split_indices)
+    seperated = false
+
+    for (i,index) in enumerate(split_indices)
+        if i%10 == 0 println("Cut Generated $(i)") end
+        seperated_ = find_cut_from_split(sepa, index, lp_sol, lp_rays)
+        seperated = seperated || seperated_
     end
 
-    # STEP 3: Construct and Solve Seperating LP
-    lpi = constructSeperatingLP(lp_sol, intersection_points, parallel_ray) 
-
-    try
-        solve_lpi(lpi[])
-    catch
-        return SCIP.SCIP_DIDNOTFIND
+    if (seperated)
+        return SCIP.SCIP_SEPARATED
     end
 
-    separating_sol = get_lpi_solution_vector(lpi[])
-    SCIP.@SCIP_CALL SCIP.SCIPlpiFree(lpi)
-    
-    separating_sol = separating_sol[1:dim]
-    b = dot(separating_sol,lp_sol) + 1
-
-    row = Ref{Ptr{SCIP.SCIP_ROW}}(C_NULL)
-    SCIP.@SCIP_CALL SCIP.SCIPcreateEmptyRowSepa(scip, row, scip.sepas[sepa], "", b,SCIP.SCIPinfinity(scip), true, false, false)      
-    vars = get_lp_variables(scip)
-    infeasible = Ref{SCIP.SCIP_Bool}(0)
-
-    for (idx, sol) in enumerate(separating_sol)
-        if abs(sol) < EPSILON continue end
-        SCIP.@SCIP_CALL SCIP.SCIPaddVarToRow(scip, row[], vars[idx],sol)
-    end
-    #SCIP.@SCIP_CALL SCIP.SCIPprintRow(scip, row[], C_NULL)
-
-    SCIP.@SCIP_CALL SCIP.SCIPaddRow(scip,row[],true, infeasible)  
-    SCIP.@SCIP_CALL SCIP.SCIPreleaseRow(scip,row)
-    return SCIP.SCIP_SEPARATED
-    
+    return SCIP.SCIP_DIDNOTFIND    
 end

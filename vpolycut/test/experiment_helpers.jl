@@ -1,10 +1,40 @@
 """
+Take config from experiment config and load them to scip
+"""
+function load_config_to_scip(scip::SCIP.SCIPData, config::ExperimentConfiguration)
+    setter = (par, val) -> SCIP.set_parameter(scip, par, val)
+    if !config.separator turn_off_scip_separators(setter) end
+    if !config.heuristics turn_off_scip_heuristics(setter) end
+    if !config.presolve setter("presolving/maxrounds", 0) end
+    if !config.propagation setter("propagating/maxroundsroot",0) end
+    if !config.conflict setter("conflict/enable",false) end
+    if config.zero_cut allow_zero_power_cut(setter) end
+    if !config.symmetry setter("misc/usesymmetry", 0) end
+    if config.gomory
+        setter("separating/gmi/freq", 0) 
+        setter("separating/gmi/priority", 9999) 
+        setter("separating/gmi/maxsuppabs", 5000)
+        setter("separating/gmi/dynamiccuts", false) 
+        setter("separating/gmi/maxsupprel", 1.0)
+        setter("separating/gmi/forcecuts", true)  
+    end
+
+    setter("separating/maxroundsroot",config.max_separounds)
+    # For stability 
+    setter("limits/restarts",0)
+    setter("display/verblevel",config.verbosity) 
+    setter("limits/nodes",config.node_limit)
+    setter("branching/relpscost/priority",-1)
+end
+
+"""
 Settings from SCIP sepa emph off
 """
 function turn_off_scip_separators(setter::Function)
     setter("separating/disjunctive/freq", -1)
     setter("separating/impliedbounds/freq", -1)
-    setter("separating/gomory/freq", 0)
+    setter("separating/gomory/freq", -1)
+    setter("separating/gmi/freq", -1) 
     setter("separating/strongcg/freq", -1)
     setter("separating/aggregation/freq", -1)
     setter("separating/clique/freq", -1)
@@ -90,5 +120,6 @@ function allow_zero_power_cut(setter::Function)
     setter("separating/minefficacyroot", 0)
     setter("cutselection/hybrid/minortho", 0)
     setter("cutselection/hybrid/minorthoroot", 0)
-    setter("separating/poolfreq", 1)
+    setter("cutselection/hybrid/minorthoroot", 0)
+    setter("separating/filtercutpoolrel", false)
 end
