@@ -1,0 +1,20 @@
+indent = 4
+
+# Union{A <: B, C} instead of Union{A<:B,C}.
+whitespace_typedefs = true
+
+# arr[(i1 + i2):(i3 + i4)] instead of arr[i1+i2:i3+i4]
+whitespace_ops_in_indices = true
+
+remove_extra_newlines = true
+
+always_use_return = true
+
+whitespace_in_kwargs = true
+
+trailing_comma = false
+
+join_lines_based_on_source = false
+
+separate_kwargs_with_semicolon = true
+
