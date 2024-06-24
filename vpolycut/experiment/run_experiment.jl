@@ -4,8 +4,6 @@
 #
 
 module Experiment
-# Load Constants
-include("constants.jl")
 
 # Code for parsing arguments
 include("parseargs.jl")

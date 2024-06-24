@@ -3,6 +3,7 @@
 # Contains the code for CLI parsing arguments
 #
 import ArgParse
+
 """
 Parse Command Line Arguments
 """

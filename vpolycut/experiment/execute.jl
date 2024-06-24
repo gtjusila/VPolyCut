@@ -3,9 +3,9 @@
 # The code containing a single run of the experiment
 #
 import SCIP
-
+include("setscipparam.jl")
 include("helpers.jl")
-include("../src/IntersectionSeperator.jl")
+include("../src/IntersectionSeparator.jl")
 
 function execute(settings::Dict)
     # STEP 0: Setup
@@ -13,9 +13,11 @@ function execute(settings::Dict)
     scip::SCIP.SCIPData = optimizer.inner
     setter_param = (par, val) -> SCIP.set_parameter(scip, par, val)
     setscipsettings(setter_param)
+    settings["mode"] = string(strip(settings["mode"]))
+    settings["instance"] = string(strip(settings["instance"]))
+    result_path = setupexperimentdirectory(settings["instance"], settings["mode"])
 
     # STEP 1: Activate desired cut
-    settings["mode"] = strip(settings["mode"])
     if settings["mode"] == "gomory"
         includegomorysepa(setter_param)
     elseif settings["mode"] == "vpc"
@@ -26,8 +28,7 @@ function execute(settings::Dict)
     end
 
     # STEP 2: Load problem
-    instance = strip(settings["instance"])
-    path = joinpath(abspath("./data"), instance)
+    path = joinpath(abspath("./data"), settings["instance"])
     SCIP.@SCIP_CALL SCIP.SCIPreadProb(scip, path * ".mps", C_NULL)
 
     # STEP 3: Load Debugging solution
@@ -41,9 +42,7 @@ function execute(settings::Dict)
     SCIP.@SCIP_CALL SCIP.SCIPsolve(scip)
 
     initialdualbound = SCIP.SCIPgetFirstLPDualboundRoot(scip)
-    println("Initial Dual Bound $(initialdualbound)")
-    finaldualbound = SCIP.SCIPgetSolOrigObj(scip, C_NULL)
-    println("Final Dual Bound $(finaldualbound)")
+    finaldualbound = SCIP.SCIPgetDualboundRoot(scip)
 
     initialgap = abs(initialdualbound - reference_sol)
     finalgap = abs(finaldualbound - reference_sol)
