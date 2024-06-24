@@ -10,7 +10,7 @@ function get_point_ray_collection(scip::SCIP.SCIPData, points, ray,fixed; root =
         #STEP 0: This is a child node, we first need to solve the LP relaxation
 
         #STEP 0.1: Construct LP Relaxation
-        cutoff = Ref{SCIP.SCIP_Bool}(0)
+        cutoff = Ref{SCIP.SCIP_Bool}(0 )
         SCIP.@SCIP_CALL SCIP.SCIPflushLP(scip)
         SCIP.@SCIP_CALL SCIP.SCIPconstructLP(scip,cutoff)
         if cutoff[] != 0
