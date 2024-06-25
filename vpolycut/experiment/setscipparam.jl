@@ -94,7 +94,7 @@ function setscipsettings(setter::Function)
     setter("limits/restarts", 0)
 
     # Set time limit
-    setter("limits/time", 10)
+    setter("limits/time", 3600)
 
     # Only 1 round of separation
     setter("separating/maxroundsroot", 1)
