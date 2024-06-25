@@ -3,8 +3,10 @@
 # The code containing a single run of the experiment
 #
 import SCIP
+
 include("setscipparam.jl")
 include("helpers.jl")
+include("writeoutput.jl")
 include("../src/IntersectionSeparator.jl")
 
 function execute(settings::Dict)
@@ -34,24 +36,13 @@ function execute(settings::Dict)
     # STEP 3: Load Debugging solution
     debug_sol = Ref{Ptr{SCIP.SCIP_Sol}}(C_NULL)
     load_solution(scip, debug_sol, path * ".sol")
-    reference_sol = SCIP.SCIPgetSolOrigObj(scip, debug_sol[])
-    println("ReferenceObjective: $(round(reference_sol,sigdigits = 4))")
+    reference_obj = SCIP.SCIPgetSolOrigObj(scip, debug_sol[])
+
     SCIP.@SCIP_CALL SCIP.SCIPfreeSol(scip, debug_sol)
 
     # STEP 4: Solve
     SCIP.@SCIP_CALL SCIP.SCIPsolve(scip)
 
-    initialdualbound = SCIP.SCIPgetFirstLPDualboundRoot(scip)
-    finaldualbound = SCIP.SCIPgetDualboundRoot(scip)
 
-    initialgap = abs(initialdualbound - reference_sol)
-    finalgap = abs(finaldualbound - reference_sol)
-
-    gapclosed = 1 - finalgap / initialgap
-
-    solv_stats = open("solving_statistic.txt", "w")
-    solv_stats_ptr = Libc.FILE(solv_stats)
-    SCIP.SCIPprintStatistics(scip, solv_stats_ptr)
-
-    println("Gap Closed $(gapclosed)")
+    writeoutput(result_path, scip, settings, reference_obj)
 end

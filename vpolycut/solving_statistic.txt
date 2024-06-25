@@ -1,7 +1,7 @@
 SCIP Status        : solving was interrupted [node limit reached]
-Total Time         :       0.12
-  solving          :       0.12
-  presolving       :       0.01 (included in solving)
+Total Time         :       0.09
+  solving          :       0.09
+  presolving       :       0.00 (included in solving)
   reading          :       0.00
   copying          :       0.00 (0 times copied the problem)
 Original Problem   :
@@ -226,8 +226,8 @@ B&B Tree           :
   switching time   :       0.00
 Root Node          :
   First LP value   : -4.84054196130089e+03
-  First LP Iters   :         38 (6173.84 Iter/sec)
-  First LP Time    :       0.01
+  First LP Iters   :         38 (52631.58 Iter/sec)
+  First LP Time    :       0.00
   Final Dual Bound : -4.84002700223574e+03
   Final Root Iters :         46
   Root LP Estimate : -4.84002700223574e+03
@@ -237,6 +237,6 @@ Solution           :
   Dual Bound       : -4.84002700223574e+03
   Gap              :   infinite
 Integrals          :      Total       Avg%
-  primal-dual      :      11.62     100.00
+  primal-dual      :       8.65     100.00
   primal-ref       :          -          - (not evaluated)
   dual-ref         :          -          - (not evaluated)

@@ -1,4 +1,4 @@
-\ Model Separating LP
+\ Model Seperating LP
 \ LP format - for model browsing. Use MPS format to capture full model detail.
 Minimize
   C41 + C42 + C43 + C44 + C45 + C46 + C47 + C48 + C49 + C50 + C51 + C52
