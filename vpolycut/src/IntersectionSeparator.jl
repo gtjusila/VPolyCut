@@ -88,17 +88,17 @@ function constructSeperatingLP(lp_sol, intersection_points, parallel_ray)
         @assert(length(point) == dim)
         add_row_to_lpi(
             lpi[];
-            alpha = (point - lp_sol),
-            lhs = 1.0,
-            rhs = 1.0,
-            row_name = "point" * string(idx)
+            alpha=(point - lp_sol),
+            lhs=1.0,
+            rhs=1.0,
+            row_name="point" * string(idx)
         )
     end
 
     # Ray constraint
     for (idx, ray) in enumerate(parallel_ray)
         @assert(length(ray) == dim)
-        add_row_to_lpi(lpi[]; alpha = ray, lhs = EPSILON, row_name = "ray" * string(idx))
+        add_row_to_lpi(lpi[]; alpha=ray, lhs=EPSILON, row_name="ray" * string(idx))
     end
 
     SCIP.@SCIP_CALL SCIP.SCIPlpiAddCols(
@@ -118,15 +118,14 @@ function constructSeperatingLP(lp_sol, intersection_points, parallel_ray)
         alpha = zeros(SCIP.SCIP_Real, 2 * dim)
 
         alpha[i] = -1.0
-        alpha[i + dim] = -1.0
-        add_row_to_lpi(lpi[]; alpha = alpha, rhs = 0.0)
+        alpha[i+dim] = -1.0
+        add_row_to_lpi(lpi[]; alpha=alpha, rhs=0.0)
 
         alpha[i] = 1.0
-        alpha[i + dim] = -1.0
-        add_row_to_lpi(lpi[]; alpha = alpha, rhs = 0.0)
+        alpha[i+dim] = -1.0
+        add_row_to_lpi(lpi[]; alpha=alpha, rhs=0.0)
     end
 
-    SCIP.@SCIP_CALL SCIP.SCIPlpiWriteLP(lpi[], "test.lp")
     return lpi
 end
 
@@ -211,7 +210,7 @@ function SCIP.exec_lp(sepa::IntersectionSeparator)
     if DEBUG_PRINT_ORIGINAL_CORNER_POLYHEDRON
         println("====================")
         println("Seperator Called")
-        println("Solution is " * string(lp_sol[abs.(lp_sol) .> EPSILON]))
+        println("Solution is " * string(lp_sol[abs.(lp_sol).>EPSILON]))
         println("LP Rays are " * string(lp_rays))
         println("====================")
     end
