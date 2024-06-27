@@ -68,16 +68,17 @@ end
 
 function solve_separating_lp(lp_solution, intersection_points, pararrel_rays)
     dim = length(lp_solution)
-    print(intersection_points)
+
     separating_lp = modelwithsubscip()
 
     @assert SCIP.SCIPgetSubscipsOff(unsafe_backend(separating_lp).inner) != 0
 
-    @variable(separating_lp, x[1:dim])
+    @variable(separating_lp, -10000 <= x[1:dim] <= 10000)
     @variable(separating_lp, z[1:dim])
 
     for point in intersection_points
-        @constraint(separating_lp, sum(x[i] * point[i] for i = 1:dim) >= 1)
+        new_point = point - lp_solution
+        @constraint(separating_lp, sum(x[i] * new_point[i] for i = 1:dim) >= 1)
     end
 
     for ray in pararrel_rays
@@ -88,7 +89,6 @@ function solve_separating_lp(lp_solution, intersection_points, pararrel_rays)
     @constraint(separating_lp, -x <= z)
 
     @objective(separating_lp, Min, sum(z))
-    println(separating_lp)
     optimize!(separating_lp)
 
     if is_solved_and_feasible(separating_lp)
@@ -129,9 +129,9 @@ function find_cut_from_split(
     if isnothing(separating_sol)
         return false
     end
-    println(separating_sol)
+
     b = dot(separating_sol, lp_sol) + 1
-    println(b)
+
     row = Ref{Ptr{SCIP.SCIP_ROW}}(C_NULL)
     SCIP.@SCIP_CALL SCIP.SCIPcreateEmptyRowSepa(
         scip,
@@ -190,14 +190,7 @@ function SCIP.exec_lp(sepa::IntersectionSeparator)
 
     # STEP 2: Decide Splitting Variable
     vars = get_lp_variables(scip)
-    split_index = get_most_fractional_index(vars)
 
-    if split_index == -1
-        @warn "No Splitting Variable"
-        return SCIP.SCIP_DIDNOTFIND
-    end
-
-    println(lp_sol[split_index])
     split_indices = get_all_fractional_indices(vars, 0.001)
 
     @info length(split_indices)
