@@ -1,6 +1,7 @@
 import SCIP
 using JuMP
 using LinearAlgebra
+import MathOptInterface as MOI
 
 include("CornerPolyhedron.jl")
 include("utils.jl")
@@ -55,79 +56,51 @@ function compute_intersection_points(current_solution, split_index, ray_collecti
     return (intersection_points, pararrel_ray)
 end
 
+function modelwithsubscip()
+    inner = MOI.Bridges.full_bridge_optimizer(SCIP.Optimizer(), Float64)
+    model = direct_generic_model(Float64, inner)
+    set_attribute(model, "display/verblevel", 0)
+    backend = unsafe_backend(model)
+    scip = backend.inner
+    SCIP.@SCIP_CALL SCIP.SCIPsetSubscipsOff(scip, SCIP.SCIP_Bool(true))
+    return model
+end
+
+function solve_separating_lp(lp_solution, intersection_points, pararrel_rays)
+    dim = length(lp_solution)
+
+    separating_lp = modelwithsubscip()
+
+    @variable(separating_lp, x[1:dim])
+    @variable(separating_lp, z[1:dim])
+
+    for point in intersection_points
+        @constraint(separating_lp, sum(x[i] * point[i] for i = 1:dim) >= 1)
+    end
+
+    for ray in pararrel_rays
+        @constraint(separating_lp, sum(x[i] * ray[i] for i = 1:dim) >= 0)
+    end
+
+    @constraint(separating_lp, x <= z)
+    @constraint(separating_lp, -x <= z)
+
+    @objective(separating_lp, Min, sum(z))
+
+    scip = unsafe_backend(separating_lp)
+    println(scip.inner.scip[])
+
+    optimize!(separating_lp)
+
+    scip = unsafe_backend(separating_lp)
+    println(scip.inner.scip[])
+    exit(1)
+    #println(seperating_lp)
+end
+
 """
 Construct the seperating lp return a reference to a pointer to the LPI
 """
-function constructSeperatingLP(lp_sol, intersection_points, parallel_ray)
-    dim = length(lp_sol)
-    lpi = Ref{Ptr{SCIP.SCIP_LPI}}(C_NULL)
-
-    SCIP.@SCIP_CALL SCIP.SCIPlpiCreate(
-        lpi,
-        C_NULL,
-        "Seperating LP",
-        SCIP.SCIP_OBJSEN_MINIMIZE
-    )
-
-    # Add Variables
-    SCIP.@SCIP_CALL SCIP.SCIPlpiAddCols(
-        lpi[],
-        dim,
-        zeros(dim),
-        -10000 * ones(dim),
-        10000 * ones(dim),
-        C_NULL,
-        0,
-        C_NULL,
-        C_NULL,
-        C_NULL
-    )
-
-    # Point constraint
-    for (idx, point) in enumerate(intersection_points)
-        @assert(length(point) == dim)
-        add_row_to_lpi(
-            lpi[];
-            alpha=(point - lp_sol),
-            lhs=1.0,
-            rhs=1.0,
-            row_name="point" * string(idx)
-        )
-    end
-
-    # Ray constraint
-    for (idx, ray) in enumerate(parallel_ray)
-        @assert(length(ray) == dim)
-        add_row_to_lpi(lpi[]; alpha=ray, lhs=EPSILON, row_name="ray" * string(idx))
-    end
-
-    SCIP.@SCIP_CALL SCIP.SCIPlpiAddCols(
-        lpi[],
-        dim,
-        ones(dim),
-        -10000 * ones(dim),
-        10000 * ones(dim),
-        C_NULL,
-        0,
-        C_NULL,
-        C_NULL,
-        C_NULL
-    )
-
-    for i = 1:dim
-        alpha = zeros(SCIP.SCIP_Real, 2 * dim)
-
-        alpha[i] = -1.0
-        alpha[i+dim] = -1.0
-        add_row_to_lpi(lpi[]; alpha=alpha, rhs=0.0)
-
-        alpha[i] = 1.0
-        alpha[i+dim] = -1.0
-        add_row_to_lpi(lpi[]; alpha=alpha, rhs=0.0)
-    end
-
-    return lpi
-end
 
 function find_cut_from_split(
     sepa::IntersectionSeparator,
@@ -151,8 +124,7 @@ function find_cut_from_split(
     end
 
     # STEP 3: Construct and Solve Seperating LP
-    lpi = constructSeperatingLP(lp_sol, intersection_points, parallel_ray)
-
+    lpi = solve_separating_lp(lp_sol, intersection_points, parallel_ray)
     try
         solve_lpi(lpi[])
     catch
