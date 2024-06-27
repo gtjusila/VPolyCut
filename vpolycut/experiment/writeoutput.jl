@@ -9,6 +9,7 @@ function writeoutput(path::String, scip::SCIP.SCIPData, settings::Dict, referenc
     println(output, "ExperimentMode: $(settings["mode"])")
     println(output, "Instance: $(settings["instance"])")
     println(output, "OutputDirectory: $(path)")
+    println(output, "RunTime: $(SCIP.SCIPgetStatus(scip))")
 
     println(output, "ReferenceObjective: $(round(reference_obj,sigdigits = 6))")
 

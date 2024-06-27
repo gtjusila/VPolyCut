@@ -68,8 +68,10 @@ end
 
 function solve_separating_lp(lp_solution, intersection_points, pararrel_rays)
     dim = length(lp_solution)
-
+    print(intersection_points)
     separating_lp = modelwithsubscip()
+
+    @assert SCIP.SCIPgetSubscipsOff(unsafe_backend(separating_lp).inner) != 0
 
     @variable(separating_lp, x[1:dim])
     @variable(separating_lp, z[1:dim])
@@ -86,16 +88,14 @@ function solve_separating_lp(lp_solution, intersection_points, pararrel_rays)
     @constraint(separating_lp, -x <= z)
 
     @objective(separating_lp, Min, sum(z))
-
-    scip = unsafe_backend(separating_lp)
-    println(scip.inner.scip[])
-
+    println(separating_lp)
     optimize!(separating_lp)
 
-    scip = unsafe_backend(separating_lp)
-    println(scip.inner.scip[])
-    exit(1)
-    #println(seperating_lp)
+    if is_solved_and_feasible(separating_lp)
+        return Vector{SCIP.SCIP_Real}(value.(x))
+    end
+
+    return nothing
 end
 
 """
@@ -124,19 +124,14 @@ function find_cut_from_split(
     end
 
     # STEP 3: Construct and Solve Seperating LP
-    lpi = solve_separating_lp(lp_sol, intersection_points, parallel_ray)
-    try
-        solve_lpi(lpi[])
-    catch
+    separating_sol = solve_separating_lp(lp_sol, intersection_points, parallel_ray)
+
+    if isnothing(separating_sol)
         return false
     end
-
-    separating_sol = get_lpi_solution_vector(lpi[])
-    SCIP.@SCIP_CALL SCIP.SCIPlpiFree(lpi)
-
-    separating_sol = separating_sol[1:dim]
+    println(separating_sol)
     b = dot(separating_sol, lp_sol) + 1
-
+    println(b)
     row = Ref{Ptr{SCIP.SCIP_ROW}}(C_NULL)
     SCIP.@SCIP_CALL SCIP.SCIPcreateEmptyRowSepa(
         scip,
