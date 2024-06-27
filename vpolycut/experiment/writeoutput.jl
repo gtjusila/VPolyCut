@@ -3,13 +3,14 @@
 # Code to write output
 #
 import SCIP
-function writeoutput(path::String, scip::SCIP.SCIPData, settings::Dict, reference_obj::SCIP.SCIP_Real)
+function writeoutput(path::String, scip::SCIP.SCIPData, settings::Dict, reference_obj::SCIP.SCIP_Real, feasible::SCIP.SCIP_Bool)
     output = open(joinpath(path, "results.txt"), "w")
 
     println(output, "ExperimentMode: $(settings["mode"])")
     println(output, "Instance: $(settings["instance"])")
     println(output, "OutputDirectory: $(path)")
     println(output, "RunTime: $(SCIP.SCIPgetStatus(scip))")
+    println(output, "DbgSolFeasible: $(feasible != 0)")
 
     println(output, "ReferenceObjective: $(round(reference_obj,sigdigits = 6))")
 
