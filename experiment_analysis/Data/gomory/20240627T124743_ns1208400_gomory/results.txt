@@ -1,0 +1,10 @@
+ExperimentMode: gomory
+Instance: ns1208400
+OutputDirectory: /home/htc/gtjusila/vpolycut/vpolycut/results/20240627T124743_ns1208400_gomory
+ReferenceObjective: 2.0
+FirstLPObj: 0.0
+InitialGap: 2.0
+FinalLPObj: 0.0
+FinalGap: 2.0
+GapClosed: 0.0
+SCIPStatus: SCIP_STATUS_NODELIMIT

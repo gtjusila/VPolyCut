@@ -1,0 +1,10 @@
+ExperimentMode: gomory
+Instance: neos17
+OutputDirectory: /home/htc/gtjusila/vpolycut/vpolycut/results/20240627T124743_neos17_gomory
+ReferenceObjective: 0.150003
+FirstLPObj: 0.000681499
+InitialGap: 0.149321
+FinalLPObj: 0.000682212
+FinalGap: 0.14932
+GapClosed: 4.77851e-6
+SCIPStatus: SCIP_STATUS_NODELIMIT

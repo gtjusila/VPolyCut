@@ -1,0 +1,10 @@
+ExperimentMode: gomory
+Instance: mcsched
+OutputDirectory: /home/htc/gtjusila/vpolycut/vpolycut/results/20240627T124742_mcsched_gomory
+ReferenceObjective: 211913.0
+FirstLPObj: 193775.0
+InitialGap: 18138.2
+FinalLPObj: 193782.0
+FinalGap: 18130.8
+GapClosed: 0.000408178
+SCIPStatus: SCIP_STATUS_NODELIMIT

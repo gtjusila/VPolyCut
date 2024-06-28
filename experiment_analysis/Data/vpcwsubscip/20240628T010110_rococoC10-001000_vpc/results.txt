@@ -1,0 +1,11 @@
+ExperimentMode: vpc
+Instance: rococoC10-001000
+OutputDirectory: /home/htc/gtjusila/vpolycut/vpolycut/results/20240628T010110_rococoC10-001000_vpc
+RunTime: SCIP_STATUS_NODELIMIT
+ReferenceObjective: 11460.0
+FirstLPObj: 7515.27
+InitialGap: 3944.73
+FinalLPObj: 7616.65
+FinalGap: 3843.35
+GapClosed: 0.0256988
+SCIPStatus: SCIP_STATUS_NODELIMIT

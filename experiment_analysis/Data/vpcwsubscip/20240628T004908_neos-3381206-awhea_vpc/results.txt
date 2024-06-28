@@ -1,0 +1,11 @@
+ExperimentMode: vpc
+Instance: neos-3381206-awhea
+OutputDirectory: /home/htc/gtjusila/vpolycut/vpolycut/results/20240628T004908_neos-3381206-awhea_vpc
+RunTime: SCIP_STATUS_NODELIMIT
+ReferenceObjective: 453.0
+FirstLPObj: 415.24
+InitialGap: 37.76
+FinalLPObj: 415.24
+FinalGap: 37.76
+GapClosed: 2.9976e-15
+SCIPStatus: SCIP_STATUS_NODELIMIT

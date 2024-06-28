@@ -1,0 +1,11 @@
+ExperimentMode: vpc
+Instance: nu25-pr12
+OutputDirectory: /home/htc/gtjusila/vpolycut/vpolycut/results/20240628T005210_nu25-pr12_vpc
+RunTime: SCIP_STATUS_NODELIMIT
+ReferenceObjective: 53905.0
+FirstLPObj: 52757.5
+InitialGap: 1147.5
+FinalLPObj: 53124.5
+FinalGap: 780.5
+GapClosed: 0.319826
+SCIPStatus: SCIP_STATUS_NODELIMIT
