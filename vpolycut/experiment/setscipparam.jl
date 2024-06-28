@@ -105,8 +105,8 @@ function setscipsettings(setter::Function)
     setter("branching/relpscost/initcand", 0)
 
     # Uncomment the following for super easy instances
-    setter("propagating/maxroundsroot", 0)
-    setter("presolving/maxrounds", 0)
+    #setter("propagating/maxroundsroot", 0)
+    #setter("presolving/maxrounds", 0)
 end
 
 function includegomorysepa(setter::Function)
