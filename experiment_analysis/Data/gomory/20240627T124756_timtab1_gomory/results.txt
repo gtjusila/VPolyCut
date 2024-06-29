@@ -1,0 +1,10 @@
+ExperimentMode: gomory
+Instance: timtab1
+OutputDirectory: /home/htc/gtjusila/vpolycut/vpolycut/results/20240627T124756_timtab1_gomory
+ReferenceObjective: 764772.0
+FirstLPObj: 157896.0
+InitialGap: 606876.0
+FinalLPObj: 234097.0
+FinalGap: 530675.0
+GapClosed: 0.125563
+SCIPStatus: SCIP_STATUS_NODELIMIT

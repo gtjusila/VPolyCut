@@ -1,0 +1,10 @@
+ExperimentMode: gomory
+Instance: 30n20b8
+OutputDirectory: /home/htc/gtjusila/vpolycut/vpolycut/results/20240627T124633_30n20b8_gomory
+ReferenceObjective: 302.0
+FirstLPObj: 107.728
+InitialGap: 194.272
+FinalLPObj: 126.538
+FinalGap: 175.462
+GapClosed: 0.0968264
+SCIPStatus: SCIP_STATUS_NODELIMIT

@@ -1,0 +1,10 @@
+ExperimentMode: vpc
+Instance: neos-3083819-nubu
+OutputDirectory: /home/htc/gtjusila/vpolycut/vpolycut/results/20240627T124856_neos-3083819-nubu_vpc
+ReferenceObjective: 6.308e6
+FirstLPObj: 6.29058e6
+InitialGap: 17420.4
+FinalLPObj: 6.29062e6
+FinalGap: 17380.2
+GapClosed: 0.00231211
+SCIPStatus: SCIP_STATUS_NODELIMIT
