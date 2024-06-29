@@ -14,7 +14,7 @@ function execute(settings::Dict)
     optimizer = SCIP.Optimizer()
     scip::SCIP.SCIPData = optimizer.inner
     setter_param = (par, val) -> SCIP.set_parameter(scip, par, val)
-    setscipsettings(setter_param, settings["easy"])
+    setscipsettings(setter_param)
     settings["mode"] = string(strip(settings["mode"]))
     settings["instance"] = string(strip(settings["instance"]))
     result_path = setupexperimentdirectory(settings["instance"], settings["mode"])
