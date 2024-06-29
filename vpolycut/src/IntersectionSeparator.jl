@@ -11,7 +11,7 @@ include("lpi_utils.jl")
 const LPSol = Vector{SCIP.SCIP_Real}
 const LPRay = Vector{SCIP.SCIP_Real}
 
-DEBUG_PRINT_ORIGINAL_CORNER_POLYHEDRON = false
+DEBUG_PRINT_ORIGINAL_CORNER_POLYHEDRON = true
 DEBUG_PRINT_INTERSECTION_POINTS = false
 
 """
@@ -23,11 +23,11 @@ Intersection Cut Separator
 @kwdef mutable struct IntersectionSeparator <: SCIP.AbstractSeparator
     scipd::SCIP.SCIPData
 end
-
 """
 Given a current solution, a split index, and a ray collection compute intersection points
 and pararrel_rays
 """
+#=
 function compute_intersection_points(current_solution, split_index, ray_collection)
     intersection_points = []
     pararrel_ray = []
@@ -54,6 +54,72 @@ function compute_intersection_points(current_solution, split_index, ray_collecti
     end
 
     return (intersection_points, pararrel_ray)
+end
+=#
+function constructandsolve(scip)
+    cutoff = Ref{SCIP.SCIP_Bool}(0)
+    SCIP.@SCIP_CALL SCIP.SCIPflushLP(scip)
+    SCIP.@SCIP_CALL SCIP.SCIPconstructLP(scip, cutoff)
+    if cutoff[] != 0
+        @warn "Cutoff during LP Construction"
+        return false
+    end
+
+    #STEP 0.2: Solve LP Relaxation and Cutoff if possible
+    error = Ref{SCIP.SCIP_Bool}(C_NULL)
+    cutoff = Ref{SCIP.SCIP_Bool}(0)
+    SCIP.@SCIP_CALL SCIP.SCIPsolveProbingLP(scip, -1, error, cutoff)
+    if error[] != 0
+        if DEBUG_BRANCH_AND_BOUND
+            println("Error During LP Solve")
+        end
+        return false
+    end
+    if cutoff[] != 0
+        if DEBUG_BRANCH_AND_BOUND
+            println("====================")
+            println("LP Infeasible")
+            println("====================")
+        end
+        return false
+    end
+
+    return true
+end
+function compute_intersection_points(scip, split_index)
+    vars = get_lp_variables(scip)
+    points = []
+    ray = []
+    split_var = vars[split_index]
+    var_sol = SCIP.SCIPvarGetSol(split_var, true)
+    SCIP.@SCIP_CALL SCIP.SCIPwriteLP(scip, "current.lp")
+    exit(1)
+    # Enter Probing mode
+    SCIP.SCIPstartProbing(scip)
+
+    # "Upper" Side
+    SCIP.SCIPnewProbingNode(scip)
+    SCIP.SCIPchgVarLb(scip, split_var, ceil(var_sol))
+    if constructandsolve(scip)
+        po, ra = get_corner_polyhedron(scip)
+        push!(points, po)
+        append!(ray, ra)
+    end
+    SCIP.SCIPbacktrackProbing(scip, SCIP.SCIPgetProbingDepth(scip) - 1)
+
+    SCIP.SCIPnewProbingNode(scip)
+    ub = SCIP.SCIPvarGetUbLocal(split_var)
+    if constructandsolve(scip)
+        po, ra = get_corner_polyhedron(scip)
+        push!(points, po)
+        append!(ray, ra)
+    end
+    println(points)
+    println(ray)
+    SCIP.SCIPbacktrackProbing(scip, SCIP.SCIPgetProbingDepth(scip) - 1)
+
+    SCIP.SCIPendProbing(scip)
+    return points, ray
 end
 
 function modelwithsubscip()
@@ -112,7 +178,7 @@ function find_cut_from_split(
     dim = length(lp_sol)
     # STEP 3: Compute intersection Variable
     intersection_points, parallel_ray =
-        compute_intersection_points(lp_sol, split_index, lp_rays)
+        compute_intersection_points(scip, split_index)
 
     if DEBUG_PRINT_INTERSECTION_POINTS
         println("====================")
