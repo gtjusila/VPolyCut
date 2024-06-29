@@ -4,7 +4,7 @@
 #
 import SCIP
 
-function setscipsettings(setter::Function, easy::Bool)
+function setscipsettings(setter::Function)
     # Turn off heuristics
     setter("heuristics/padm/freq", -1)
     setter("heuristics/ofins/freq", -1)
@@ -105,10 +105,8 @@ function setscipsettings(setter::Function, easy::Bool)
     setter("branching/relpscost/initcand", 0)
 
     # Uncomment the following for super easy instances
-    if easy
-        setter("propagating/maxroundsroot", 0)
-        setter("presolving/maxrounds", 0)
-    end
+    #setter("propagating/maxroundsroot", 0)
+    #setter("presolving/maxrounds", 0)
 end
 
 function includegomorysepa(setter::Function)
