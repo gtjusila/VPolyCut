@@ -73,12 +73,12 @@ function solve_separating_lp(lp_solution, intersection_points, pararrel_rays)
 
     @assert SCIP.SCIPgetSubscipsOff(unsafe_backend(separating_lp).inner) != 0
 
-    @variable(separating_lp, -10000 <= x[1:dim] <= 10000)
+    @variable(separating_lp, -10_000 <= x[1:dim] <= 10_000)
     @variable(separating_lp, z[1:dim])
 
     for point in intersection_points
         new_point = point - lp_solution
-        @constraint(separating_lp, sum(x[i] * new_point[i] for i = 1:dim) >= 1)
+        @constraint(separating_lp, sum(x[i] * new_point[i] for i = 1:dim) == 1)
     end
 
     for ray in pararrel_rays
@@ -88,7 +88,7 @@ function solve_separating_lp(lp_solution, intersection_points, pararrel_rays)
     @constraint(separating_lp, x <= z)
     @constraint(separating_lp, -x <= z)
 
-    @objective(separating_lp, Min, sum(z))
+    @objective(separating_lp, Min, 0)
     optimize!(separating_lp)
 
     if is_solved_and_feasible(separating_lp)
@@ -101,7 +101,6 @@ end
 """
 Construct the seperating lp return a reference to a pointer to the LPI
 """
-
 function find_cut_from_split(
     sepa::IntersectionSeparator,
     split_index::Int64,
@@ -210,6 +209,7 @@ function SCIP.exec_lp(sepa::IntersectionSeparator)
 
     return SCIP.SCIP_DIDNOTFIND
 end
+
 function includeintersectionsepa(scip::SCIP.SCIPData)
     sepa = IntersectionSeparator(scipd=scip)
     SCIP.include_sepa(scip.scip[], scip.sepas, sepa; freq=0, usessubscip=true)
