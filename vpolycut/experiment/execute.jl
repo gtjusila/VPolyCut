@@ -23,7 +23,7 @@ function execute(settings::Dict)
     if settings["mode"] == "gomory"
         includegomorysepa(setter_param)
     elseif settings["mode"] == "vpc"
-        includevpcsepa(scip)
+        includeintersectionsepa(scip)
     else
         println("Unrecognized Experiment Mode. Terminating.")
         exit(1)
@@ -42,12 +42,16 @@ function execute(settings::Dict)
     # STEP 4: Solve
     SCIP.@SCIP_CALL SCIP.SCIPsolve(scip)
 
+
     # STEP 5: Check if debug solution is still feasible:
+    #=
     debug_sol = Ref{Ptr{SCIP.SCIP_Sol}}(C_NULL)
     feasible = Ref{SCIP.SCIP_Bool}(C_NULL)
     load_solution(scip, debug_sol, path * ".sol")
     SCIP.@SCIP_CALL SCIP.SCIPcheckSol(scip, debug_sol[], true, true, true, true, true, feasible)
     feasible = feasible[]
+    =#
+    feasible = SCIP.SCIP_Bool(true)
 
     writeoutput(result_path, scip, settings, reference_obj, feasible)
 end

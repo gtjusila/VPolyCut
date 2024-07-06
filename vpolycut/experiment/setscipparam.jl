@@ -119,8 +119,3 @@ function includegomorysepa(setter::Function)
     setter("separating/gmi/maxsupprel", 1.0)
     setter("separating/gmi/forcecuts", true)
 end
-
-function includevpcsepa(scip::SCIP.SCIPData)
-    sepa = IntersectionSeparator(scipd=scip)
-    SCIP.include_sepa(scip.scip[], scip.sepas, sepa; freq=0, usessubscip=true)
-end

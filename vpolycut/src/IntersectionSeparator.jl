@@ -110,6 +110,7 @@ function find_cut_from_split(
 )::Bool
     scip = sepa.scipd
     dim = length(lp_sol)
+
     # STEP 3: Compute intersection Variable
     intersection_points, parallel_ray =
         compute_intersection_points(lp_sol, split_index, lp_rays)
@@ -193,7 +194,6 @@ function SCIP.exec_lp(sepa::IntersectionSeparator)
 
     split_indices = get_all_fractional_indices(vars, 0.001)
 
-    @info length(split_indices)
     seperated = false
 
     for (i, index) in enumerate(split_indices)
@@ -209,4 +209,8 @@ function SCIP.exec_lp(sepa::IntersectionSeparator)
     end
 
     return SCIP.SCIP_DIDNOTFIND
+end
+function includeintersectionsepa(scip::SCIP.SCIPData)
+    sepa = IntersectionSeparator(scipd=scip)
+    SCIP.include_sepa(scip.scip[], scip.sepas, sepa; freq=0, usessubscip=true)
 end

@@ -16,7 +16,7 @@ function parseargs()
         "--mode", "-m"
         help = "The mode of experiment to be run. Modes available: gomory, vpoly"
         required = true
-        "--easy"
+        "--easy", "-e"
         help = "Disable Presolving and Propagation for easy instances"
         action = :store_true
     end
