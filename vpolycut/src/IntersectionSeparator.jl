@@ -193,7 +193,6 @@ function SCIP.exec_lp(sepa::IntersectionSeparator)
     vars = get_lp_variables(scip)
 
     split_indices = get_all_fractional_indices(vars, 0.001)
-    println("NumFracVar: ", length(split_indices))
     seperated = false
 
     for (i, index) in enumerate(split_indices)
