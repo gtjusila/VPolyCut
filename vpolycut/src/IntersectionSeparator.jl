@@ -82,7 +82,7 @@ function solve_separating_lp(lp_solution, intersection_points, pararrel_rays)
     end
 
     for ray in pararrel_rays
-        @constraint(separating_lp, sum(x[i] * ray[i] for i = 1:dim) >= 0)
+        @constraint(separating_lp, sum(x[i] * ray[i] for i = 1:dim) == 0)
     end
 
     @constraint(separating_lp, x <= z)
@@ -154,6 +154,7 @@ function find_cut_from_split(
         SCIP.@SCIP_CALL SCIP.SCIPaddVarToRow(scip, row[], vars[idx], sol)
     end
 
+    #SCIP.@SCIP_CALL SCIP.SCIPprintRow(scip, row[], C_NULL)
     SCIP.@SCIP_CALL SCIP.SCIPaddRow(scip, row[], true, infeasible)
     SCIP.@SCIP_CALL SCIP.SCIPreleaseRow(scip, row)
 
@@ -192,7 +193,7 @@ function SCIP.exec_lp(sepa::IntersectionSeparator)
     vars = get_lp_variables(scip)
 
     split_indices = get_all_fractional_indices(vars, 0.001)
-
+    println("NumFracVar: ", length(split_indices))
     seperated = false
 
     for (i, index) in enumerate(split_indices)
