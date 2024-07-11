@@ -119,3 +119,4 @@ function includegomorysepa(setter::Function)
     setter("separating/gmi/maxsupprel", 1.0)
     setter("separating/gmi/forcecuts", true)
 end
+
