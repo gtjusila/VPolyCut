@@ -16,7 +16,7 @@ fi
 echo "Submitting job arrays with $num_lines tasks"
 
 # Submit the array job for the first Julia command (gomory)
-#sbatch --array=0-$(($num_lines-1)) --export=MODE=gomory /home/htc/gtjusila/vpolycut/array_job_script.sh
+sbatch --array=0-$(($num_lines-1)) --export=MODE=gomory /home/htc/gtjusila/vpolycut/array_job_script.sh
 
 # Submit the array job for the second Julia command (vpc)
 sbatch --array=0-$(($num_lines-1)) --export=MODE=vpc /home/htc/gtjusila/vpolycut/array_job_script.sh

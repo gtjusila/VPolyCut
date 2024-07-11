@@ -14,7 +14,7 @@ function execute(settings::Dict)
     optimizer = SCIP.Optimizer()
     scip::SCIP.SCIPData = optimizer.inner
     setter_param = (par, val) -> SCIP.set_parameter(scip, par, val)
-    setscipsettings(setter_param)
+    setscipsettings(setter_param, settings["easy"])
     settings["mode"] = string(strip(settings["mode"]))
     settings["instance"] = string(strip(settings["instance"]))
     result_path = setupexperimentdirectory(settings["instance"], settings["mode"])
@@ -23,7 +23,7 @@ function execute(settings::Dict)
     if settings["mode"] == "gomory"
         includegomorysepa(setter_param)
     elseif settings["mode"] == "vpc"
-        includevpcsepa(scip)
+        includeintersectionsepa(scip)
     else
         println("Unrecognized Experiment Mode. Terminating.")
         exit(1)
@@ -48,6 +48,14 @@ function execute(settings::Dict)
     load_solution(scip, debug_sol, path * ".sol")
     SCIP.@SCIP_CALL SCIP.SCIPcheckSol(scip, debug_sol[], true, true, true, true, true, feasible)
     feasible = feasible[]
+
+    # STEP 5: Check if debug solution is still feasible:
+    debug_sol = Ref{Ptr{SCIP.SCIP_Sol}}(C_NULL)
+    feasible = Ref{SCIP.SCIP_Bool}(C_NULL)
+    load_solution(scip, debug_sol, path * ".sol")
+    SCIP.@SCIP_CALL SCIP.SCIPcheckSol(scip, debug_sol[], true, true, true, true, true, feasible)
+    feasible = feasible[]
+
 
     writeoutput(result_path, scip, settings, reference_obj, feasible)
 end

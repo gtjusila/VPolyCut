@@ -4,7 +4,7 @@
 #
 import SCIP
 
-function setscipsettings(setter::Function)
+function setscipsettings(setter::Function, easy::Bool)
     # Turn off heuristics
     setter("heuristics/padm/freq", -1)
     setter("heuristics/ofins/freq", -1)
@@ -105,8 +105,10 @@ function setscipsettings(setter::Function)
     setter("branching/relpscost/initcand", 0)
 
     # Uncomment the following for super easy instances
-    #setter("propagating/maxroundsroot", 0)
-    #setter("presolving/maxrounds", 0)
+    if easy
+        setter("propagating/maxroundsroot", 0)
+        setter("presolving/maxrounds", 0)
+    end
 end
 
 function includegomorysepa(setter::Function)
@@ -118,7 +120,3 @@ function includegomorysepa(setter::Function)
     setter("separating/gmi/forcecuts", true)
 end
 
-function includevpcsepa(scip::SCIP.SCIPData)
-    sepa = IntersectionSeparator(scipd=scip)
-    SCIP.include_sepa(scip.scip[], scip.sepas, sepa; freq=0, usessubscip=true)
-end
