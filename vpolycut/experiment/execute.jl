@@ -49,13 +49,6 @@ function execute(settings::Dict)
     SCIP.@SCIP_CALL SCIP.SCIPcheckSol(scip, debug_sol[], true, true, true, true, true, feasible)
     feasible = feasible[]
 
-    # STEP 5: Check if debug solution is still feasible:
-    debug_sol = Ref{Ptr{SCIP.SCIP_Sol}}(C_NULL)
-    feasible = Ref{SCIP.SCIP_Bool}(C_NULL)
-    load_solution(scip, debug_sol, path * ".sol")
-    SCIP.@SCIP_CALL SCIP.SCIPcheckSol(scip, debug_sol[], true, true, true, true, true, feasible)
-    feasible = feasible[]
-
 
     writeoutput(result_path, scip, settings, reference_obj, feasible)
 end
