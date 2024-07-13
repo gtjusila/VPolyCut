@@ -3,43 +3,42 @@
 # along with the helper function to get Tableau Information
 #
 import SCIP
-include("utils.jl")
 
 """
 Returns the pair (lp_sol, lp_rays) where lp_sol is the current solution and lp_rays is a vector
 containing lp_rays each is of the form Vector{SCIP.SCIP_Real}
 """
-function get_corner_polyhedron(scip::SCIP.SCIPData; epsilon::SCIP.SCIP_Real = 10*SCIP.SCIPepsilon(scip))
+function get_corner_polyhedron(scip::SCIP.SCIPData; epsilon::SCIP.SCIP_Real=10 * SCIP.SCIPepsilon(scip))
     """
     Get Corner Polyhedron Information From LP Solver from the given scip pointer
     """
     @assert SCIP.SCIPgetLPSolstat(scip) == SCIP.SCIP_LPSOLSTAT_OPTIMAL
-    
+
     # Get Information from SCIP
     lp_cols = get_lp_columns(scip)
     col_num = length(lp_cols)
-    lp_rows = get_lp_row_information(scip) 
+    lp_rows = get_lp_row_information(scip)
     basis_indices = get_lp_basis_information(scip)
 
     # Initiate a vector to collect corner polyhedron ray
-    ray_collection = Vector{Vector{SCIP.SCIP_Real}}(undef,0) 
-    
+    ray_collection = Vector{Vector{SCIP.SCIP_Real}}(undef, 0)
+
     # Get Tableau
-    tableau = get_dense_tableau_rows(scip) 
-    
+    tableau = get_dense_tableau_rows(scip)
+
     #=
     Generate Rays from non basic variable
     If variable is non basic i.e. the upper or lower bound is attained then one can push the variable against the bound
     =#
-    for (j, col) in enumerate(lp_cols) 
+    for (j, col) in enumerate(lp_cols)
         # SCIP Basic Vartiables
         if (SCIP.SCIPcolGetBasisStatus(col) == SCIP.SCIP_BASESTAT_UPPER)
-            factor_ = 1.0; 
+            factor_ = 1.0
         elseif (SCIP.SCIPcolGetBasisStatus(col) == SCIP.SCIP_BASESTAT_LOWER)
-            factor_ = -1.0;
+            factor_ = -1.0
         elseif (SCIP.SCIPcolGetBasisStatus(col) == SCIP.SCIP_BASESTAT_ZERO)
             #Safekeeping: Should Never Happen unless polyhedron is not pointed
-            throw("SCIP_BASESTAT_ZERO encountered") 
+            throw("SCIP_BASESTAT_ZERO encountered")
         elseif (SCIP.SCIPcolGetBasisStatus(col) == SCIP.SCIP_BASESTAT_BASIC)
             # variable is in the basis 
             continue
@@ -51,22 +50,22 @@ function get_corner_polyhedron(scip::SCIP.SCIPData; epsilon::SCIP.SCIP_Real = 10
         ray_ = zeros(col_num)
         ray_[j] = -factor_
         for (k, index) in enumerate(basis_indices)
-            if index >= 0 
-                ray_[index+1] =  factor_*tableau[k][j]
+            if index >= 0
+                ray_[index+1] = factor_ * tableau[k][j]
             end
         end
-        
+
         push!(ray_collection, ray_)
     end
 
     # Generate Rays from slack variable
-    for (i, row) in enumerate(lp_rows) 
+    for (i, row) in enumerate(lp_rows)
         #Go through each row
-        if( SCIP.LibSCIP.SCIProwGetBasisStatus(row) == SCIP.SCIP_BASESTAT_LOWER)
+        if (SCIP.LibSCIP.SCIProwGetBasisStatus(row) == SCIP.SCIP_BASESTAT_LOWER)
             factor_ = 1.0
         elseif (SCIP.LibSCIP.SCIProwGetBasisStatus(row) == SCIP.SCIP_BASESTAT_UPPER)
-            factor_ = - 1.0
-        elseif (SCIP.LibSCIP.SCIProwGetBasisStatus(row) ==  SCIP.SCIP_BASESTAT_ZERO)
+            factor_ = -1.0
+        elseif (SCIP.LibSCIP.SCIProwGetBasisStatus(row) == SCIP.SCIP_BASESTAT_ZERO)
             # Same as above
             throw("SCIP_BASESTAT_ZERO encountered")
         elseif (SCIP.LibSCIP.SCIProwGetBasisStatus(row) == SCIP.SCIP_BASESTAT_BASIC)
@@ -80,9 +79,9 @@ function get_corner_polyhedron(scip::SCIP.SCIPData; epsilon::SCIP.SCIP_Real = 10
         ray_ = zeros(col_num)
         ray_non_zero = false
         for (j, index) in enumerate(basis_indices)
-            if (index >= 0) && abs(tableau[j][col_num+i]) >= epsilon 
-                ray_[index+1] =  factor_*tableau[j][col_num+i]
-                ray_non_zero =  true
+            if (index >= 0) && abs(tableau[j][col_num+i]) >= epsilon
+                ray_[index+1] = factor_ * tableau[j][col_num+i]
+                ray_non_zero = true
             end
         end
 
@@ -91,7 +90,7 @@ function get_corner_polyhedron(scip::SCIP.SCIPData; epsilon::SCIP.SCIP_Real = 10
         end
     end
 
-    current_solution = get_lp_solution_vector(scip) 
+    current_solution = get_lp_solution_vector(scip)
 
-    return current_solution,ray_collection
+    return current_solution, ray_collection
 end

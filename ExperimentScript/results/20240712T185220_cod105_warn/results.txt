@@ -1,0 +1,11 @@
+ExperimentMode: warn
+Instance: cod105
+OutputDirectory: /Users/gtjusila/Documents/Project/VPolyCut/ExperimentScript/results/20240712T185220_cod105_warn
+SCIPStatus: SCIP_STATUS_NODELIMIT
+DbgSolFeasible: true
+ReferenceObjective: -12.0
+FirstLPObj: -18.2857
+InitialGap: 6.28571
+FinalLPObj: -18.2857
+FinalGap: 6.28571
+GapClosed: 0.0

@@ -3,10 +3,6 @@ using JuMP
 using LinearAlgebra
 import MathOptInterface as MOI
 
-include("CornerPolyhedron.jl")
-include("utils.jl")
-include("constants.jl")
-include("lpi_utils.jl")
 
 const LPSol = Vector{SCIP.SCIP_Real}
 const LPRay = Vector{SCIP.SCIP_Real}
@@ -210,7 +206,7 @@ function SCIP.exec_lp(sepa::IntersectionSeparator)
     return SCIP.SCIP_DIDNOTFIND
 end
 
-function includeintersectionsepa(scip::SCIP.SCIPData)
+function include_intersection_sepa(scip::SCIP.SCIPData)
     sepa = IntersectionSeparator(scipd=scip)
     SCIP.include_sepa(scip.scip[], scip.sepas, sepa; freq=0, usessubscip=true)
 end

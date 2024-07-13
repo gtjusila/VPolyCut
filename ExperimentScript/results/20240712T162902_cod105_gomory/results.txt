@@ -1,0 +1,5 @@
+ExperimentMode: gomory
+Instance: cod105
+OutputDirectory: /Users/gtjusila/Documents/Project/VPolyCut/ExperimentScript/results/20240712T162902_cod105_gomory
+SCIPStatus: SCIP_STATUS_NODELIMIT
+DbgSolFeasible: true

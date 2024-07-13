@@ -1,10 +1,39 @@
-#
-# setscipparam.jl
-# Code to set scip parameter and turn on separators
-#
+import JuMP
 import SCIP
+import MathOptInterface as MOI
+import VPolyCut
 
-function setscipsettings(setter::Function, easy::Bool)
+function setup_jump_model()
+    model = setup_nocache_jump_model()
+    return model
+end
+
+function include_separator(scip::SCIP.SCIPData, seperator::Type{T}; kwargs...) where {T<:SCIP.AbstractSeparator}
+    sepa = seperator(; kwargs...)
+    SCIP.include_sepa(scip.scip[], scip.sepas, sepa; freq=0, usessubscip=true)
+end
+
+"""
+setup_jump_model
+
+A JuMP model without cache. In standard JuMP model, we cannot control
+when is the SCIP Optimizer object recreated so it will be impossible to do 
+SCIP calls on it. 
+"""
+function setup_nocache_jump_model()
+    inner = MOI.Bridges.full_bridge_optimizer(SCIP.Optimizer(), Float64)
+    model = JuMP.direct_generic_model(Float64, inner)
+    return model
+end
+
+function get_scipdata_from_model(model::T) where {T<:JuMP.AbstractModel}
+    backend = JuMP.unsafe_backend(model)
+    return backend.inner
+end
+
+function set_scip_parameters(model::T) where {T<:JuMP.AbstractModel}
+    setter = (par, var) -> JuMP.set_attribute(model, par, var)
+
     # Turn off heuristics
     setter("heuristics/padm/freq", -1)
     setter("heuristics/ofins/freq", -1)
@@ -103,19 +132,10 @@ function setscipsettings(setter::Function, easy::Bool)
     setter("display/verblevel", 5)
     setter("limits/nodes", 1)
     setter("branching/relpscost/initcand", 0)
-
-    # Uncomment the following for super easy instances
-    if easy
-        setter("propagating/maxroundsroot", 0)
-        setter("presolving/maxrounds", 0)
-    end
 end
 
-function includegomorysepa(setter::Function)
-    setter("separating/gmi/freq", 0)
-    setter("separating/gmi/priority", 9999)
-    setter("separating/gmi/maxsuppabs", 5000)
-    setter("separating/gmi/dynamiccuts", false)
-    setter("separating/gmi/maxsupprel", 1.0)
-    setter("separating/gmi/forcecuts", true)
+function set_scip_parameters_easy(model::T) where {T<:JuMP.AbstractModel}
+    set_scip_parameters(model::T)
+    JuMP.set_attribute(model, "propagating/maxroundsroot", 0)
+    JuMP.set_attribute(model, "presolving/maxrounds", 0)
 end
