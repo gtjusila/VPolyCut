@@ -82,7 +82,7 @@ function set_scip_parameters(model::T) where {T<:JuMP.AbstractModel}
     setter("separating/disjunctive/freq", -1)
     setter("separating/impliedbounds/freq", -1)
     setter("separating/gomory/freq", -1)
-    setter("separating/gmi/freq", -1)
+    #setter("separating/gmi/freq", -1)
     setter("separating/strongcg/freq", -1)
     setter("separating/aggregation/freq", -1)
     setter("separating/clique/freq", -1)
