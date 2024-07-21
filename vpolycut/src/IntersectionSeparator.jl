@@ -3,21 +3,17 @@ using JuMP
 using LinearAlgebra
 import MathOptInterface as MOI
 
-
-const LPSol = Vector{SCIP.SCIP_Real}
-const LPRay = Vector{SCIP.SCIP_Real}
-
 DEBUG_PRINT_ORIGINAL_CORNER_POLYHEDRON = false
 DEBUG_PRINT_INTERSECTION_POINTS = false
 
 """
 Intersection Cut Separator
-
 # Fields
 - scipd::SCIP.SCIPData Reference to the SCIPData object
 """
 @kwdef mutable struct IntersectionSeparator <: SCIP.AbstractSeparator
     scipd::SCIP.SCIPData
+    called::Int = 0
 end
 
 """
@@ -160,16 +156,22 @@ end
 function SCIP.exec_lp(sepa::IntersectionSeparator)
     # Aliasing for easier call
     scip = sepa.scipd
+    sepa.called += 1
 
     # Preconditions
     @assert(SCIP.SCIPgetStage(scip) == SCIP.SCIP_STAGE_SOLVING)
     @assert(SCIP.SCIPisLPSolBasic(scip) != 0)
     @assert(SCIP.SCIPgetLPSolstat(scip) == SCIP.SCIP_LPSOLSTAT_OPTIMAL)
 
+    # STEP 0: Get LP TAbleau data
+    tableau = get_tableau_from_scip(scip)
+    n_cols = tableau.num_lp_cols
+    n_rows = tableau.num_lp_rows
+
     # STEP 1: Get Corner Polyhedron of current LP solution
-    lp_sol = nothing
-    lp_rays = nothing
-    lp_sol, lp_rays = get_corner_polyhedron(scip)
+    corner = get_corner_polyhedron(tableau)
+    lp_sol = corner.lp_sol
+    lp_rays = corner.lp_rays
 
     if DEBUG_PRINT_ORIGINAL_CORNER_POLYHEDRON
         println("====================")

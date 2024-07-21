@@ -1,7 +1,7 @@
 @testitem "Tableau_Simplex" begin
     import JuMP
     import SCIP
-    include("utilities.jl")
+    include("../utilities.jl")
     include("test_tableau_helper.jl")
 
     model = setup_jump_model()
@@ -21,7 +21,7 @@ end
 @testitem "Tableau_TestCase_1" begin
     using JuMP
     import SCIP
-    include("utilities.jl")
+    include("../utilities.jl")
     include("test_tableau_helper.jl")
 
     model = setup_jump_model()
@@ -47,10 +47,12 @@ end
     JuMP.optimize!(model)
 end
 
-@testitem "Tableau_Conforti" begin
+@testitem "Tableau_Conforti" default_imports = false begin
+    using Revise
     using JuMP
-    import SCIP
-    include("utilities.jl")
+    using SCIP
+    using VPolyCut
+    include("../utilities.jl")
     include("test_tableau_helper.jl")
 
     model = setup_jump_model()
@@ -64,7 +66,7 @@ end
     JuMP.@variable(model, x3 >= 0, Int)
 
     # Define the objective function
-    @objective(model, Min, -0.5x2 + -x3)
+    @objective(model, Max, 0.5x2 + x3)
 
     # Define the constraints
     @constraint(model, c1, x1 + x2 + x3 <= 2)
@@ -72,6 +74,61 @@ end
     @constraint(model, c3, x2 - 0.5 * x3 >= 0)
     @constraint(model, c4, x1 + 0.5 * x3 <= 1)
     @constraint(model, c5, -x1 + x2 + x3 <= 1)
+
+    print(model)
+    JuMP.optimize!(model)
+end
+
+@testitem "Tableau_Test2" begin
+    using JuMP
+    import SCIP
+    include("../utilities.jl")
+    include("test_tableau_helper.jl")
+
+    model = setup_jump_model()
+    scip = get_scipdata_from_model(model)
+    include_separator(scip, LPTableau; scipd=scip)
+    set_scip_parameters_easy(model)
+    JuMP.set_attribute(model, "display/verblevel", 0)
+
+
+    JuMP.@variable(model, x1 >= 0, Int)
+    JuMP.@variable(model, x2 >= 0, Int)
+
+    # Define the objective function
+    @objective(model, Min, -4 * x1 + 3 * x2)
+
+    # Define the constraints
+    @constraint(model, c1, x1 + 2 * x2 <= 8.2)
+    @constraint(model, c2, 3 * x1 + x2 <= 9.2)
+    @constraint(model, c3, x1 + x2 >= 2.8)
+
+    print(model)
+    JuMP.optimize!(model)
+end
+
+@testitem "Tableau_Test3" begin
+    using JuMP
+    import SCIP
+    include("../utilities.jl")
+    include("test_tableau_helper.jl")
+
+    model = setup_jump_model()
+    scip = get_scipdata_from_model(model)
+    include_separator(scip, LPTableau; scipd=scip)
+    set_scip_parameters_easy(model)
+    JuMP.set_attribute(model, "display/verblevel", 0)
+
+    JuMP.@variable(model, x1 >= 0, Int)
+    JuMP.@variable(model, x2 >= 0, Int)
+
+    # Define the objective function
+    @objective(model, Min, -x1)
+
+    # Define the constraints
+    @constraint(model, c1, 3 <= x1 - x2 <= 7)
+    @constraint(model, c2, x1 - 2 * x2 >= -2)
+    @constraint(model, c3, 2 * x1 - x2 <= 15)
 
     print(model)
     JuMP.optimize!(model)

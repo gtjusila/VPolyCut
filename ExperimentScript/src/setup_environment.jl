@@ -2,6 +2,15 @@ import SCIP
 import Printf
 import Dates
 
+mutable struct ExperimentStore
+    scip::SCIP.SCIPData
+    result_path::String
+    separator::String
+    instance::String
+    reference_objective::SCIP.SCIP_Real
+    feasible::Bool
+end
+
 function setup_environment(execution_parameters::ExecutionParameters)
     scip = setup_scip_object(execution_parameters)
     result_path = setup_experiment_directory(execution_parameters)
@@ -10,7 +19,9 @@ function setup_environment(execution_parameters::ExecutionParameters)
         scip,
         result_path,
         execution_parameters.separator_label,
-        execution_parameters.instance
+        execution_parameters.instance,
+        0,
+        false
     )
 end
 

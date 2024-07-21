@@ -1,4 +1,4 @@
-function do_postprocessing(experiment_store::ExperimentStore)
+function record_result(experiment_store::ExperimentStore)
     experiment_store.feasible = check_debug_solution_feasibility(experiment_store)
     write_output(experiment_store)
 end

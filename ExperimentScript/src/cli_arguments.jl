@@ -2,22 +2,19 @@ import SCIP
 import VPolyCut
 import ArgParse
 
-"""
-get_execution_parameters
-
-Get ExecutionParameters from commandline_arguments
-"""
-function get_execution_parameters()::ExecutionParameters
-    commandline_arguments = get_commandline_arguments()
-    return parse_commandline_arguments(commandline_arguments)
+struct ExecutionParameters
+    instance::String
+    separator_label::String
+    separator::Type{<:SCIP.AbstractSeparator}
+    easy::Bool
 end
 
-"""
-get_commandline_arguments
+function get_execution_parameters()::ExecutionParameters
+    cli_arguments = setup_cli_arguments()
+    return read_cli_arguments(cli_arguments)
+end
 
-Parse Command Line Arguments
-"""
-function get_commandline_arguments()
+function setup_cli_arguments()
     settings = ArgParse.ArgParseSettings()
     ArgParse.@add_arg_table settings begin
         "--instance", "-i"
@@ -33,12 +30,7 @@ function get_commandline_arguments()
     return ArgParse.parse_args(settings)
 end
 
-"""
-parse_commandline_arguments
-
-Create an object of type ExecutionParameters from the given `commandline_arguments` dicitonary
-"""
-function parse_commandline_arguments(commandline_arguments::Dict)::ExecutionParameters
+function read_cli_arguments(commandline_arguments::Dict)::ExecutionParameters
     instance = remove_whitespaces(commandline_arguments["instance"])
     mode_text = remove_whitespaces(commandline_arguments["mode"])
     separator = get_separator_type_from_string(mode_text)
@@ -46,11 +38,6 @@ function parse_commandline_arguments(commandline_arguments::Dict)::ExecutionPara
     return ExecutionParameters(instance, mode_text, separator, easy)
 end
 
-"""
-get_seperator_type_from_string
-
-take string `separator_type` and convert it to the coresponding seperator_type
-"""
 function get_separator_type_from_string(separator_type::String)::Type{<:SCIP.AbstractSeparator}
     separator_type = remove_whitespaces(separator_type)
     if separator_type == "gomory"

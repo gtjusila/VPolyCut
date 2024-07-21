@@ -11,6 +11,7 @@ end
 function include_separator(scip::SCIP.SCIPData, seperator::Type{T}; kwargs...) where {T<:SCIP.AbstractSeparator}
     sepa = seperator(; kwargs...)
     SCIP.include_sepa(scip.scip[], scip.sepas, sepa; freq=0, usessubscip=true)
+    return sepa
 end
 
 """

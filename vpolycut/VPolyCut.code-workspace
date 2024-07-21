@@ -5,9 +5,6 @@
 		},
 		{
 			"path": "../ExperimentScript"
-		},
-		{
-			"path": "../../julia_env/scip_jl/scip_jl_gurobi"
 		}
 	],
 	"settings": {}
