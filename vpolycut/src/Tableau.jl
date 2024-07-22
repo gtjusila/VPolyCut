@@ -13,6 +13,8 @@ function get_basis_status(obj::LPObject)::SCIP.SCIP_BASESTAT
     return obj.basis_status
 end
 
+const ROW = :ROW
+const COLUMN = :COLUMN
 # LPColumn Definition and Methods
 
 @kwdef mutable struct LPColumn <: LPObject
@@ -42,6 +44,7 @@ end
     basis_status::SCIP.SCIP_BASESTAT = SCIP.SCIP_BASESTAT_ZERO
     rhs::SCIP.SCIP_Real = -1
     lhs::SCIP.SCIP_Real = -1
+    pointer::Ptr{SCIP.SCIP_ROW} = C_NULL
     slack::SCIP.SCIP_Real = -1
 end
 
@@ -55,6 +58,10 @@ end
 
 function get_row_slack(row::LPRow)::SCIP.SCIP_Real
     return row.slack
+end
+
+function get_row_pointer(row::LPRow)::Ptr{SCIP.SCIP_ROW}
+    return row.pointer
 end
 
 # LPTableau Definition
@@ -71,10 +78,10 @@ size and getindex are overloaded to access the tableau matrix.
 @kwdef mutable struct LPTableau <: Base.AbstractMatrix{SCIP.SCIP_Real}
     # Variables and Rows are distinguished by their unique index given from SCIP
     tableau_matrix::Matrix{SCIP.SCIP_Real} = Matrix{SCIP.SCIP_Real}(undef, 0, 0)
-    mapobj2col::Dict{LPObject,Int} = Dict()
+    mapobj2col::Dict{Tuple{Symbol,Int},Int} = Dict()
     mapcol2obj::Dict{Int,LPObject} = Dict()
     maprow2obj::Dict{Int,LPObject} = Dict()
-    mapobj2row::Dict{LPObject,Int} = Dict()
+    mapobj2row::Dict{Tuple{Symbol,Int},Int} = Dict()
     num_lp_rows::Int = 0
     num_lp_cols::Int = 0
 end
@@ -124,7 +131,34 @@ function get_row_object(tableau::LPTableau, row_index::Int)::LPObject
 end
 
 function get_object_column(tableau::LPTableau, obj::LPObject)::Int
-    return tableau.mapobj2col[obj]
+    if isa(obj, LPColumn)
+        return tableau.mapobj2col[(COLUMN, obj.scip_index)]
+    else
+        return tableau.mapobj2col[(ROW, obj.scip_index)]
+    end
+end
+
+function get_object_from_scip_index(tableau::LPTableau, scip_index::Int, s::Symbol)::LPObject
+    return tableau.mapcol2obj[tableau.mapobj2col[(s, scip_index)]]
+end
+
+# Setter Methods for tableau
+function set_column_object!(tableau::LPTableau, obj::LPObject, col_index::Int)
+    if isa(obj, LPColumn)
+        tableau.mapobj2col[(COLUMN, obj.scip_index)] = col_index
+    elseif isa(obj, LPRow)
+        tableau.mapobj2col[(ROW, obj.scip_index)] = col_index
+    end
+    tableau.mapcol2obj[col_index] = obj
+end
+
+function set_row_object!(tableau::LPTableau, obj::LPObject, row_index::Int)
+    if isa(obj, LPColumn)
+        tableau.mapobj2row[(COLUMN, obj.scip_index)] = row_index
+    elseif isa(obj, LPRow)
+        tableau.mapobj2row[(ROW, obj.scip_index)] = row_index
+    end
+    tableau.maprow2obj[row_index] = obj
 end
 
 # Methods For Accessing Tableau Data From SCIP
@@ -189,8 +223,7 @@ function collect_lp_column_information!(tableau::LPTableau, scip::SCIP.SCIPData)
         lp_col.lb = SCIP.SCIPcolGetLb(col)
         lp_col.sol = SCIP.SCIPcolGetPrimsol(col)
 
-        tableau.mapobj2col[lp_col] = i
-        tableau.mapcol2obj[i] = lp_col
+        set_column_object!(tableau, lp_col, i)
     end
 end
 
@@ -214,10 +247,10 @@ function collect_lp_row_information!(tableau::LPTableau, scip::SCIP.SCIPData)
         lp_row.rhs = SCIP.SCIProwGetRhs(row)
         lp_row.lhs = SCIP.SCIProwGetLhs(row)
         lp_row.slack = SCIP.SCIPgetRowLPActivity(scip, row)
+        lp_row.pointer = row
 
         col_idx = i + nlpcols
-        tableau.mapobj2col[lp_row] = col_idx
-        tableau.mapcol2obj[col_idx] = lp_row
+        set_column_object!(tableau, lp_row, col_idx)
     end
 end
 
@@ -237,14 +270,11 @@ function collect_basis_infromation!(tableau::LPTableau, scip::SCIP.SCIPData)
         if idx < 0
             # Entry is -i, i.e. the ith row is basic
             obj = tableau.mapcol2obj[nlpcols+abs(idx)]
-            tableau.maprow2obj[row] = obj
-            tableau.mapobj2row[obj] = row
         else
             # Entry is i, i.e. the (i+1)th column is basic (since indexing in C starts with 0)
             obj = tableau.mapcol2obj[idx+1]
-            tableau.maprow2obj[row] = obj
-            tableau.mapobj2row[obj] = row
         end
+        set_row_object!(tableau, obj, row)
     end
 end
 

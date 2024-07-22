@@ -81,6 +81,7 @@ function solve_separating_lp(lp_solution, intersection_points, pararrel_rays)
     @constraint(separating_lp, -x <= z)
 
     @objective(separating_lp, Min, 0)
+
     optimize!(separating_lp)
 
     if is_solved_and_feasible(separating_lp)
@@ -90,6 +91,23 @@ function solve_separating_lp(lp_solution, intersection_points, pararrel_rays)
     return nothing
 end
 
+function project(vector::Vector{SCIP.SCIP_Real}, mask::Vector{Bool})
+    return vector[mask]
+end
+
+function get_row_coefficients_from_pointer(tableau::LPTableau, pointer::Ptr{SCIP.SCIP_ROW})
+    nnonz = SCIP.SCIProwGetNNonz(pointer)
+    cols = SCIP.SCIProwGetCols(pointer)
+    cols = unsafe_wrap(Vector{Ptr{SCIP.SCIP_COL}}, cols, nnonz)
+    cols = [get_object_from_scip_index(tableau, Int(SCIP.SCIPcolGetIndex(col)), COLUMN) for col in cols]
+    coefs = SCIP.SCIProwGetVals(pointer)
+    coefs = unsafe_wrap(Vector{SCIP.SCIP_Real}, coefs, nnonz)
+    row = zeros(get_num_lp_cols(tableau))
+    for i = 1:nnonz
+        row[get_object_column(tableau, cols[i])] = coefs[i]
+    end
+    return row
+end
 """
 Construct the seperating lp return a reference to a pointer to the LPI
 """
@@ -97,7 +115,8 @@ function find_cut_from_split(
     sepa::IntersectionSeparator,
     split_index::Int64,
     lp_sol::LPSol,
-    lp_rays::Vector{LPRay}
+    lp_rays::Vector{LPRay},
+    tableau::LPTableau
 )::Bool
     scip = sepa.scipd
     dim = length(lp_sol)
@@ -115,15 +134,51 @@ function find_cut_from_split(
         println("====================")
     end
 
+    # Project and keep projection information
+    projected_to_old_index = Dict{Int,Int}()
+    projection_mask = fill(false, dim)
+    j = 1
+    for i = 1:get_num_lp_cols(tableau)
+        #col_object = get_column_object(tableau, i)
+        #if get_basis_status(col_object) != SCIP.SCIP_BASESTAT_BASIC
+        projection_mask[i] = true
+        projected_to_old_index[j] = i
+        j += 1
+        #end
+    end
+    dim_projected_space = j - 1
+    project_sol = project(lp_sol, projection_mask)
+    intersection_points = [project(point, projection_mask) for point in intersection_points]
+    parallel_ray = [project(ray, projection_mask) for ray in parallel_ray]
+
     # STEP 3: Construct and Solve Seperating LP
-    separating_sol = solve_separating_lp(lp_sol, intersection_points, parallel_ray)
+    separating_sol = solve_separating_lp(project_sol, intersection_points, parallel_ray)
 
     if isnothing(separating_sol)
         return false
     end
 
-    b = dot(separating_sol, lp_sol) + 1
+    b = dot(separating_sol, project_sol) + 1
 
+    # map cut back to the original space
+
+    original_dim = get_num_lp_cols(tableau)
+    cut_vector = zeros(original_dim)
+    @assert dim_projected_space == length(separating_sol)
+    for i = 1:dim_projected_space
+        original_index = projected_to_old_index[i]
+        obj = get_column_object(tableau, original_index)
+        if isa(obj, LPColumn)
+            cut_vector[original_index] += separating_sol[i]
+        else
+            pointer = get_row_pointer(obj)
+            row = get_row_coefficients_from_pointer(tableau, pointer)
+            for (col_id, coef) in enumerate(row)
+                cut_vector[col_id] -= coef * separating_sol[i]
+            end
+        end
+    end
+    separating_sol = cut_vector
     row = Ref{Ptr{SCIP.SCIP_ROW}}(C_NULL)
     SCIP.@SCIP_CALL SCIP.SCIPcreateEmptyRowSepa(
         scip,
@@ -146,7 +201,7 @@ function find_cut_from_split(
         SCIP.@SCIP_CALL SCIP.SCIPaddVarToRow(scip, row[], vars[idx], sol)
     end
 
-    #SCIP.@SCIP_CALL SCIP.SCIPprintRow(scip, row[], C_NULL)
+    SCIP.@SCIP_CALL SCIP.SCIPprintRow(scip, row[], C_NULL)
     SCIP.@SCIP_CALL SCIP.SCIPaddRow(scip, row[], true, infeasible)
     SCIP.@SCIP_CALL SCIP.SCIPreleaseRow(scip, row)
 
@@ -176,16 +231,16 @@ function SCIP.exec_lp(sepa::IntersectionSeparator)
     if DEBUG_PRINT_ORIGINAL_CORNER_POLYHEDRON
         println("====================")
         println("Seperator Called")
-        println("Solution is " * string(lp_sol[abs.(lp_sol).>EPSILON]))
+        println("Solution is " * string(lp_sol))
         println("LP Rays are " * string(lp_rays))
         println("====================")
     end
 
     # [CLEAN] Might actually not need this
-    dim = length(lp_sol)
-    if length(lp_rays) != dim
-        return SCIP.SCIP_DIDNOTFIND
-    end
+    #dim = length(lp_sol)
+    #if length(lp_rays) != dim
+    #    return SCIP.SCIP_DIDNOTFIND
+    #end
 
     # STEP 2: Decide Splitting Variable
     vars = get_lp_variables(scip)
@@ -197,7 +252,7 @@ function SCIP.exec_lp(sepa::IntersectionSeparator)
         if i % 10 == 0
             println("Cut Generated $(i)")
         end
-        seperated_ = find_cut_from_split(sepa, index, lp_sol, lp_rays)
+        seperated_ = find_cut_from_split(sepa, index, lp_sol, lp_rays, tableau)
         seperated = seperated || seperated_
     end
 

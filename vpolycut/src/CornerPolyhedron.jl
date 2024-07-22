@@ -17,24 +17,19 @@ containing lp_rays each is of the form Vector{SCIP.SCIP_Real}
 """
 function get_corner_polyhedron(tableau::LPTableau)::CornerPolyhedron
     # Initiate a vector to collect corner polyhedron ray
-    dim = get_num_tableau_objects(tableau)
     rays = get_non_basic_rays(tableau)
     sol = get_solution_vector(tableau)
 
-    projection_mask = fill(false, dim)
-    for i = 1:get_num_lp_cols(tableau)
-        projection_mask[i] = true
-    end
+    #projection_mask = fill(false, dim)
+    #for i = 1:get_num_lp_cols(tableau)
+    #    projection_mask[i] = true
+    #end
 
     # Project only to the space contained by LP Columns 
-    sol = project(sol, projection_mask)
-    rays = [project(ray, projection_mask) for ray in rays]
+    #sol = project(sol, projection_mask)
+    #rays = [project(ray, projection_mask) for ray in rays]
 
     return CornerPolyhedron(sol, rays)
-end
-
-function project(vector::Vector{SCIP.SCIP_Real}, mask::Vector{Bool})
-    return vector[mask]
 end
 
 function get_solution_vector(tableau::LPTableau)::Vector{SCIP.SCIP_Real}
@@ -103,7 +98,11 @@ function construct_non_basic_ray(tableau::LPTableau, col::LPObject)::LPRay
     for row_idx = 1:get_num_basic_objects(tableau)
         row_obj = get_row_object(tableau, row_idx)
         row_obj_col = get_object_column(tableau, row_obj)
-        ray[row_obj_col] = -direction * tableau[row_idx, col_idx]
+        value = -direction * tableau[row_idx, col_idx]
+        # Todo clean this up
+        if abs(value) > 10e-6
+            ray[row_obj_col] = value
+        end
     end
 
     return ray
