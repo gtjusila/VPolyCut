@@ -4,3 +4,7 @@ vpolycut/.DS_Store
 .DS_Store
 slurm_output
 experiment_analysis
+
+ExperimentScript/Manifest.toml
+
+vpolycut/Manifest.toml
