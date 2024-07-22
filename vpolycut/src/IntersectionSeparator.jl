@@ -102,9 +102,9 @@ function get_row_coefficients_from_pointer(tableau::LPTableau, pointer::Ptr{SCIP
     cols = [get_object_from_scip_index(tableau, Int(SCIP.SCIPcolGetIndex(col)), COLUMN) for col in cols]
     coefs = SCIP.SCIProwGetVals(pointer)
     coefs = unsafe_wrap(Vector{SCIP.SCIP_Real}, coefs, nnonz)
-    row = zeros(get_num_lp_cols(tableau))
+    row = zeros(get_nlpcols(tableau))
     for i = 1:nnonz
-        row[get_object_column(tableau, cols[i])] = coefs[i]
+        row[objcol(tableau, cols[i])] = coefs[i]
     end
     return row
 end
@@ -138,7 +138,7 @@ function find_cut_from_split(
     projected_to_old_index = Dict{Int,Int}()
     projection_mask = fill(false, dim)
     j = 1
-    for i = 1:get_num_lp_cols(tableau)
+    for i = 1:get_nlpcols(tableau)
         #col_object = get_column_object(tableau, i)
         #if get_basis_status(col_object) != SCIP.SCIP_BASESTAT_BASIC
         projection_mask[i] = true
@@ -162,7 +162,7 @@ function find_cut_from_split(
 
     # map cut back to the original space
 
-    original_dim = get_num_lp_cols(tableau)
+    original_dim = get_nlpcols(tableau)
     cut_vector = zeros(original_dim)
     @assert dim_projected_space == length(separating_sol)
     for i = 1:dim_projected_space
@@ -171,7 +171,7 @@ function find_cut_from_split(
         if isa(obj, LPColumn)
             cut_vector[original_index] += separating_sol[i]
         else
-            pointer = get_row_pointer(obj)
+            pointer = get_pointer(obj)
             row = get_row_coefficients_from_pointer(tableau, pointer)
             for (col_id, coef) in enumerate(row)
                 cut_vector[col_id] -= coef * separating_sol[i]
@@ -219,12 +219,12 @@ function SCIP.exec_lp(sepa::IntersectionSeparator)
     @assert(SCIP.SCIPgetLPSolstat(scip) == SCIP.SCIP_LPSOLSTAT_OPTIMAL)
 
     # STEP 0: Get LP TAbleau data
-    tableau = get_tableau_from_scip(scip)
+    tableau = construct_tableau(scip)
     n_cols = tableau.num_lp_cols
     n_rows = tableau.num_lp_rows
 
     # STEP 1: Get Corner Polyhedron of current LP solution
-    corner = get_corner_polyhedron(tableau)
+    corner = construct_corner_polyhedron(tableau)
     lp_sol = corner.lp_sol
     lp_rays = corner.lp_rays
 
