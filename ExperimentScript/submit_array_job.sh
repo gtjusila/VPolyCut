@@ -25,6 +25,6 @@ fi
 echo "Submitting job arrays with $num_lines tasks"
 
 # Submit the array job for the first Julia command (gomory) with constraint
-sbatch --array=0-$(($num_lines-1)) --export=MODE=gomory --constraint=$constraint --output=../temp/%x_%j.out --error=../temp/%x_%j.err /home/htc/gtjusila/new_vpolycut/ExperimentScript/array_job_script.sh
+sbatch --array=0-$(($num_lines-1)) --export=MODE=gomory --constraint=$constraint --output=../temp/%x_%j.out --error=../temp/%x_%j.err array_job_script.sh
 # Submit the array job for the second Julia command (vpc) with constraint
-sbatch --array=0-$(($num_lines-1)) --export=MODE=vpc --constraint=$constraint --output=../temp/%x_%j.out --error=../temp/%x_%j.err /home/htc/gtjusila/new_vpolycut/ExperimentScript/array_job_script.sh
+sbatch --array=0-$(($num_lines-1)) --export=MODE=vpc --constraint=$constraint --output=../temp/%x_%j.out --error=../temp/%x_%j.err array_job_script.sh
