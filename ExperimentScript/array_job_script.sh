@@ -8,7 +8,6 @@
 #SBATCH --ntasks=1
 #SBATCH --cpus-per-task=12
 #SBATCH --mem=32G
-#SBATCH --constraint=Gold6246
 
 # Load necessary modules (if any)
 # module load julia

@@ -1,5 +1,14 @@
 #!/bin/bash
 
+# Check if a command-line argument is provided
+if [ $# -eq 0 ]; then
+    echo "Usage: $0 <constraint>"
+    exit 1
+fi
+
+# Read the constraint from the command-line argument
+constraint=$1
+
 # Read the lines from the file into an array
 mapfile -t lines < /home/htc/gtjusila/new_vpolycut/implementation_notes/instances_set.txt
 
@@ -15,9 +24,8 @@ fi
 
 echo "Submitting job arrays with $num_lines tasks"
 
-# Submit the array job for the first Julia command (gomory)
-#sbatch --array=0-$(($num_lines-1)) --export=MODE=gomory /home/htc/gtjusila/vpolycut/array_job_script.sh
+# Submit the array job for the first Julia command (gomory) with constraint
+sbatch --array=0-$(($num_lines-1)) --export=MODE=gomory --constraint=$constraint /home/htc/gtjusila/vpolycut/array_job_script.sh
 
-# Submit the array job for the second Julia command (vpc)
-#sbatch --array=0-$(($num_lines-1)) --export=MODE=vpc /home/htc/gtjusila/new_vpolycut/ExperimentScript/array_job_script.sh
-
+# Submit the array job for the second Julia command (vpc) with constraint
+sbatch --array=0-$(($num_lines-1)) --export=MODE=vpc --constraint=$constraint /home/htc/gtjusila/new_vpolycut/ExperimentScript/array_job_script.sh
