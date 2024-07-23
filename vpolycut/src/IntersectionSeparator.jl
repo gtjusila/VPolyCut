@@ -95,6 +95,41 @@ function project(vector::Vector{SCIP.SCIP_Real}, mask::Vector{Bool})
     return vector[mask]
 end
 
+function get_cut_vector(projection_mask, projected_to_old_index, tableau, lp_sol, intersection_points, parallel_ray, dim_projected_space)
+    # Project and keep projection information
+    project_sol = project(lp_sol, projection_mask)
+    intersection_points = [project(point, projection_mask) for point in intersection_points]
+    parallel_ray = [project(ray, projection_mask) for ray in parallel_ray]
+
+    # STEP 3: Construct and Solve Seperating LP
+    separating_sol = solve_separating_lp(project_sol, intersection_points, parallel_ray)
+
+    if isnothing(separating_sol)
+        return false
+    end
+
+    b = dot(separating_sol, project_sol) + 1
+
+    # map cut back to the original space
+
+    original_dim = get_nlpcols(tableau)
+    cut_vector = zeros(original_dim)
+    @assert dim_projected_space == length(separating_sol)
+    for i = 1:dim_projected_space
+        original_index = projected_to_old_index[i]
+        obj = get_column_object(tableau, original_index)
+        if isa(obj, LPColumn)
+            cut_vector[original_index] += separating_sol[i]
+        else
+            pointer = get_pointer(obj)
+            row = get_row_coefficients_from_pointer(tableau, pointer)
+            for (col_id, coef) in enumerate(row)
+                cut_vector[col_id] -= coef * separating_sol[i]
+            end
+        end
+    end
+    return cut_vector, b
+end
 function get_row_coefficients_from_pointer(tableau::LPTableau, pointer::Ptr{SCIP.SCIP_ROW})
     nnonz = SCIP.SCIProwGetNNonz(pointer)
     cols = SCIP.SCIProwGetCols(pointer)
@@ -104,7 +139,7 @@ function get_row_coefficients_from_pointer(tableau::LPTableau, pointer::Ptr{SCIP
     coefs = unsafe_wrap(Vector{SCIP.SCIP_Real}, coefs, nnonz)
     row = zeros(get_nlpcols(tableau))
     for i = 1:nnonz
-        row[objcol(tableau, cols[i])] = coefs[i]
+        row[get_column_index(tableau, cols[i])] = coefs[i]
     end
     return row
 end
@@ -138,6 +173,21 @@ function find_cut_from_split(
     projected_to_old_index = Dict{Int,Int}()
     projection_mask = fill(false, dim)
     j = 1
+    for i = 1:get_nobjects(tableau)
+        col_object = get_column_object(tableau, i)
+        if get_basis_status(col_object) != SCIP.SCIP_BASESTAT_BASIC
+            projection_mask[i] = true
+            projected_to_old_index[j] = i
+            j += 1
+        end
+    end
+    dim_projected_space = j - 1
+    cut_vector1, b1 = get_cut_vector(projection_mask, projected_to_old_index, tableau, lp_sol, intersection_points, parallel_ray, dim_projected_space)
+
+    # Project and keep projection information
+    projected_to_old_index = Dict{Int,Int}()
+    projection_mask = fill(false, dim)
+    j = 1
     for i = 1:get_nlpcols(tableau)
         #col_object = get_column_object(tableau, i)
         #if get_basis_status(col_object) != SCIP.SCIP_BASESTAT_BASIC
@@ -147,37 +197,10 @@ function find_cut_from_split(
         #end
     end
     dim_projected_space = j - 1
-    project_sol = project(lp_sol, projection_mask)
-    intersection_points = [project(point, projection_mask) for point in intersection_points]
-    parallel_ray = [project(ray, projection_mask) for ray in parallel_ray]
+    cut_vector, b = get_cut_vector(projection_mask, projected_to_old_index, tableau, lp_sol, intersection_points, parallel_ray, dim_projected_space)
 
-    # STEP 3: Construct and Solve Seperating LP
-    separating_sol = solve_separating_lp(project_sol, intersection_points, parallel_ray)
-
-    if isnothing(separating_sol)
-        return false
-    end
-
-    b = dot(separating_sol, project_sol) + 1
-
-    # map cut back to the original space
-
-    original_dim = get_nlpcols(tableau)
-    cut_vector = zeros(original_dim)
-    @assert dim_projected_space == length(separating_sol)
-    for i = 1:dim_projected_space
-        original_index = projected_to_old_index[i]
-        obj = get_column_object(tableau, original_index)
-        if isa(obj, LPColumn)
-            cut_vector[original_index] += separating_sol[i]
-        else
-            pointer = get_pointer(obj)
-            row = get_row_coefficients_from_pointer(tableau, pointer)
-            for (col_id, coef) in enumerate(row)
-                cut_vector[col_id] -= coef * separating_sol[i]
-            end
-        end
-    end
+    println("GAP $(norm(cut_vector1 - cut_vector))")
+    println("GAP b $(abs(b-b1))")
     separating_sol = cut_vector
     row = Ref{Ptr{SCIP.SCIP_ROW}}(C_NULL)
     SCIP.@SCIP_CALL SCIP.SCIPcreateEmptyRowSepa(
@@ -201,7 +224,7 @@ function find_cut_from_split(
         SCIP.@SCIP_CALL SCIP.SCIPaddVarToRow(scip, row[], vars[idx], sol)
     end
 
-    SCIP.@SCIP_CALL SCIP.SCIPprintRow(scip, row[], C_NULL)
+    #SCIP.@SCIP_CALL SCIP.SCIPprintRow(scip, row[], C_NULL)
     SCIP.@SCIP_CALL SCIP.SCIPaddRow(scip, row[], true, infeasible)
     SCIP.@SCIP_CALL SCIP.SCIPreleaseRow(scip, row)
 

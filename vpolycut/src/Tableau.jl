@@ -136,8 +136,17 @@ function get_column_index(tableau::LPTableau, obj::LPObject)::Int
     end
 end
 
-function get_object_from_scip_index(tableau::LPTableau, scip_index::Int, s::Symbol)::LPObject
-    return tableau.mapcol2obj[tableau.mapobj2col[(s, scip_index)]]
+function get_object_from_scip_index(tableau::LPTableau, scip_index::Int, object_type::Symbol)::LPObject
+    # Create a dummy object and use it to look for the actual object within the tableau columns
+    dummy = nothing
+    if object_type == COLUMN
+        dummy = LPColumn(scip_index, SCIP.SCIP_BASESTAT_ZERO, -1, -1, -1)
+    else
+        dummy = LPRow(scip_index, SCIP.SCIP_BASESTAT_ZERO, -1, -1, C_NULL, -1)
+    end
+    col_index = get_column_index(tableau, dummy)
+
+    return get_column_object(tableau, col_index)
 end
 
 # Setter Methods for tableau
@@ -246,6 +255,10 @@ function fetch_rows!(tableau::LPTableau, scip::SCIP.SCIPData)
         lp_row.lhs = SCIP.SCIProwGetLhs(row)
         lp_row.slack = SCIP.SCIPgetRowLPActivity(scip, row)
         lp_row.obj_pointer = row
+
+        if SCIP.SCIProwGetConstant(row) != 0
+            @warn "Row has non-zero constant term"
+        end
 
         col_idx = i + nlpcols
         set_column_object!(tableau, lp_row, col_idx)
