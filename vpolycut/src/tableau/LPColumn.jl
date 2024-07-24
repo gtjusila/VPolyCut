@@ -34,13 +34,22 @@ function get_scip_index(col::LPColumn)::Int
     return col.scip_index
 end
 
-"""
-Populate column with information from SCIP
-"""
-function populate!(scip::SCIP.SCIPData, scip_ptr::Ptr{SCIP.SCIP_COL}, col::LPColumn)
-    col.scip_index = SCIP.SCIPcolGetIndex(scip_ptr)
-    col.basis_status = SCIP.SCIPcolGetBasisStatus(scip_ptr)
-    col.ub = SCIP.SCIPcolGetUb(scip_ptr)
-    col.lb = SCIP.SCIPcolGetLb(scip_ptr)
-    col.sol = SCIP.SCIPcolGetPrimsol(scip_ptr)
+function set_scip_index!(col::LPColumn, index::Integer)
+    col.scip_index = index
+end
+
+function set_basis_status!(col::LPColumn, status::SCIP.SCIP_BASESTAT)
+    col.basis_status = status
+end
+
+function set_ub!(col::LPColumn, ub::SCIP.SCIP_Real)
+    col.ub = ub
+end
+
+function set_lb!(col::LPColumn, lb::SCIP.SCIP_Real)
+    col.lb = lb
+end
+
+function set_sol!(col::LPColumn, sol::SCIP.SCIP_Real)
+    col.sol = sol
 end

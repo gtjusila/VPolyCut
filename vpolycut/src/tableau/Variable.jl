@@ -37,7 +37,8 @@ function get_sol(var::Variable)::SCIP.SCIP_Real
 end
 
 """
-This function should return a unique representation for the subtype of Variable
+This function should return a unique representation for the subtype of Variable this is 
+for storing in the tableau
 """
 function get_symbolic_representation(var::Variable)::Symbol
     error("get_symbolic_representation not implemented for type ", typeof(var))
@@ -47,6 +48,23 @@ function get_scip_index(var::Variable)::Int
     error("get_scip_index not implemented for type ", typeof(var))
 end
 
-function populate!(scip::SCIP.SCIPData, scip_ptr::Ptr, var::Variable)
-    error("populate! not implemented for type ", typeof(var))
+function set_scip_index!(var::Variable, index::Integer)
+    error("set_scip_index! not implemented for type ", typeof(var))
 end
+
+function set_basis_status!(var::Variable, status::SCIP.SCIP_BASESTAT)
+    error("set_basis_status! not implemented for type ", typeof(var))
+end
+
+function set_ub!(var::Variable, ub::SCIP.SCIP_Real)
+    error("set_ub! not implemented for type ", typeof(var))
+end
+
+function set_lb!(var::Variable, lb::SCIP.SCIP_Real)
+    error("set_lb! not implemented for type ", typeof(var))
+end
+
+function set_sol!(var::Variable, sol::SCIP.SCIP_Real)
+    error("set_sol! not implemented for type ", typeof(var))
+end
+

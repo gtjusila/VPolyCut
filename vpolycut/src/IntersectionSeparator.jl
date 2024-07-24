@@ -95,7 +95,7 @@ function project(vector::Vector{SCIP.SCIP_Real}, mask::Vector{Bool})
     return vector[mask]
 end
 
-function get_cut_vector(projection_mask, projected_to_old_index, tableau, lp_sol, intersection_points, parallel_ray, dim_projected_space)
+function get_cut_vector(scip, projection_mask, projected_to_old_index, tableau, lp_sol, intersection_points, parallel_ray, dim_projected_space)
     # Project and keep projection information
     project_sol = project(lp_sol, projection_mask)
     intersection_points = [project(point, projection_mask) for point in intersection_points]
@@ -114,7 +114,7 @@ function get_cut_vector(projection_mask, projected_to_old_index, tableau, lp_sol
     for i = 1:length(separating_sol)
         full_separating_sol[projected_to_old_index[i]] = separating_sol[i]
     end
-    cut_vector, b = convert_standard_row_to_general(tableau, full_separating_sol, b)
+    cut_vector, b = convert_standard_row_to_general(scip, tableau, full_separating_sol, b)
     return cut_vector, b
 end
 
@@ -158,7 +158,7 @@ function find_cut_from_split(
         end
     end
     dim_projected_space = j - 1
-    cut_vector, b = get_cut_vector(projection_mask, projected_to_old_index, tableau, lp_sol, intersection_points, parallel_ray, dim_projected_space)
+    cut_vector, b = get_cut_vector(scip, projection_mask, projected_to_old_index, tableau, lp_sol, intersection_points, parallel_ray, dim_projected_space)
 
     separating_sol = cut_vector
     row = Ref{Ptr{SCIP.SCIP_ROW}}(C_NULL)
@@ -201,7 +201,7 @@ function SCIP.exec_lp(sepa::IntersectionSeparator)
     @assert(SCIP.SCIPgetLPSolstat(scip) == SCIP.SCIP_LPSOLSTAT_OPTIMAL)
 
     # STEP 0: Get LP TAbleau data
-    tableau = construct_tableau(scip)
+    tableau = construct_tableau_with_constraint_matrix(scip)
 
     # STEP 1: Get Corner Polyhedron of current LP solution
     corner = construct_corner_polyhedron(tableau)

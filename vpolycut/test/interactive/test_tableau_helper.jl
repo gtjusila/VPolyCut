@@ -42,7 +42,6 @@ function print_lp_tableau(lp_tableau::VPolyCut.Tableau)
             println("RHS: ", VPolyCut.get_ub(col))
             println("LHS: ", VPolyCut.get_lb(col))
             println("Slack: ", VPolyCut.get_sol(col))
-            println("Row Coef: ", col.coefficient)
         end
     end
 

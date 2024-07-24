@@ -27,6 +27,7 @@ The abstract type `Variable` represents every variable in the SCIP standard form
 LPRow represents the slack variables s and LPColumn represents the original variables x.
 
 The LP tableau stores tableau information at the optimal solution of the LP in SCIP standard form.
+Additionally Tableau may store a constraint matrix that represents the LP in SCIP general form.
 """
 @kwdef mutable struct Tableau <: Base.AbstractMatrix{SCIP.SCIP_Real}
     # Variables and Rows are distinguished by their unique index given from SCIP
@@ -37,6 +38,7 @@ The LP tableau stores tableau information at the optimal solution of the LP in S
     mapvar2row::Dict{Tuple{Symbol,Int},Int} = Dict()
     noriginalrows::Int = 0
     noriginalcols::Int = 0
+    constraint_matrix::Union{Nothing,ConstraintMatrix} = nothing
 end
 
 # Allow LPTableau to behave as if it is a matrix
@@ -53,6 +55,17 @@ function Base.setindex!(tableau::Tableau, v, i::Int, j::Int)
 end
 
 # Methods for accessing the LPTableau Data
+function has_constraint_matrix_information(tableau::Tableau)::Bool
+    return !isnothing(tableau.constraint_matrix)
+end
+
+function get_constraint_matrix(tableau::Tableau)::Union{Nothing,ConstraintMatrix}
+    if !has_constraint_matrix_information(tableau)
+        error("Tableau does not have constraint matrix information")
+    end
+    return tableau.constraint_matrix
+end
+
 function get_nvars(tableau::Tableau)::Int
     return size(tableau.tableau_matrix)[2]
 end
@@ -108,22 +121,34 @@ function set_row_var!(tableau::Tableau, var::Variable, row_index::Int)
     tableau.maprow2var[row_index] = var
 end
 
-#TODO CLEANUP
-function convert_standard_row_to_general(tableau::Tableau, standard_row::Vector{SCIP.SCIP_Real}, b)
+function set_constraint_matrix!(tableau::Tableau, matrix::ConstraintMatrix)
+    tableau.constraint_matrix = matrix
+end
+
+function convert_standard_row_to_general(scip::SCIP.SCIPData, tableau::Tableau, standard_row::Vector{SCIP.SCIP_Real}, b)
+    if !has_constraint_matrix_information(tableau)
+        error("Tableau does not have constraint matrix information")
+    end
+
+    nvars = get_nvars(tableau)
+    noriginalcols = get_noriginalcols(tableau)
     general_row = zeros(get_noriginalcols(tableau))
-    for i = 1:get_nvars(tableau)
-        if standard_row[i] != 0
-            if i > get_noriginalcols(tableau)
-                original_row = get_var_from_column(tableau, i)
-                original_row_coefficients = get_row_coefficients(original_row)
-                b += standard_row[i] * get_constant(original_row)
-                for j = 1:get_noriginalcols(tableau)
-                    general_row[j] -= standard_row[i] * original_row_coefficients[j]
-                end
-            else
+    constraint_matrix = get_constraint_matrix(tableau)
+
+    for i = 1:nvars
+        if SCIP.SCIPisZero(scip, standard_row[i]) == 0
+            var = get_var_from_column(tableau, i)
+            if isacolumn(var)
                 general_row[i] = standard_row[i]
+            else
+                row_index = i - noriginalcols
+                for j = 1:noriginalcols
+                    general_row[j] -= standard_row[i] * get_entry(constraint_matrix, row_index, j)
+                end
+                b += standard_row[i] * get_constant(constraint_matrix, row_index)
             end
         end
     end
+
     return general_row, b
 end
