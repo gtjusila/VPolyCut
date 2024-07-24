@@ -1,28 +1,30 @@
+include("utilities.jl")
+include("utilities/tableau_test_utilities.jl")
+include("ProblemLoader.jl")
 using Revise
 using JuMP
 using VPolyCut
 using Test
 
-@testset "Test" begin
-    include("./utilities.jl")
+@testset "Tableau Test" begin
     model = setup_jump_model()
     scip = get_scipdata_from_model(model)
-    sepa = include_separator(scip, VPolyCut.IntersectionSeparator; scipd=scip)
+    function testcase(scip)
+        tableau = VPolyCut.construct_tableau(scip)
+        col = VPolyCut.get_var_from_column(tableau, 1)
+        @test VPolyCut.get_lb(col) == 0.0
+        @test VPolyCut.get_ub(col) == SCIP.SCIPinfinity(scip)
+        @test VPolyCut.get_noriginalcols(tableau) == 3
+        @test VPolyCut.get_noriginalrows(tableau) == 5
+        @test VPolyCut.get_nvars(tableau) == 8
+        @test VPolyCut.get_nbasis(tableau) == 5
+        row = VPolyCut.get_var_from_column(tableau, 4)
+        @test VPolyCut.get_lb(row) == -SCIP.SCIPinfinity(scip)
+        @test VPolyCut.get_ub(row) == 2
+    end
+    sepa = include_separator(scip, TableauTest; scipd=scip, callback=testcase)
     set_scip_parameters_easy(model)
-
-    JuMP.@variable(model, x1 >= 0, Int)
-    JuMP.@variable(model, x2 >= 0, Int)
-    JuMP.@variable(model, x3 >= 0, Int)
-
-    # Define the objective function
-    @objective(model, Max, 0.5x2 + x3)
-
-    # Define the constraints
-    @constraint(model, c1, x1 + x2 + x3 <= 2)
-    @constraint(model, c2, x1 - 0.5 * x3 >= 0)
-    @constraint(model, c3, x2 - 0.5 * x3 >= 0)
-    @constraint(model, c4, x1 + 0.5 * x3 <= 1)
-    @constraint(model, c5, -x1 + x2 + x3 <= 1)
-
+    problem = ProblemConforti()
+    load_problem(problem, model)
     JuMP.optimize!(model)
 end

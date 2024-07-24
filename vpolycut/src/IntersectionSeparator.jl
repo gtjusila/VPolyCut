@@ -109,40 +109,15 @@ function get_cut_vector(projection_mask, projected_to_old_index, tableau, lp_sol
     end
 
     b = dot(separating_sol, project_sol) + 1
-
     # map cut back to the original space
-
-    original_dim = get_nlpcols(tableau)
-    cut_vector = zeros(original_dim)
-    @assert dim_projected_space == length(separating_sol)
-    for i = 1:dim_projected_space
-        original_index = projected_to_old_index[i]
-        obj = get_column_object(tableau, original_index)
-        if isa(obj, LPColumn)
-            cut_vector[original_index] += separating_sol[i]
-        else
-            pointer = get_pointer(obj)
-            row = get_row_coefficients_from_pointer(tableau, pointer)
-            for (col_id, coef) in enumerate(row)
-                cut_vector[col_id] -= coef * separating_sol[i]
-            end
-        end
+    full_separating_sol = zeros(get_nvars(tableau))
+    for i = 1:length(separating_sol)
+        full_separating_sol[projected_to_old_index[i]] = separating_sol[i]
     end
+    cut_vector, b = convert_standard_row_to_general(tableau, full_separating_sol, b)
     return cut_vector, b
 end
-function get_row_coefficients_from_pointer(tableau::LPTableau, pointer::Ptr{SCIP.SCIP_ROW})
-    nnonz = SCIP.SCIProwGetNNonz(pointer)
-    cols = SCIP.SCIProwGetCols(pointer)
-    cols = unsafe_wrap(Vector{Ptr{SCIP.SCIP_COL}}, cols, nnonz)
-    cols = [get_object_from_scip_index(tableau, Int(SCIP.SCIPcolGetIndex(col)), COLUMN) for col in cols]
-    coefs = SCIP.SCIProwGetVals(pointer)
-    coefs = unsafe_wrap(Vector{SCIP.SCIP_Real}, coefs, nnonz)
-    row = zeros(get_nlpcols(tableau))
-    for i = 1:nnonz
-        row[get_column_index(tableau, cols[i])] = coefs[i]
-    end
-    return row
-end
+
 """
 Construct the seperating lp return a reference to a pointer to the LPI
 """
@@ -151,7 +126,7 @@ function find_cut_from_split(
     split_index::Int64,
     lp_sol::LPSol,
     lp_rays::Vector{LPRay},
-    tableau::LPTableau
+    tableau::Tableau
 )::Bool
     scip = sepa.scipd
     dim = length(lp_sol)
@@ -170,37 +145,21 @@ function find_cut_from_split(
     end
 
     # Project and keep projection information
+
     projected_to_old_index = Dict{Int,Int}()
     projection_mask = fill(false, dim)
     j = 1
-    for i = 1:get_nobjects(tableau)
-        col_object = get_column_object(tableau, i)
-        if get_basis_status(col_object) != SCIP.SCIP_BASESTAT_BASIC
+    for i = 1:get_nvars(tableau)
+        var = get_var_from_column(tableau, i)
+        if !is_basic(var)
             projection_mask[i] = true
             projected_to_old_index[j] = i
             j += 1
         end
     end
     dim_projected_space = j - 1
-    cut_vector1, b1 = get_cut_vector(projection_mask, projected_to_old_index, tableau, lp_sol, intersection_points, parallel_ray, dim_projected_space)
-
-    # Project and keep projection information
-    projected_to_old_index = Dict{Int,Int}()
-    projection_mask = fill(false, dim)
-    j = 1
-    for i = 1:get_nlpcols(tableau)
-        #col_object = get_column_object(tableau, i)
-        #if get_basis_status(col_object) != SCIP.SCIP_BASESTAT_BASIC
-        projection_mask[i] = true
-        projected_to_old_index[j] = i
-        j += 1
-        #end
-    end
-    dim_projected_space = j - 1
     cut_vector, b = get_cut_vector(projection_mask, projected_to_old_index, tableau, lp_sol, intersection_points, parallel_ray, dim_projected_space)
 
-    println("GAP $(norm(cut_vector1 - cut_vector))")
-    println("GAP b $(abs(b-b1))")
     separating_sol = cut_vector
     row = Ref{Ptr{SCIP.SCIP_ROW}}(C_NULL)
     SCIP.@SCIP_CALL SCIP.SCIPcreateEmptyRowSepa(
@@ -243,8 +202,6 @@ function SCIP.exec_lp(sepa::IntersectionSeparator)
 
     # STEP 0: Get LP TAbleau data
     tableau = construct_tableau(scip)
-    n_cols = tableau.num_lp_cols
-    n_rows = tableau.num_lp_rows
 
     # STEP 1: Get Corner Polyhedron of current LP solution
     corner = construct_corner_polyhedron(tableau)
@@ -258,7 +215,6 @@ function SCIP.exec_lp(sepa::IntersectionSeparator)
         println("LP Rays are " * string(lp_rays))
         println("====================")
     end
-
     # [CLEAN] Might actually not need this
     #dim = length(lp_sol)
     #if length(lp_rays) != dim

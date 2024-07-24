@@ -1,7 +1,3 @@
-# 
-# This file contains the code to retrieve the corner polyhedron from the current SCIP Pointer 
-# along with the helper function to get Tableau Information
-#
 import SCIP
 
 const LPRay = Vector{SCIP.SCIP_Real}
@@ -12,11 +8,10 @@ struct CornerPolyhedron
     lp_rays::Vector{LPRay}
 end
 
-
 """
-Create a Corner Polyhedron in the dimension of the problem in the 'SCIP' Standard Form
+Create a Corner Polyhedron in the dimension of the problem in the SCIP Standard Form
 """
-function construct_corner_polyhedron(tableau::LPTableau)::CornerPolyhedron
+function construct_corner_polyhedron(tableau::Tableau)::CornerPolyhedron
     # Initiate a vector to collect corner polyhedron ray
     rays = get_non_basic_rays(tableau)
     sol = get_solution_vector(tableau)
@@ -24,33 +19,25 @@ function construct_corner_polyhedron(tableau::LPTableau)::CornerPolyhedron
     return CornerPolyhedron(sol, rays)
 end
 
-function get_solution_vector(tableau::LPTableau)::Vector{SCIP.SCIP_Real}
-    dim = get_nobjects(tableau)
+function get_solution_vector(tableau::Tableau)::Vector{SCIP.SCIP_Real}
+    dim = get_nvars(tableau)
     solution = zeros(dim)
 
     for i = 1:dim
-        col = get_column_object(tableau, i)
-        solution[i] = get_solution(col)
+        var = get_var_from_column(tableau, i)
+        solution[i] = get_sol(var)
     end
 
     return solution
 end
 
-function get_solution(col::LPColumn)::SCIP.SCIP_Real
-    return get_primal_sol(col)
-end
-
-function get_solution(row::LPRow)::SCIP.SCIP_Real
-    return -get_slack(row)
-end
-
-function get_non_basic_rays(tableau::LPTableau)::Vector{LPRay}
+function get_non_basic_rays(tableau::Tableau)::Vector{LPRay}
     ray_collection = Vector{LPRay}(undef, 0)
 
-    for i = 1:get_nobjects(tableau)
-        col = get_column_object(tableau, i)
-        if get_basis_status(col) != SCIP.SCIP_BASESTAT_BASIC
-            ray = construct_non_basic_ray(tableau, col)
+    for i = 1:get_nvars(tableau)
+        var = get_var_from_column(tableau, i)
+        if !is_basic(var)
+            ray = construct_non_basic_ray(tableau, var)
             push!(ray_collection, ray)
         end
     end
@@ -58,40 +45,46 @@ function get_non_basic_rays(tableau::LPTableau)::Vector{LPRay}
     return ray_collection
 end
 
-function construct_non_basic_ray(tableau::LPTableau, col::LPObject)::LPRay
+"""
+Construct non basic ray from the ith column
+"""
+function construct_non_basic_ray(tableau::Tableau, var::Variable)::LPRay
     direction = 1.0
 
-    if (get_basis_status(col) == SCIP.SCIP_BASESTAT_UPPER)
+    if is_at_upper_bound(var)
         direction = -1.0
-    elseif (get_basis_status(col) == SCIP.SCIP_BASESTAT_LOWER)
+    elseif is_at_lower_bound(var)
         direction = 1.0
     else
         #Safekeeping: Should Never Happen unless polyhedron is not pointed
-        error("Invalid basis status encountered: $(get_basis_status(col))")
+        error("Invalid basis status encountered: $(get_basis_status(var))")
     end
 
     # SCIP assumes that the constraint matrix is in the form [A I] where I
     # are columns corresponding to the slack variables. Hence, if the 
     # nonbasic column is a slack variable, then the direction is reversed
-    if isa(col, LPRow)
+    col_idx = get_column_from_var(tableau, var)
+    if col_idx > get_noriginalcols(tableau)
         direction = -direction
     end
 
     # Construct ray r
-    dim = get_nobjects(tableau)
+    dim = get_nvars(tableau)
     ray = zeros(dim)
 
-    col_idx = get_column_index(tableau, col)
     ray[col_idx] = direction
 
-    for row_idx = 1:get_nbasicobjects(tableau)
-        row_obj = get_row_object(tableau, row_idx)
-        row_obj_col = get_column_index(tableau, row_obj)
+    #
+    # Suppose the tableau is 
+    # 1x1 + 1x2 + 1s = 0
+    # where x1 is basic, x2 is at its lower bound and s is at
+    # its upper bound. Then the ray corresponding to 
+    # x2 is [-1 1 0] and the ray corresponding to s is [1 0 -1]
+    for row_idx = 1:get_nbasis(tableau)
+        basic_var = get_var_from_row(tableau, row_idx)
+        basic_col = get_column_from_var(tableau, basic_var)
         value = -direction * tableau[row_idx, col_idx]
-        # Todo clean this up
-        if abs(value) > 10e-6
-            ray[row_obj_col] = value
-        end
+        ray[basic_col] = value
     end
 
     return ray
