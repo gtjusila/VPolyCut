@@ -101,7 +101,7 @@ function find_cut_from_split(
         compute_intersection_points(scip, split_index, lp_sol, lp_rays)
 
     # Create a projection object 
-    projection = create_projection_to_nonbasic_space(tableau)
+    projection = create_trivial_projection(tableau)
 
     # STEP 2: Project the intersection points and rays to the non-basic space
     projected_lp_sol = project_point(projection, lp_sol)
