@@ -76,6 +76,7 @@ function create_variable_from_column_pointer(scip_ptr::Ptr{SCIP.SCIP_COL})::Vari
     set_ub!(lp_col, SCIP.SCIPcolGetUb(scip_ptr))
     set_lb!(lp_col, SCIP.SCIPcolGetLb(scip_ptr))
     set_sol!(lp_col, SCIP.SCIPcolGetPrimsol(scip_ptr))
+    set_var_pointer!(lp_col, SCIP.SCIPcolGetVar(scip_ptr))
     return lp_col
 end
 

@@ -3,9 +3,6 @@ using JuMP
 using LinearAlgebra
 import MathOptInterface as MOI
 
-DEBUG_PRINT_ORIGINAL_CORNER_POLYHEDRON = false
-DEBUG_PRINT_INTERSECTION_POINTS = false
-
 """
 Intersection Cut Separator
 # Fields
@@ -20,7 +17,12 @@ end
 Given a current solution, a split index, and a ray collection compute intersection points
 and pararrel_rays
 """
-function compute_intersection_points(current_solution, split_index, ray_collection)
+function compute_intersection_points(
+    scip::SCIP.SCIPData,
+    split_index::Int,
+    current_solution::Point,
+    ray_collection::Vector{Ray}
+)
     intersection_points = []
     pararrel_ray = []
 
@@ -29,10 +31,10 @@ function compute_intersection_points(current_solution, split_index, ray_collecti
         up = ceil(current_solution[split_index])
         epsilon = 0
 
-        if ray[split_index] < -EPSILON
+        if SCIP.SCIPisNegative(scip, ray[split_index]) == 1
             # Ray will hit lower bound
             epsilon = (low - current_solution[split_index]) / ray[split_index]
-        elseif ray[split_index] > EPSILON
+        elseif SCIP.SCIPisPositive(scip, ray[split_index]) == 1
             # Ray will hit upper bound
             epsilon = (up - current_solution[split_index]) / ray[split_index]
         else
@@ -48,20 +50,10 @@ function compute_intersection_points(current_solution, split_index, ray_collecti
     return (intersection_points, pararrel_ray)
 end
 
-function modelwithsubscip()
-    inner = MOI.Bridges.full_bridge_optimizer(SCIP.Optimizer(), Float64)
-    model = direct_generic_model(Float64, inner)
-    set_attribute(model, "display/verblevel", 0)
-    backend = unsafe_backend(model)
-    scip = backend.inner
-    SCIP.@SCIP_CALL SCIP.SCIPsetSubscipsOff(scip, SCIP.SCIP_Bool(true))
-    return model
-end
-
 function solve_separating_lp(lp_solution, intersection_points, pararrel_rays)
     dim = length(lp_solution)
 
-    separating_lp = modelwithsubscip()
+    separating_lp = create_subscip_model()
 
     @assert SCIP.SCIPgetSubscipsOff(unsafe_backend(separating_lp).inner) != 0
 
@@ -85,37 +77,10 @@ function solve_separating_lp(lp_solution, intersection_points, pararrel_rays)
     optimize!(separating_lp)
 
     if is_solved_and_feasible(separating_lp)
-        return Vector{SCIP.SCIP_Real}(value.(x))
+        return Point(value.(x))
     end
 
     return nothing
-end
-
-function project(vector::Vector{SCIP.SCIP_Real}, mask::Vector{Bool})
-    return vector[mask]
-end
-
-function get_cut_vector(scip, projection_mask, projected_to_old_index, tableau, lp_sol, intersection_points, parallel_ray, dim_projected_space)
-    # Project and keep projection information
-    project_sol = project(lp_sol, projection_mask)
-    intersection_points = [project(point, projection_mask) for point in intersection_points]
-    parallel_ray = [project(ray, projection_mask) for ray in parallel_ray]
-
-    # STEP 3: Construct and Solve Seperating LP
-    separating_sol = solve_separating_lp(project_sol, intersection_points, parallel_ray)
-
-    if isnothing(separating_sol)
-        return false
-    end
-
-    b = dot(separating_sol, project_sol) + 1
-    # map cut back to the original space
-    full_separating_sol = zeros(get_nvars(tableau))
-    for i = 1:length(separating_sol)
-        full_separating_sol[projected_to_old_index[i]] = separating_sol[i]
-    end
-    cut_vector, b = convert_standard_row_to_general(scip, tableau, full_separating_sol, b)
-    return cut_vector, b
 end
 
 """
@@ -124,43 +89,39 @@ Construct the seperating lp return a reference to a pointer to the LPI
 function find_cut_from_split(
     sepa::IntersectionSeparator,
     split_index::Int64,
-    lp_sol::LPSol,
-    lp_rays::Vector{LPRay},
+    corner_polyhedron::CornerPolyhedron,
     tableau::Tableau
 )::Bool
     scip = sepa.scipd
-    dim = length(lp_sol)
+    lp_sol = corner_polyhedron.lp_sol
+    lp_rays = corner_polyhedron.lp_rays
 
-    # STEP 3: Compute intersection Variable
+    # STEP 1: Compute intersection points 
     intersection_points, parallel_ray =
-        compute_intersection_points(lp_sol, split_index, lp_rays)
+        compute_intersection_points(scip, split_index, lp_sol, lp_rays)
 
-    if DEBUG_PRINT_INTERSECTION_POINTS
-        println("====================")
-        println("Intersection Points")
-        println(intersection_points)
-        println("Parallel Ray")
-        println(parallel_ray)
-        println("====================")
+    # Create a projection object 
+    projection = create_projection_to_nonbasic_space(tableau)
+
+    # STEP 2: Project the intersection points and rays to the non-basic space
+    projected_lp_sol = project_point(projection, lp_sol)
+    projected_intersection_points = [project_point(projection, point) for point in intersection_points]
+    projected_parallel_ray = [project_point(projection, ray) for ray in parallel_ray]
+
+    # Step 3: Solve the seperating LP
+    separating_sol = solve_separating_lp(projected_lp_sol, projected_intersection_points, projected_parallel_ray)
+    if isnothing(separating_sol)
+        return false
     end
+    b = dot(separating_sol, projected_lp_sol) + 1
 
-    # Project and keep projection information
+    # Step 4: Convert the seperating solution to the original space
+    full_seperating_sol = undo_projection(projection, separating_sol)
 
-    projected_to_old_index = Dict{Int,Int}()
-    projection_mask = fill(false, dim)
-    j = 1
-    for i = 1:get_nvars(tableau)
-        var = get_var_from_column(tableau, i)
-        if !is_basic(var)
-            projection_mask[i] = true
-            projected_to_old_index[j] = i
-            j += 1
-        end
-    end
-    dim_projected_space = j - 1
-    cut_vector, b = get_cut_vector(scip, projection_mask, projected_to_old_index, tableau, lp_sol, intersection_points, parallel_ray, dim_projected_space)
+    # Step 5: Convert the seperating solution to a cut in general form
+    cut_vector, b = convert_standard_inequality_to_general(scip, tableau, full_seperating_sol, b)
 
-    separating_sol = cut_vector
+    # Step 6: Add the cut to the SCIP
     row = Ref{Ptr{SCIP.SCIP_ROW}}(C_NULL)
     SCIP.@SCIP_CALL SCIP.SCIPcreateEmptyRowSepa(
         scip,
@@ -173,14 +134,13 @@ function find_cut_from_split(
         false,
         false
     )
-    vars = get_lp_variables(scip)
     infeasible = Ref{SCIP.SCIP_Bool}(0)
 
-    for (idx, sol) in enumerate(separating_sol)
-        if abs(sol) < EPSILON
-            continue
+    for (idx, sol) in enumerate(cut_vector)
+        if SCIP.SCIPisZero(scip, sol) == 0
+            var = get_var_from_column(tableau, idx)
+            SCIP.@SCIP_CALL SCIP.SCIPaddVarToRow(scip, row[], get_var_pointer(var), sol)
         end
-        SCIP.@SCIP_CALL SCIP.SCIPaddVarToRow(scip, row[], vars[idx], sol)
     end
 
     #SCIP.@SCIP_CALL SCIP.SCIPprintRow(scip, row[], C_NULL)
@@ -200,42 +160,26 @@ function SCIP.exec_lp(sepa::IntersectionSeparator)
     @assert(SCIP.SCIPisLPSolBasic(scip) != 0)
     @assert(SCIP.SCIPgetLPSolstat(scip) == SCIP.SCIP_LPSOLSTAT_OPTIMAL)
 
-    # STEP 0: Get LP TAbleau data
+    # STEP 0: Get LP Tableau data
     tableau = construct_tableau_with_constraint_matrix(scip)
 
     # STEP 1: Get Corner Polyhedron of current LP solution
     corner = construct_corner_polyhedron(tableau)
-    lp_sol = corner.lp_sol
-    lp_rays = corner.lp_rays
 
-    if DEBUG_PRINT_ORIGINAL_CORNER_POLYHEDRON
-        println("====================")
-        println("Seperator Called")
-        println("Solution is " * string(lp_sol))
-        println("LP Rays are " * string(lp_rays))
-        println("====================")
-    end
-    # [CLEAN] Might actually not need this
-    #dim = length(lp_sol)
-    #if length(lp_rays) != dim
-    #    return SCIP.SCIP_DIDNOTFIND
-    #end
+    # STEP 2: Get the set of fractional indices 
+    split_indices = get_branching_indices(scip, tableau)
+    separated = false
 
-    # STEP 2: Decide Splitting Variable
-    vars = get_lp_variables(scip)
-
-    split_indices = get_all_fractional_indices(vars, 0.001)
-    seperated = false
-
+    # STEP 3: For each fractional indices try to find a cut
     for (i, index) in enumerate(split_indices)
         if i % 10 == 0
             println("Cut Generated $(i)")
         end
-        seperated_ = find_cut_from_split(sepa, index, lp_sol, lp_rays, tableau)
-        seperated = seperated || seperated_
+        success = find_cut_from_split(sepa, index, corner, tableau)
+        separated = separated || success
     end
 
-    if (seperated)
+    if (separated)
         return SCIP.SCIP_SEPARATED
     end
 

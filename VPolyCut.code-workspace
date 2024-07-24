@@ -7,6 +7,9 @@
 		{
 			"name": "ExperimentScript",
 			"path": "ExperimentScript"
+		},
+		{
+			"path": "../scipsuite/scip"
 		}
 	],
 	"settings": {}

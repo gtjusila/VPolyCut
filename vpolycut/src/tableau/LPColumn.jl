@@ -7,6 +7,7 @@
     ub::SCIP.SCIP_Real = -1
     lb::SCIP.SCIP_Real = -1
     sol::SCIP.SCIP_Real = -1
+    variable_pointer::Ptr{SCIP.SCIP_VAR} = C_NULL
 end
 
 function get_lb(col::LPColumn)::SCIP.SCIP_Real
@@ -34,6 +35,13 @@ function get_scip_index(col::LPColumn)::Int
     return col.scip_index
 end
 
+"""
+Column Var Pointer would point to the SCIP variable associated with the column
+"""
+function get_var_pointer(col::LPColumn)::Ptr{SCIP.SCIP_VAR}
+    return col.variable_pointer
+end
+
 function set_scip_index!(col::LPColumn, index::Integer)
     col.scip_index = index
 end
@@ -52,4 +60,8 @@ end
 
 function set_sol!(col::LPColumn, sol::SCIP.SCIP_Real)
     col.sol = sol
+end
+
+function set_var_pointer!(col::LPColumn, pointer::Ptr{SCIP.SCIP_VAR})
+    col.variable_pointer = pointer
 end

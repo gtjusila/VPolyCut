@@ -125,7 +125,30 @@ function set_constraint_matrix!(tableau::Tableau, matrix::ConstraintMatrix)
     tableau.constraint_matrix = matrix
 end
 
-function convert_standard_row_to_general(scip::SCIP.SCIPData, tableau::Tableau, standard_row::Vector{SCIP.SCIP_Real}, b)
+function get_branching_indices(scip::SCIP.SCIPData, tableau::Tableau)::Vector{Int}
+    return filter(x -> is_branchable(scip, get_var_from_column(tableau, x)), 1:get_nvars(tableau))
+end
+
+function is_branchable(scip::SCIP.SCIPData, var::Variable)::Bool
+    # If the variable is a slack then we cannot branch
+    if isarow(var)
+        return false
+    end
+
+    # If the variable is not constrainted to be integer we cannot branch
+    if SCIP.SCIPvarIsIntegral(get_var_pointer(var)) == 0
+        return false
+    end
+
+    # If the primal is integral we cannot branch
+    if SCIP.SCIPisFeasIntegral(scip, get_sol(var)) == 1
+        return false
+    end
+
+    return true
+end
+
+function convert_standard_inequality_to_general(scip::SCIP.SCIPData, tableau::Tableau, standard_row::Vector{SCIP.SCIP_Real}, b)
     if !has_constraint_matrix_information(tableau)
         error("Tableau does not have constraint matrix information")
     end
@@ -136,17 +159,18 @@ function convert_standard_row_to_general(scip::SCIP.SCIPData, tableau::Tableau, 
     constraint_matrix = get_constraint_matrix(tableau)
 
     for i = 1:nvars
-        if SCIP.SCIPisZero(scip, standard_row[i]) == 0
-            var = get_var_from_column(tableau, i)
-            if isacolumn(var)
-                general_row[i] = standard_row[i]
-            else
-                row_index = i - noriginalcols
-                for j = 1:noriginalcols
-                    general_row[j] -= standard_row[i] * get_entry(constraint_matrix, row_index, j)
-                end
-                b += standard_row[i] * get_constant(constraint_matrix, row_index)
+        if SCIP.SCIPisZero(scip, standard_row[i]) == 1
+            continue
+        end
+        var = get_var_from_column(tableau, i)
+        if isacolumn(var)
+            general_row[i] = standard_row[i]
+        else
+            row_index = i - noriginalcols
+            for j = 1:noriginalcols
+                general_row[j] -= standard_row[i] * get_entry(constraint_matrix, row_index, j)
             end
+            b += standard_row[i] * get_constant(constraint_matrix, row_index)
         end
     end
 

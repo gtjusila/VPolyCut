@@ -1,11 +1,8 @@
 import SCIP
 
-const LPRay = Vector{SCIP.SCIP_Real}
-const LPSol = Vector{SCIP.SCIP_Real}
-
 struct CornerPolyhedron
-    lp_sol::LPSol
-    lp_rays::Vector{LPRay}
+    lp_sol::Point
+    lp_rays::Vector{Ray}
 end
 
 """
@@ -19,7 +16,7 @@ function construct_corner_polyhedron(tableau::Tableau)::CornerPolyhedron
     return CornerPolyhedron(sol, rays)
 end
 
-function get_solution_vector(tableau::Tableau)::Vector{SCIP.SCIP_Real}
+function get_solution_vector(tableau::Tableau)::Point
     dim = get_nvars(tableau)
     solution = zeros(dim)
 
@@ -31,8 +28,8 @@ function get_solution_vector(tableau::Tableau)::Vector{SCIP.SCIP_Real}
     return solution
 end
 
-function get_non_basic_rays(tableau::Tableau)::Vector{LPRay}
-    ray_collection = Vector{LPRay}(undef, 0)
+function get_non_basic_rays(tableau::Tableau)::Vector{Ray}
+    ray_collection = Vector{Ray}(undef, 0)
 
     for i = 1:get_nvars(tableau)
         var = get_var_from_column(tableau, i)
@@ -48,7 +45,7 @@ end
 """
 Construct non basic ray from the ith column
 """
-function construct_non_basic_ray(tableau::Tableau, var::Variable)::LPRay
+function construct_non_basic_ray(tableau::Tableau, var::Variable)::Ray
     direction = 1.0
 
     if is_at_upper_bound(var)
