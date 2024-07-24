@@ -13,7 +13,7 @@ rm("./VPolyCut/Manifest.toml", force=true)
 rm("./ExperimentScript/Manifest.toml", force=true)
 
 # Setup for VPolyCut
-cd("./VPolyCut")
+cd("./vpolycut")
 Pkg.activate(".")
 ENV["SCIPOPTDIR"] = scip_dir
 Pkg.develop(path=scip_jl)
@@ -33,7 +33,7 @@ cd("..")
 cd("./ExperimentScript")
 Pkg.activate(".")
 ENV["SCIPOPTDIR"] = scip_dir
-Pkg.develop(path="../VPolyCut")
+Pkg.develop(path="../vpolycut")
 Pkg.develop(path=scip_jl)
 Pkg.build()
 try
