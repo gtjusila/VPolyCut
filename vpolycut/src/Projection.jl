@@ -5,7 +5,10 @@ using SCIP
     map_projected_to_original::Vector{Int} = []
 end
 
-function create_projection_to_nonbasic_space(tableau::Tableau)::Projection
+"""
+The nonbasic projection is the projection into the subspace spanned by the nonbasic variables
+"""
+function create_nonbasic_projection(tableau::Tableau)::Projection
     original_dimension = get_nvars(tableau)
     projected_to_original = []
 
@@ -21,6 +24,15 @@ function create_projection_to_nonbasic_space(tableau::Tableau)::Projection
     return Projection(original_dimension, j - 1, projected_to_original)
 end
 
+"""
+The trivial projeciton is the projection into the subspace spanned by the original variables
+"""
+function create_trivial_projection(tableau::Tableau)::Projection
+    original_dimension = get_nvars(tableau)
+    projected_dimension = get_noriginalcols(tableau)
+    map_projected_to_original = collect(1:projected_dimension)
+    return Projection(original_dimension, projected_dimension, map_projected_to_original)
+end
 function project_point(projection::Projection, point::Point)
     return point[projection.map_projected_to_original]
 end
