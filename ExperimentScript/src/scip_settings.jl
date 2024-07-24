@@ -4,7 +4,9 @@
 #
 import SCIP
 
-function setscipsettings(setter::Function, easy::Bool)
+function set_scip_parameters(scip::SCIP.SCIPData, easy::Bool)
+    setter = (par, val) -> SCIP.set_parameter(scip, par, val)
+
     # Turn off heuristics
     setter("heuristics/padm/freq", -1)
     setter("heuristics/ofins/freq", -1)
@@ -109,13 +111,4 @@ function setscipsettings(setter::Function, easy::Bool)
         setter("propagating/maxroundsroot", 0)
         setter("presolving/maxrounds", 0)
     end
-end
-
-function includegomorysepa(setter::Function)
-    setter("separating/gmi/freq", 0)
-    setter("separating/gmi/priority", 9999)
-    setter("separating/gmi/maxsuppabs", 5000)
-    setter("separating/gmi/dynamiccuts", false)
-    setter("separating/gmi/maxsupprel", 1.0)
-    setter("separating/gmi/forcecuts", true)
 end

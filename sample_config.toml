@@ -1,0 +1,4 @@
+# Sample configuration for SCIP setup
+
+scip_jl = "/Users/gtjusila/Documents/Project/scipsuite/SCIP.jl"
+scip_dir = "/Users/gtjusila/Documents/Project/scipsuite/scip/build"

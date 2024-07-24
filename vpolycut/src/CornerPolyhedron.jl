@@ -1,97 +1,88 @@
-# 
-# This file contains the code to retrieve the corner polyhedron from the current SCIP Pointer 
-# along with the helper function to get Tableau Information
-#
 import SCIP
-include("utils.jl")
+
+struct CornerPolyhedron
+    lp_sol::Point
+    lp_rays::Vector{Ray}
+end
 
 """
-Returns the pair (lp_sol, lp_rays) where lp_sol is the current solution and lp_rays is a vector
-containing lp_rays each is of the form Vector{SCIP.SCIP_Real}
+Create a Corner Polyhedron in the dimension of the problem in the SCIP Standard Form
 """
-function get_corner_polyhedron(scip::SCIP.SCIPData; epsilon::SCIP.SCIP_Real = 10*SCIP.SCIPepsilon(scip))
-    """
-    Get Corner Polyhedron Information From LP Solver from the given scip pointer
-    """
-    @assert SCIP.SCIPgetLPSolstat(scip) == SCIP.SCIP_LPSOLSTAT_OPTIMAL
-    
-    # Get Information from SCIP
-    lp_cols = get_lp_columns(scip)
-    col_num = length(lp_cols)
-    lp_rows = get_lp_row_information(scip) 
-    basis_indices = get_lp_basis_information(scip)
-
+function construct_corner_polyhedron(tableau::Tableau)::CornerPolyhedron
     # Initiate a vector to collect corner polyhedron ray
-    ray_collection = Vector{Vector{SCIP.SCIP_Real}}(undef,0) 
-    
-    # Get Tableau
-    tableau = get_dense_tableau_rows(scip) 
-    
-    #=
-    Generate Rays from non basic variable
-    If variable is non basic i.e. the upper or lower bound is attained then one can push the variable against the bound
-    =#
-    for (j, col) in enumerate(lp_cols) 
-        # SCIP Basic Vartiables
-        if (SCIP.SCIPcolGetBasisStatus(col) == SCIP.SCIP_BASESTAT_UPPER)
-            factor_ = 1.0; 
-        elseif (SCIP.SCIPcolGetBasisStatus(col) == SCIP.SCIP_BASESTAT_LOWER)
-            factor_ = -1.0;
-        elseif (SCIP.SCIPcolGetBasisStatus(col) == SCIP.SCIP_BASESTAT_ZERO)
-            #Safekeeping: Should Never Happen unless polyhedron is not pointed
-            throw("SCIP_BASESTAT_ZERO encountered") 
-        elseif (SCIP.SCIPcolGetBasisStatus(col) == SCIP.SCIP_BASESTAT_BASIC)
-            # variable is in the basis 
-            continue
-        else
-            throw("SCIP_BASESTAT Status Undefined")
-        end
+    rays = get_non_basic_rays(tableau)
+    sol = get_solution_vector(tableau)
 
-        # Construct ray r_j
-        ray_ = zeros(col_num)
-        ray_[j] = -factor_
-        for (k, index) in enumerate(basis_indices)
-            if index >= 0 
-                ray_[index+1] =  factor_*tableau[k][j]
-            end
-        end
-        
-        push!(ray_collection, ray_)
+    return CornerPolyhedron(sol, rays)
+end
+
+function get_solution_vector(tableau::Tableau)::Point
+    dim = get_nvars(tableau)
+    solution = zeros(dim)
+
+    for i = 1:dim
+        var = get_var_from_column(tableau, i)
+        solution[i] = get_sol(var)
     end
 
-    # Generate Rays from slack variable
-    for (i, row) in enumerate(lp_rows) 
-        #Go through each row
-        if( SCIP.LibSCIP.SCIProwGetBasisStatus(row) == SCIP.SCIP_BASESTAT_LOWER)
-            factor_ = 1.0
-        elseif (SCIP.LibSCIP.SCIProwGetBasisStatus(row) == SCIP.SCIP_BASESTAT_UPPER)
-            factor_ = - 1.0
-        elseif (SCIP.LibSCIP.SCIProwGetBasisStatus(row) ==  SCIP.SCIP_BASESTAT_ZERO)
-            # Same as above
-            throw("SCIP_BASESTAT_ZERO encountered")
-        elseif (SCIP.LibSCIP.SCIProwGetBasisStatus(row) == SCIP.SCIP_BASESTAT_BASIC)
-            # Row is basic
-            continue
-        else
-            throw("SCIP_BASESTAT Status Undefined")
-        end
+    return solution
+end
 
-        # Construct ray r_j
-        ray_ = zeros(col_num)
-        ray_non_zero = false
-        for (j, index) in enumerate(basis_indices)
-            if (index >= 0) && abs(tableau[j][col_num+i]) >= epsilon 
-                ray_[index+1] =  factor_*tableau[j][col_num+i]
-                ray_non_zero =  true
-            end
-        end
+function get_non_basic_rays(tableau::Tableau)::Vector{Ray}
+    ray_collection = Vector{Ray}(undef, 0)
 
-        if ray_non_zero
-            push!(ray_collection, ray_)
+    for i = 1:get_nvars(tableau)
+        var = get_var_from_column(tableau, i)
+        if !is_basic(var)
+            ray = construct_non_basic_ray(tableau, var)
+            push!(ray_collection, ray)
         end
     end
 
-    current_solution = get_lp_solution_vector(scip) 
+    return ray_collection
+end
 
-    return current_solution,ray_collection
+"""
+Construct non basic ray from the ith column
+"""
+function construct_non_basic_ray(tableau::Tableau, var::Variable)::Ray
+    direction = 1.0
+
+    if is_at_upper_bound(var)
+        direction = -1.0
+    elseif is_at_lower_bound(var)
+        direction = 1.0
+    else
+        #Safekeeping: Should Never Happen unless polyhedron is not pointed
+        error("Invalid basis status encountered: $(get_basis_status(var))")
+    end
+
+    # SCIP assumes that the constraint matrix is in the form [A I] where I
+    # are columns corresponding to the slack variables. Hence, if the 
+    # nonbasic column is a slack variable, then the direction is reversed
+    col_idx = get_column_from_var(tableau, var)
+    if col_idx > get_noriginalcols(tableau)
+        direction = -direction
+    end
+
+    # Construct ray r
+    dim = get_nvars(tableau)
+    ray = zeros(dim)
+
+    ray[col_idx] = direction
+
+    #
+    # Suppose the tableau is 
+    # 1x1 + 1x2 + 1s = 0
+    # where x1 is basic, x2 is at its lower bound and s is at
+    # its upper bound. Then the ray corresponding to 
+    # x2 is [-1 1 0] and the ray corresponding to s is [1 0 -1]
+    for row_idx = 1:get_nbasis(tableau)
+        basic_var = get_var_from_row(tableau, row_idx)
+        basic_col = get_column_from_var(tableau, basic_var)
+        value = -direction * tableau[row_idx, col_idx]
+        ray[basic_col] = value
+    end
+
+    return ray
 end
