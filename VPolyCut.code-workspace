@@ -1,15 +1,10 @@
 {
 	"folders": [
 		{
-			"name": "VPolyCut",
-			"path": "VPolyCut"
+			"path": "./VPolyCut"
 		},
 		{
-			"name": "ExperimentScript",
-			"path": "ExperimentScript"
-		},
-		{
-			"path": "../scipsuite/scip"
+			"path": "./ExperimentScript"
 		}
 	],
 	"settings": {}
