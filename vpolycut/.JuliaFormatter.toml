@@ -1,0 +1,4 @@
+style = "blue"
+always_use_return = false
+trailing_comma = false
+join_lines_based_on_source = true

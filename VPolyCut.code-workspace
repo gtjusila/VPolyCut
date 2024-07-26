@@ -1,7 +1,10 @@
 {
 	"folders": [
 		{
-			"path": "vpolycut"
+			"path": "./VPolyCut"
+		},
+		{
+			"path": "./ExperimentScript"
 		}
 	],
 	"settings": {}
