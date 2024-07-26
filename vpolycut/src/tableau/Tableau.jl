@@ -67,14 +67,14 @@ function get_constraint_matrix(tableau::Tableau)::Union{Nothing,ConstraintMatrix
 end
 
 function get_nvars(tableau::Tableau)::Int
-    return size(tableau.tableau_matrix)[2]
+    return size(tableau)[2]
 end
 
 """
 get number of variables in the basis
 """
 function get_nbasis(tableau::Tableau)::Int
-    return size(tableau.tableau_matrix)[1]
+    return size(tableau)[1]
 end
 
 """
@@ -89,10 +89,6 @@ get number of variables in the original problem
 """
 function get_noriginalcols(tableau::Tableau)::Int
     return tableau.noriginalcols
-end
-
-function get_all_variables(tableau::Tableau)::Variable
-    return collect(values(tableau.mapcol2var))
 end
 
 function get_var_from_column(tableau::Tableau, col_index::Int)::Variable
@@ -126,7 +122,9 @@ function set_constraint_matrix!(tableau::Tableau, matrix::ConstraintMatrix)
 end
 
 function get_branching_indices(scip::SCIP.SCIPData, tableau::Tableau)::Vector{Int}
-    return filter(x -> is_branchable(scip, get_var_from_column(tableau, x)), 1:get_nvars(tableau))
+    return filter(
+        x -> is_branchable(scip, get_var_from_column(tableau, x)), 1:get_nvars(tableau)
+    )
 end
 
 function is_branchable(scip::SCIP.SCIPData, var::Variable)::Bool
@@ -148,7 +146,9 @@ function is_branchable(scip::SCIP.SCIPData, var::Variable)::Bool
     return true
 end
 
-function convert_standard_inequality_to_general(scip::SCIP.SCIPData, tableau::Tableau, standard_row::Vector{SCIP.SCIP_Real}, b)
+function convert_standard_inequality_to_general(
+    scip::SCIP.SCIPData, tableau::Tableau, standard_row::Vector{SCIP.SCIP_Real}, b
+)
     if !has_constraint_matrix_information(tableau)
         error("Tableau does not have constraint matrix information")
     end
@@ -158,7 +158,7 @@ function convert_standard_inequality_to_general(scip::SCIP.SCIPData, tableau::Ta
     general_row = zeros(get_noriginalcols(tableau))
     constraint_matrix = get_constraint_matrix(tableau)
 
-    for i = 1:nvars
+    for i in 1:nvars
         if SCIP.SCIPisZero(scip, standard_row[i]) == 1
             continue
         end
@@ -167,8 +167,9 @@ function convert_standard_inequality_to_general(scip::SCIP.SCIPData, tableau::Ta
             general_row[i] = standard_row[i]
         else
             row_index = i - noriginalcols
-            for j = 1:noriginalcols
-                general_row[j] -= standard_row[i] * get_entry(constraint_matrix, row_index, j)
+            for j in 1:noriginalcols
+                general_row[j] -=
+                    standard_row[i] * get_entry(constraint_matrix, row_index, j)
             end
             b += standard_row[i] * get_constant(constraint_matrix, row_index)
         end

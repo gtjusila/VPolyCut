@@ -15,6 +15,7 @@ function is_at_lower_bound(var::Variable)::Bool
     return get_basis_status(var) == SCIP.SCIP_BASESTAT_LOWER
 end
 
+#COV_EXCL_START
 function is_zero(var::Variable)::Bool
     return get_basis_status(var) == SCIP.SCIP_BASESTAT_ZERO
 end
@@ -67,4 +68,4 @@ end
 function set_sol!(var::Variable, sol::SCIP.SCIP_Real)
     error("set_sol! not implemented for type ", typeof(var))
 end
-
+#COV_EXCL_STOP

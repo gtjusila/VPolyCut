@@ -7,3 +7,5 @@ experiment_analysis
 config.toml
 vpolycut/Manifest.toml
 ExperimentScript/Manifest.toml
+
+vpolycut/lcov.info

@@ -1,4 +1,4 @@
-import SCIP
+using SCIP
 using JuMP
 using LinearAlgebra
 import MathOptInterface as MOI
@@ -62,11 +62,11 @@ function solve_separating_lp(lp_solution, intersection_points, pararrel_rays)
 
     for point in intersection_points
         new_point = point - lp_solution
-        @constraint(separating_lp, sum(x[i] * new_point[i] for i = 1:dim) == 1)
+        @constraint(separating_lp, sum(x[i] * new_point[i] for i in 1:dim) == 1)
     end
 
     for ray in pararrel_rays
-        @constraint(separating_lp, sum(x[i] * ray[i] for i = 1:dim) == 0)
+        @constraint(separating_lp, sum(x[i] * ray[i] for i in 1:dim) == 0)
     end
 
     @constraint(separating_lp, x <= z)
@@ -97,19 +97,24 @@ function find_cut_from_split(
     lp_rays = corner_polyhedron.lp_rays
 
     # STEP 1: Compute intersection points 
-    intersection_points, parallel_ray =
-        compute_intersection_points(scip, split_index, lp_sol, lp_rays)
+    intersection_points, parallel_ray = compute_intersection_points(
+        scip, split_index, lp_sol, lp_rays
+    )
 
     # Create a projection object 
     projection = create_projection_to_nonbasic_space(tableau)
 
     # STEP 2: Project the intersection points and rays to the non-basic space
     projected_lp_sol = project_point(projection, lp_sol)
-    projected_intersection_points = [project_point(projection, point) for point in intersection_points]
+    projected_intersection_points = [
+        project_point(projection, point) for point in intersection_points
+    ]
     projected_parallel_ray = [project_point(projection, ray) for ray in parallel_ray]
 
     # Step 3: Solve the seperating LP
-    separating_sol = solve_separating_lp(projected_lp_sol, projected_intersection_points, projected_parallel_ray)
+    separating_sol = solve_separating_lp(
+        projected_lp_sol, projected_intersection_points, projected_parallel_ray
+    )
     if isnothing(separating_sol)
         return false
     end
@@ -119,7 +124,9 @@ function find_cut_from_split(
     full_seperating_sol = undo_projection(projection, separating_sol)
 
     # Step 5: Convert the seperating solution to a cut in general form
-    cut_vector, b = convert_standard_inequality_to_general(scip, tableau, full_seperating_sol, b)
+    cut_vector, b = convert_standard_inequality_to_general(
+        scip, tableau, full_seperating_sol, b
+    )
 
     # Step 6: Add the cut to the SCIP
     row = Ref{Ptr{SCIP.SCIP_ROW}}(C_NULL)
@@ -146,7 +153,6 @@ function find_cut_from_split(
     #SCIP.@SCIP_CALL SCIP.SCIPprintRow(scip, row[], C_NULL)
     SCIP.@SCIP_CALL SCIP.SCIPaddRow(scip, row[], true, infeasible)
     SCIP.@SCIP_CALL SCIP.SCIPreleaseRow(scip, row)
-
     return true
 end
 
@@ -187,6 +193,6 @@ function SCIP.exec_lp(sepa::IntersectionSeparator)
 end
 
 function include_intersection_sepa(scip::SCIP.SCIPData)
-    sepa = IntersectionSeparator(scipd=scip)
+    sepa = IntersectionSeparator(; scipd=scip)
     SCIP.include_sepa(scip.scip[], scip.sepas, sepa; freq=0, usessubscip=true)
 end

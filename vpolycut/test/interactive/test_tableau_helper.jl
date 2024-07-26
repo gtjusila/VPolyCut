@@ -1,4 +1,4 @@
-import VPolyCut
+using VPolyCut
 using Printf
 
 @kwdef mutable struct LPTableau <: SCIP.AbstractSeparator
@@ -6,11 +6,9 @@ using Printf
 end
 
 function SCIP.exec_lp(sepa::LPTableau)
-
     tableau = VPolyCut.construct_tableau(scip)
 
     print_lp_tableau(tableau)
-
 end
 
 function print_matrix(matrix)
@@ -30,7 +28,7 @@ function print_lp_tableau(lp_tableau::VPolyCut.Tableau)
     println("Columns:")
     println("================")
 
-    for i = 1:size(lp_tableau)[2]
+    for i in 1:size(lp_tableau)[2]
         col = VPolyCut.get_var_from_column(lp_tableau, i)
         if isa(col, VPolyCut.LPColumn)
             println("Basis Status: ", VPolyCut.get_basis_status(col))
@@ -49,7 +47,7 @@ function print_lp_tableau(lp_tableau::VPolyCut.Tableau)
     println("Rows")
     println("================")
 
-    for i = 1:VPolyCut.get_nbasis(lp_tableau)
+    for i in 1:VPolyCut.get_nbasis(lp_tableau)
         row = VPolyCut.get_var_from_row(lp_tableau, i)
         if isa(row, VPolyCut.LPRow)
             println("Basis Status: ", VPolyCut.get_basis_status(row))
