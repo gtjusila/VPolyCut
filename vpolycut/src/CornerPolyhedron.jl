@@ -1,4 +1,4 @@
-import SCIP
+using SCIP
 
 struct CornerPolyhedron
     lp_sol::Point
@@ -20,7 +20,7 @@ function get_solution_vector(tableau::Tableau)::Point
     dim = get_nvars(tableau)
     solution = zeros(dim)
 
-    for i = 1:dim
+    for i in 1:dim
         var = get_var_from_column(tableau, i)
         solution[i] = get_sol(var)
     end
@@ -31,7 +31,7 @@ end
 function get_non_basic_rays(tableau::Tableau)::Vector{Ray}
     ray_collection = Vector{Ray}(undef, 0)
 
-    for i = 1:get_nvars(tableau)
+    for i in 1:get_nvars(tableau)
         var = get_var_from_column(tableau, i)
         if !is_basic(var)
             ray = construct_non_basic_ray(tableau, var)
@@ -77,7 +77,7 @@ function construct_non_basic_ray(tableau::Tableau, var::Variable)::Ray
     # where x1 is basic, x2 is at its lower bound and s is at
     # its upper bound. Then the ray corresponding to 
     # x2 is [-1 1 0] and the ray corresponding to s is [1 0 -1]
-    for row_idx = 1:get_nbasis(tableau)
+    for row_idx in 1:get_nbasis(tableau)
         basic_var = get_var_from_row(tableau, row_idx)
         basic_col = get_column_from_var(tableau, basic_var)
         value = -direction * tableau[row_idx, col_idx]

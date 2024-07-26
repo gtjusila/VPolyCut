@@ -67,4 +67,3 @@ end
 function set_sol!(var::Variable, sol::SCIP.SCIP_Real)
     error("set_sol! not implemented for type ", typeof(var))
 end
-

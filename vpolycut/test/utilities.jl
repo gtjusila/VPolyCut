@@ -1,14 +1,16 @@
-import JuMP
-import SCIP
+using JuMP
+using SCIP
 import MathOptInterface as MOI
-import VPolyCut
+using VPolyCut
 
 function setup_jump_model()
     model = setup_nocache_jump_model()
     return model
 end
 
-function include_separator(scip::SCIP.SCIPData, seperator::Type{T}; kwargs...) where {T<:SCIP.AbstractSeparator}
+function include_separator(
+    scip::SCIP.SCIPData, seperator::Type{T}; kwargs...
+) where {T<:SCIP.AbstractSeparator}
     sepa = seperator(; kwargs...)
     SCIP.include_sepa(scip.scip[], scip.sepas, sepa; freq=0, usessubscip=true)
     return sepa

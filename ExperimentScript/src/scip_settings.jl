@@ -2,7 +2,7 @@
 # setscipparam.jl
 # Code to set scip parameter and turn on separators
 #
-import SCIP
+using SCIP
 
 function set_scip_parameters(scip::SCIP.SCIPData, easy::Bool)
     setter = (par, val) -> SCIP.set_parameter(scip, par, val)

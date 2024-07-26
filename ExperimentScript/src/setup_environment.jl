@@ -1,6 +1,6 @@
-import SCIP
-import Printf
-import Dates
+using SCIP
+using Printf
+using Dates
 
 mutable struct ExperimentStore
     scip::SCIP.SCIPData
@@ -31,7 +31,6 @@ function setup_scip_object(execution_parameters::ExecutionParameters)::SCIP.SCIP
     set_scip_parameters(scip, execution_parameters.easy)
     return scip
 end
-
 
 function setup_experiment_directory(execution_parameters::ExecutionParameters)::String
     result_path = joinpath(pwd(), "results")

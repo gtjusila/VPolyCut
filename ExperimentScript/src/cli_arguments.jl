@@ -1,6 +1,6 @@
-import SCIP
-import VPolyCut
-import ArgParse
+using SCIP
+using VPolyCut
+using ArgParse
 
 struct ExecutionParameters
     instance::String
@@ -38,7 +38,9 @@ function read_cli_arguments(commandline_arguments::Dict)::ExecutionParameters
     return ExecutionParameters(instance, mode_text, separator, easy)
 end
 
-function get_separator_type_from_string(separator_type::String)::Type{<:SCIP.AbstractSeparator}
+function get_separator_type_from_string(
+    separator_type::String
+)::Type{<:SCIP.AbstractSeparator}
     separator_type = remove_whitespaces(separator_type)
     if separator_type == "gomory"
         return GomorySeparator

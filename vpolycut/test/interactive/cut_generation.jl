@@ -1,5 +1,5 @@
 @testitem "Simplex" begin
-    import JuMP
+    using JuMP
     include("../utilities.jl")
     model = setup_jump_model()
     scip = get_scipdata_from_model(model)

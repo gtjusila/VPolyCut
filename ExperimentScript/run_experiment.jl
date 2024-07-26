@@ -1,3 +1,3 @@
-import ExperimentScript
+using ExperimentScript
 
 ExperimentScript.run_experiment();

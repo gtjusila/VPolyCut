@@ -1,6 +1,6 @@
 @testitem "Tableau_Simplex" begin
-    import JuMP
-    import SCIP
+    using JuMP
+    using SCIP
     include("../utilities.jl")
     include("test_tableau_helper.jl")
 
@@ -20,7 +20,7 @@ end
 
 @testitem "Tableau_TestCase_1" begin
     using JuMP
-    import SCIP
+    using SCIP
     include("../utilities.jl")
     include("test_tableau_helper.jl")
 
@@ -39,7 +39,6 @@ end
     @constraint(model, 2x1 + x2 + x3 + x4 <= 7)
     @constraint(model, x1 + 3x2 + 2x3 + 3x4 <= 12)
     @constraint(model, 2x1 + 2x2 + 3x3 + x4 <= 10)
-
 
     JuMP.@objective(model, Max, 2 * x1 + 3 * x2 + 4 * x3 + x4)
 
@@ -81,7 +80,7 @@ end
 
 @testitem "Tableau_Test2" begin
     using JuMP
-    import SCIP
+    using SCIP
     include("../utilities.jl")
     include("test_tableau_helper.jl")
 
@@ -90,7 +89,6 @@ end
     include_separator(scip, LPTableau; scipd=scip)
     set_scip_parameters_easy(model)
     JuMP.set_attribute(model, "display/verblevel", 0)
-
 
     JuMP.@variable(model, x1 >= 0, Int)
     JuMP.@variable(model, x2 >= 0, Int)
@@ -109,7 +107,7 @@ end
 
 @testitem "Tableau_Test3" begin
     using JuMP
-    import SCIP
+    using SCIP
     include("../utilities.jl")
     include("test_tableau_helper.jl")
 
