@@ -67,14 +67,14 @@ function get_constraint_matrix(tableau::Tableau)::Union{Nothing,ConstraintMatrix
 end
 
 function get_nvars(tableau::Tableau)::Int
-    return size(tableau.tableau_matrix)[2]
+    return size(tableau)[2]
 end
 
 """
 get number of variables in the basis
 """
 function get_nbasis(tableau::Tableau)::Int
-    return size(tableau.tableau_matrix)[1]
+    return size(tableau)[1]
 end
 
 """
@@ -89,10 +89,6 @@ get number of variables in the original problem
 """
 function get_noriginalcols(tableau::Tableau)::Int
     return tableau.noriginalcols
-end
-
-function get_all_variables(tableau::Tableau)::Variable
-    return collect(values(tableau.mapcol2var))
 end
 
 function get_var_from_column(tableau::Tableau, col_index::Int)::Variable

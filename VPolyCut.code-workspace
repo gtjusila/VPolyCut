@@ -5,7 +5,12 @@
 		},
 		{
 			"path": "./ExperimentScript"
+		},
+		{
+			"path": "SCIPExperimentUtils"
 		}
 	],
-	"settings": {}
+	"settings": {
+		"julia.environmentPath": "/Users/gtjusila/Documents/Project/VPolyCut/VPolyCut"
+	}
 }

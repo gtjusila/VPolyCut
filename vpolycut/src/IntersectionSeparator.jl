@@ -153,7 +153,6 @@ function find_cut_from_split(
     #SCIP.@SCIP_CALL SCIP.SCIPprintRow(scip, row[], C_NULL)
     SCIP.@SCIP_CALL SCIP.SCIPaddRow(scip, row[], true, infeasible)
     SCIP.@SCIP_CALL SCIP.SCIPreleaseRow(scip, row)
-
     return true
 end
 
