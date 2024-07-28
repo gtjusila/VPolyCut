@@ -4,9 +4,9 @@
 #
 using SCIP
 using JuMP
-"""
-Get A Setter Function To Set SCIP Parameters
-"""
+
+export set_heuristics_emphasis_off, set_separators_emphasis_off, set_cut_selection_off, set_presolving_emphasis_off, set_root_node_propagation_off, set_everything_off, set_mode_cutting_plane_experiment
+
 function get_parameter_setter_function(model::JuMP.AbstractModel)
     return (par, val) -> JuMP.set_attribute(model, par, val)
 end
@@ -95,7 +95,7 @@ function set_separators_emphasis_off(model::JuMP.AbstractModel)
     setter("constraints/indicator/sepafreq", -1)
 end
 
-function disable_cut_selection(model::JuMP.AbstractModel)
+function set_cut_selection_off(model::JuMP.AbstractModel)
     setter = get_parameter_setter_function(model)
 
     # Allow cut with zero efficacy
@@ -117,14 +117,24 @@ function set_root_node_propagation_off(model::JuMP.AbstractModel)
     setter("propagating/maxroundsroot", 0)
 end
 
-function set_mode_cutting_plane_experiment(model::JuMP.AbstractModel)
+function set_strong_branching_lookahead_off(model::JuMP.AbstractModel)
+    setter = get_parameter_setter_function(model)
+    setter("branching/relpscost/initcand", 0)
+end
+function set_everything_off(model::JuMP.AbstractModel)
     set_heuristics_emphasis_off(model)
     set_separators_emphasis_off(model)
-    disable_cut_selection(model)
+    set_cut_selection_off(model)
     set_presolving_emphasis_off(model)
     set_root_node_propagation_off(model)
+    set_strong_branching_lookahead_off(model)
+end
+
+function set_mode_cutting_plane_experiment(model::JuMP.AbstractModel)
+    set_everything_off(model)
 
     setter = get_parameter_setter_function(model)
+
     # Set time limit
     setter("limits/time", 3600)
 
@@ -134,5 +144,4 @@ function set_mode_cutting_plane_experiment(model::JuMP.AbstractModel)
     # Other settings
     setter("display/verblevel", 5)
     setter("limits/nodes", 1)
-    setter("branching/relpscost/initcand", 0)
 end

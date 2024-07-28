@@ -12,3 +12,7 @@ end
 @testset "intersectioncut" begin
     include("./intersectioncut.jl")
 end
+
+@testset "branchandbound" begin
+    include("./branchandbound.jl")
+end
