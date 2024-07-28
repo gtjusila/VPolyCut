@@ -5,7 +5,7 @@
 using SCIP
 
 """
-LPTableau
+Tableau
 
 Suppose we have a linear program in SCIP general form
 

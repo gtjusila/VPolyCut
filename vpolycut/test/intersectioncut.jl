@@ -14,10 +14,9 @@ using SCIPExperimentUtils
     @constraint(model, c1, x + y <= 1.5)
     @objective(model, Min, -x)
 
+    # Include Intersection Separator
     scip = get_scip_data_from_model(model)
     VPolyCut.include_intersection_sepa(scip)
-
-    # Makesure the original LP Solution is cut off 
 
     # Originally solution should be feasible
     vars = SCIP.SCIPgetVars(scip)
@@ -29,7 +28,6 @@ using SCIPExperimentUtils
     SCIP.@SCIP_CALL SCIP.SCIPsetSolVal(scip, sol[], vars[2], 0.0)
     feasible = Ref{SCIP.SCIP_Bool}(0)
 
-    # [1.5 1] should be LP feasible here
     SCIP.@SCIP_CALL SCIP.SCIPcheckSol(
         scip, sol[], 0, 1, 1, 0, 1, feasible
     )
@@ -47,7 +45,6 @@ using SCIPExperimentUtils
         scip = data["scip"]
 
         # Catch when root node is branched or solved 
-        # [1.5 1] should be LP infeasible here
         feasible = Ref{SCIP.SCIP_Bool}(0)
         sol = Ref{Ptr{SCIP.SCIP_SOL}}(C_NULL)
         SCIP.@SCIP_CALL SCIP.SCIPcreateSol(scip, sol, C_NULL)
@@ -96,8 +93,6 @@ end
     SCIP.@SCIP_CALL SCIP.SCIPsetSolVal(scip, sol[], vars[1], 1.58)
     SCIP.@SCIP_CALL SCIP.SCIPsetSolVal(scip, sol[], vars[2], 1.58)
     feasible = Ref{SCIP.SCIP_Bool}(0)
-
-    # [1.5 1] should be LP feasible here
     SCIP.@SCIP_CALL SCIP.SCIPcheckSol(
         scip, sol[], 0, 1, 1, 0, 1, feasible
     )
@@ -165,7 +160,6 @@ end
     SCIP.@SCIP_CALL SCIP.SCIPsetSolVal(scip, sol[], vars[1], 0.55)
     SCIP.@SCIP_CALL SCIP.SCIPsetSolVal(scip, sol[], vars[2], 2.45)
     feasible = Ref{SCIP.SCIP_Bool}(0)
-
     # [1.5 1] should be LP feasible here
     SCIP.@SCIP_CALL SCIP.SCIPcheckSol(
         scip, sol[], 1, 1, 1, 0, 1, feasible
