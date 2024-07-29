@@ -11,8 +11,6 @@ function execute_branchandbound(branchandbound::BranchAndBound)::Bool
     # Create root node and put it in node_list
     root = Node(nothing, nothing, 0)
     node_queue_enqueue!(branchandbound, root, 0.0)
-    # Initial dual bound at root is the solution of LP
-    set_dual_bound(root, SCIP.SCIPgetLPObjval(scip))
 
     # Setup loop
     current_node = nothing
@@ -20,15 +18,6 @@ function execute_branchandbound(branchandbound::BranchAndBound)::Bool
 
     # Main Branch and Bound Loop
     while !node_queue_empty(branchandbound)
-        if iteration_count > 10000
-            return false
-        end
-        if iteration_count % 100 == 0
-            println(
-                "Iteration $(iteration_count) with best solution $(get_primal_bound(branchandbound))"
-            )
-        end
-
         # Increment iteration count
         iteration_count += 1
 
@@ -37,8 +26,7 @@ function execute_branchandbound(branchandbound::BranchAndBound)::Bool
         current_node = switch_node!(scip, current_node, next_node)
         prunable = propagate!(scip)
         if prunable
-            @info "Pruning node line 35"
-            prune!(current_node)
+            deactivate!(current_node)
             continue
         end
 
@@ -46,16 +34,14 @@ function execute_branchandbound(branchandbound::BranchAndBound)::Bool
         # Compute dual bound
         lp_feasible = solve_lp_relaxation(scip)
         if !lp_feasible
-            @info "pruning node line 44"
-            prune!(current_node)
+            deactivate!(current_node)
             continue
         end
 
         # If LP Objective is greater than lower bound then prune
         lp_objective = SCIP.SCIPgetLPObjval(scip)
         if SCIP.SCIPisGE(scip, lp_objective, get_primal_bound(branchandbound)) == 1
-            #@info "Phatoming node line 52"
-            prune!(current_node)
+            deactivate!(current_node)
             continue
         end
 
@@ -77,26 +63,19 @@ function execute_branchandbound(branchandbound::BranchAndBound)::Bool
         var = get_branching_variable(scip)
         value = SCIP.SCIPvarGetLPSol(var)
 
+        prio = SCIP.SCIPcalcNodeselPriority(
+            scip, var, SCIP.SCIP_BRANCHDIR_DOWNWARDS, floor(value)
+        )
         left_action = Action(var, DOWN, floor(value))
-        left_prio = get_dual_bound(scip, left_action)
-        if SCIP.SCIPisInfinity(scip, left_prio) == 0
-            left_node = Node(left_action, current_node, get_depth(current_node) + 1)
-            node_queue_enqueue!(branchandbound, left_node, left_prio)
-            set_left(current_node, left_node)
-        end
+        left_node = Node(current_node, left_action, get_depth(current_node) + 1)
+        node_queue_enqueue!(branchandbound, left_node, prio)
 
-        #=
         prio = SCIP.SCIPcalcNodeselPriority(
             scip, var, SCIP.SCIP_BRANCHDIR_UPWARDS, ceil(value)
         )
-        =#
         right_action = Action(var, UP, ceil(value))
-        right_prio = get_dual_bound(scip, right_action)
-        if SCIP.SCIPisInfinity(scip, right_prio) == 0
-            right_node = Node(right_action, current_node, get_depth(current_node) + 1)
-            node_queue_enqueue!(branchandbound, right_node, right_prio)
-            set_right(current_node, right_node)
-        end
+        right_node = Node(current_node, right_action, get_depth(current_node) + 1)
+        node_queue_enqueue!(branchandbound, right_node, prio)
     end
 
     SCIP.SCIPendProbing(scip)
@@ -154,28 +133,4 @@ function switch_node!(
     end
 
     return new_node
-end
-
-# Temporarily execute action 
-function get_dual_bound(scip::SCIP.SCIPData, action::Action)::SCIP.SCIP_Real
-    depth = SCIP.SCIPgetProbingDepth(scip)
-    SCIP.SCIPnewProbingNode(scip)
-    do_action(scip, action)
-
-    pruneable = propagate!(scip)
-    if pruneable
-        @info "Pruning action $(action)"
-        return SCIP.SCIPinfinity(scip)
-    end
-
-    feasible = solve_lp_relaxation(scip)
-    if !feasible
-        @info "Infeasible action $(action)"
-        return SCIP.SCIPinfinity(scip)
-    end
-
-    lpobj = SCIP.SCIPgetLPObjval(scip)
-    SCIP.SCIPbacktrackProbing(scip, depth)
-
-    return lpobj
 end

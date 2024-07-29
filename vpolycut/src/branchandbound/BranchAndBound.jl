@@ -28,10 +28,6 @@ function get_scip(branchandbound::BranchAndBound)::SCIP.SCIPData
     return branchandbound._scip
 end
 
-function set_scip(branchandbound::BranchAndBound, scip::SCIP.SCIPData)
-    branchandbound._scip = scip
-end
-
 function get_primal_bound(branchandbound::BranchAndBound)::SCIP.SCIP_Real
     return branchandbound._primal_bound
 end
@@ -44,20 +40,12 @@ function get_original_cols(branchandbound::BranchAndBound)::Vector{Ptr{SCIP.SCIP
     return branchandbound._original_cols
 end
 
-function set_original_cols(branchandbound::BranchAndBound, cols::Vector{Ptr{SCIP.SCIP_COL}})
-    branchandbound._original_cols = cols
-end
-
 function get_best_solution(branchandbound::BranchAndBound)::Union{Nothing,Point}
     return branchandbound._best_solution
 end
 
 function set_best_solution(branchandbound::BranchAndBound, sol::Union{Nothing,Point})
     branchandbound._best_solution = sol
-end
-
-function get_node_queue(branchandbound::BranchAndBound)::PriorityQueue{Node,SCIP.SCIP_Real}
-    return branchandbound._node_queue
 end
 
 function node_queue_enqueue!(
