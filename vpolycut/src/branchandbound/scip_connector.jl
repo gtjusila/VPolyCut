@@ -76,3 +76,26 @@ function get_branching_variable(scip::SCIP.SCIPData)::Ptr{SCIP.SCIP_VAR}
 
     return var
 end
+
+# Temporarily execute action 
+function get_dual_bound(scip::SCIP.SCIPData, action::Action)::SCIP.SCIP_Real
+    depth = SCIP.SCIPgetProbingDepth(scip)
+    SCIP.SCIPnewProbingNode(scip)
+    do_action(scip, action)
+
+    pruneable = propagate!(scip)
+    if pruneable
+        @info "Pruning action $(action)"
+        return SCIP.SCIPinfinity(scip)
+    end
+
+    feasible = solve_lp_relaxation(scip)
+    if !feasible
+        @info "Infeasible action $(action)"
+        return SCIP.SCIPinfinity(scip)
+    end
+
+    lpobj = SCIP.SCIPgetLPObjval(scip)
+    SCIP.SCIPbacktrackProbing(scip, depth)
+    return lpobj
+end

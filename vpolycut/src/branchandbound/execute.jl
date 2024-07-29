@@ -10,11 +10,11 @@ function execute_branchandbound(branchandbound::BranchAndBound)::Bool
 
     # Create root node and put it in node_list
     root = Node(nothing, nothing, 0)
-    node_queue_enqueue!(branchandbound, root, 0.0)
+    node_queue_push(branchandbound, root)
 
     # Setup loop
     current_node = nothing
-    iteration_count = 1
+    iteration_count = 0
 
     # Main Branch and Bound Loop
     while !node_queue_empty(branchandbound)
@@ -22,7 +22,7 @@ function execute_branchandbound(branchandbound::BranchAndBound)::Bool
         iteration_count += 1
 
         # Step 2: Select next node
-        next_node = node_queue_dequeue!(branchandbound)
+        next_node = node_queue_pop(branchandbound)
         current_node = switch_node!(scip, current_node, next_node)
         prunable = propagate!(scip)
         if prunable
@@ -59,23 +59,12 @@ function execute_branchandbound(branchandbound::BranchAndBound)::Bool
         end
 
         # Step 5: Branch
-        # First Fractional branching
         var = get_branching_variable(scip)
-        value = SCIP.SCIPvarGetLPSol(var)
+        lpsol = SCIP.SCIPvarGetLPSol(var)
 
-        prio = SCIP.SCIPcalcNodeselPriority(
-            scip, var, SCIP.SCIP_BRANCHDIR_DOWNWARDS, floor(value)
-        )
-        left_action = Action(var, DOWN, floor(value))
-        left_node = Node(current_node, left_action, get_depth(current_node) + 1)
-        node_queue_enqueue!(branchandbound, left_node, prio)
-
-        prio = SCIP.SCIPcalcNodeselPriority(
-            scip, var, SCIP.SCIP_BRANCHDIR_UPWARDS, ceil(value)
-        )
-        right_action = Action(var, UP, ceil(value))
-        right_node = Node(current_node, right_action, get_depth(current_node) + 1)
-        node_queue_enqueue!(branchandbound, right_node, prio)
+        # Warning! Some Node Queuing Procedure may alter the SCIP Internal State (e.g. if you use BestFirst) so store LP Solution before hand   
+        branch(branchandbound, var, UP, ceil(lpsol), current_node)
+        branch(branchandbound, var, DOWN, floor(lpsol), current_node)
     end
 
     SCIP.SCIPendProbing(scip)
@@ -133,4 +122,14 @@ function switch_node!(
     end
 
     return new_node
+end
+
+# Branching Codes
+function branch(
+    branchandbound::BranchAndBound, var::Ptr{SCIP.SCIP_VAR}, direction::Direction,
+    bound::SCIP.SCIP_Real, current_node::Node
+)
+    action = Action(var, direction, bound)
+    new_node = Node(current_node, action, get_depth(current_node) + 1)
+    node_queue_push(branchandbound, new_node)
 end

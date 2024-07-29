@@ -8,6 +8,9 @@
 		},
 		{
 			"path": "SCIPExperimentUtils"
+		},
+		{
+			"path": "../VPolyBest/vpolycut/src"
 		}
 	],
 	"settings": {

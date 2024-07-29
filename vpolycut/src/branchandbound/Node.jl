@@ -46,6 +46,18 @@ function do_action(scip::SCIP.SCIPData, action::Action)
     end
 end
 
+function Base.show(io::IO, action::Action)
+    var = get_var(action)
+    direction = get_direction(action)
+    bound = get_bound(action)
+    name = unsafe_string(SCIP.SCIPvarGetName(var))
+    if direction == UP
+        print(io, "$(name) >= $bound")
+    else
+        print(io, "$(name) <= $bound")
+    end
+end
+
 mutable struct Node
     """
     is node active
@@ -95,4 +107,13 @@ end
 
 function get_depth(node::Node)
     return node._depth
+end
+
+function Base.show(io::IO, node::Node)
+    if isroot(node)
+        print(io, "Root")
+    else
+        action = get_action(node)
+        print(io, action)
+    end
 end

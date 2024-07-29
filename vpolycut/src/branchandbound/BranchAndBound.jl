@@ -6,10 +6,16 @@ mutable struct BranchAndBound
     _primal_bound::SCIP.SCIP_Real
     _original_cols::Vector{Ptr{SCIP.SCIP_COL}}
     _best_solution::Union{Nothing,Point}
-    _node_queue::PriorityQueue{Node,SCIP.SCIP_Real}
+    _node_queue::NodeQueue
 end
 
-function BranchAndBound(scip::SCIP.SCIPData)::BranchAndBound
+function BranchAndBound(scip::SCIP.SCIPData)
+    return BranchAndBound(
+        scip,
+        BestFirstQueue(; scip=scip)
+    )
+end
+function BranchAndBound(scip::SCIP.SCIPData, node_queue::NodeQueue)::BranchAndBound
     # Initialize
     n = SCIP.SCIPgetNLPCols(scip)
     original_cols = SCIP.SCIPgetLPCols(scip)
@@ -20,7 +26,7 @@ function BranchAndBound(scip::SCIP.SCIPData)::BranchAndBound
         SCIP.SCIPinfinity(scip),
         original_cols,
         nothing,
-        PriorityQueue()
+        node_queue
     )
 end
 
@@ -48,16 +54,16 @@ function set_best_solution(branchandbound::BranchAndBound, sol::Union{Nothing,Po
     branchandbound._best_solution = sol
 end
 
-function node_queue_enqueue!(
-    branchandbound::BranchAndBound, node::Node, priority::SCIP.SCIP_Real
+function node_queue_push(
+    branchandbound::BranchAndBound, node::Node
 )
-    enqueue!(branchandbound._node_queue, node, priority)
+    node_queue_push!(branchandbound._node_queue, node)
 end
 
-function node_queue_dequeue!(branchandbound::BranchAndBound)::Node
-    return dequeue!(branchandbound._node_queue)
+function node_queue_pop(branchandbound::BranchAndBound)::Node
+    return node_queue_pop!(branchandbound._node_queue)
 end
 
 function node_queue_empty(branchandbound::BranchAndBound)::Bool
-    return isempty(branchandbound._node_queue)
+    return node_queue_empty(branchandbound._node_queue)
 end

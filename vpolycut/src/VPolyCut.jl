@@ -11,6 +11,7 @@ include("tableau/scip_connector.jl")
 
 # Branch and Bound
 include("branchandbound/Node.jl")
+include("branchandbound/NodeQueue.jl")
 include("branchandbound/BranchAndBound.jl")
 include("branchandbound/scip_connector.jl")
 include("branchandbound/execute.jl")
