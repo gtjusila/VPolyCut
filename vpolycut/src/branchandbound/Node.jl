@@ -109,6 +109,25 @@ function get_depth(node::Node)
     return node._depth
 end
 
+function get_path(node::Node)::Vector{Node}
+    path = []
+    current = node
+    while !isroot(current)
+        push!(path, current)
+        current = get_parent(current)
+    end
+    push!(path, current)
+    return collect(reverse(path))
+end
+
+function print_path(node::Node)
+    path = get_path(node)
+    for node in path
+        print(node, ", ")
+    end
+    print("\n")
+end
+
 function Base.show(io::IO, node::Node)
     if isroot(node)
         print(io, "Root")

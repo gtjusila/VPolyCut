@@ -9,6 +9,9 @@ mutable struct ConstraintMatrix
     constants::SparseVector{SCIP.SCIP_Real,Int}
 end
 
+get_entry(matrix::ConstraintMatrix, row::Int, col::Int) = matrix.data[row, col]
+get_constant(matrix::ConstraintMatrix, row::Int) = matrix.constants[row]
+
 function ConstraintMatrix(nrows::Int, ncols::Int)
     return ConstraintMatrix(spzeros(nrows, ncols), spzeros(nrows))
 end
@@ -19,16 +22,4 @@ end
 
 function set_constant!(matrix::ConstraintMatrix, row::Int, value::SCIP.SCIP_Real)
     matrix.constants[row] = value
-end
-
-function get_entry(matrix::ConstraintMatrix, row::Int, col::Int)::SCIP.SCIP_Real
-    return matrix.data[row, col]
-end
-
-function get_constant(matrix::ConstraintMatrix, row::Int)::SCIP.SCIP_Real
-    return matrix.constants[row]
-end
-
-function isacolumn(var::Variable)
-    return isa(var, LPColumn)
 end

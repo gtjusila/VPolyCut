@@ -1,5 +1,5 @@
 module VPolyCut
-include("typedefinitions.jl")
+include("utilities.jl")
 
 # Tableau
 include("tableau/Variable.jl")
@@ -12,6 +12,7 @@ include("tableau/scip_connector.jl")
 # Branch and Bound
 include("branchandbound/Node.jl")
 include("branchandbound/NodeQueue.jl")
+include("branchandbound/BranchingRule.jl")
 include("branchandbound/BranchAndBound.jl")
 include("branchandbound/scip_connector.jl")
 include("branchandbound/execute.jl")

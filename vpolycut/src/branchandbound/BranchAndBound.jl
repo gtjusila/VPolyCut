@@ -1,32 +1,50 @@
 using SCIP
 using DataStructures
 
-mutable struct BranchAndBound
+# Modified Branch And Bound that collect leaves
+@kwdef mutable struct BranchAndBound
     _scip::SCIP.SCIPData
     _primal_bound::SCIP.SCIP_Real
     _original_cols::Vector{Ptr{SCIP.SCIP_COL}}
     _best_solution::Union{Nothing,Point}
     _node_queue::NodeQueue
+    _max_leaves::Int
+    _leaf_nodes::Vector{Node} = Node[]
+    _branching_rule::BranchingRule = PseudoCostBranching()
 end
 
-function BranchAndBound(scip::SCIP.SCIPData)
+function BranchAndBound(
+    scip::SCIP.SCIPData;
+    max_leaves=-1,
+    branching_rule::BranchingRule=PseudoCostBranching()
+)::BranchAndBound
     return BranchAndBound(
         scip,
-        BestFirstQueue(; scip=scip)
+        BestFirstQueue(; scip=scip);
+        max_leaves=max_leaves,
+        branching_rule=branching_rule
     )
 end
-function BranchAndBound(scip::SCIP.SCIPData, node_queue::NodeQueue)::BranchAndBound
+
+function BranchAndBound(
+    scip::SCIP.SCIPData,
+    node_queue::NodeQueue;
+    max_leaves=-1,
+    branching_rule::BranchingRule=PseudoCostBranching()
+)::BranchAndBound
     # Initialize
     n = SCIP.SCIPgetNLPCols(scip)
     original_cols = SCIP.SCIPgetLPCols(scip)
     original_cols = unsafe_wrap(Vector{Ptr{SCIP.SCIP_COL}}, original_cols, n)
 
-    return BranchAndBound(
-        scip,
-        SCIP.SCIPinfinity(scip),
-        original_cols,
-        nothing,
-        node_queue
+    return BranchAndBound(;
+        _scip=scip,
+        _primal_bound=SCIP.SCIPinfinity(scip),
+        _original_cols=original_cols,
+        _best_solution=nothing,
+        _node_queue=node_queue,
+        _max_leaves=max_leaves,
+        _branching_rule=branching_rule
     )
 end
 
@@ -54,16 +72,42 @@ function set_best_solution(branchandbound::BranchAndBound, sol::Union{Nothing,Po
     branchandbound._best_solution = sol
 end
 
-function node_queue_push(
+function node_queue_push!(
     branchandbound::BranchAndBound, node::Node
 )
     node_queue_push!(branchandbound._node_queue, node)
 end
 
-function node_queue_pop(branchandbound::BranchAndBound)::Node
+function node_queue_pop!(branchandbound::BranchAndBound)::Node
     return node_queue_pop!(branchandbound._node_queue)
 end
 
 function node_queue_empty(branchandbound::BranchAndBound)::Bool
     return node_queue_empty(branchandbound._node_queue)
+end
+
+function get_node_queue_length(branchandbound::BranchAndBound)::Int
+    return length(branchandbound._node_queue)
+end
+
+function get_max_leaves(branchandbound::BranchAndBound)::Int
+    return branchandbound._max_leaves
+end
+
+function get_leaf_count(branchandbound::BranchAndBound)::Int
+    return length(branchandbound._leaf_nodes)
+end
+
+function push_leaf!(branchandbound::BranchAndBound, node::Node)
+    push!(branchandbound._leaf_nodes, node)
+end
+
+function get_leaves(branchandbound::BranchAndBound)::Vector{Node}
+    return branchandbound._leaf_nodes
+end
+
+function get_branching_variable(
+    branchandbound::BranchAndBound, scip::SCIP.SCIPData
+)::Ptr{SCIP.SCIP_VAR}
+    return get_branching_variable(branchandbound._branching_rule, scip)
 end

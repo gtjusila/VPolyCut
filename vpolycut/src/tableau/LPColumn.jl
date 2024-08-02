@@ -10,38 +10,14 @@
     variable_pointer::Ptr{SCIP.SCIP_VAR} = C_NULL
 end
 
-function get_lb(col::LPColumn)::SCIP.SCIP_Real
-    return col.lb
-end
-
-function get_ub(col::LPColumn)::SCIP.SCIP_Real
-    return col.ub
-end
-
-# The solution of a problem variable is the primal solution
-function get_sol(col::LPColumn)::SCIP.SCIP_Real
-    return col.sol
-end
-
-function get_basis_status(col::LPColumn)::SCIP.SCIP_BASESTAT
-    return col.basis_status
-end
-
-function get_symbolic_representation(row::LPColumn)::Symbol
-    return :COLUMN
-end
-
-function get_scip_index(col::LPColumn)::Int
-    return col.scip_index
-end
-
-"""
-Column Var Pointer would point to the SCIP variable associated with the column
-"""
-function get_var_pointer(col::LPColumn)::Ptr{SCIP.SCIP_VAR}
-    return col.variable_pointer
-end
-
+get_lb(col::LPColumn) = col.lb
+get_ub(col::LPColumn) = col.ub
+get_sol(col::LPColumn) = col.sol   # The solution of a problem variable is the primal solution
+get_basis_status(col::LPColumn) = col.basis_status
+get_symbolic_representation(col::LPColumn) = :COLUMN
+get_scip_index(col::LPColumn) = col.scip_index
+get_var_pointer(col::LPColumn) = col.variable_pointer # Column Var Pointer would point to the SCIP variable associated with the column
+isacolumn(var::Variable) = isa(var, LPColumn)
 function set_scip_index!(col::LPColumn, index::Integer)
     col.scip_index = index
 end

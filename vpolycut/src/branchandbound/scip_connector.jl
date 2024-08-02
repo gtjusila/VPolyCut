@@ -2,14 +2,18 @@
 using SCIP
 using DataStructures
 
-# Propegate bound change within SCIP. Return whether or not bound is pruneable
+"""
+Propegate bound change within SCIP. Return whether or not bound is pruneable
+"""
 function propagate!(scip::SCIP.SCIPData)::Bool
     cutoff = Ref{SCIP.SCIP_Bool}(0)
     SCIP.SCIPpropagateProbing(scip, -1, cutoff, C_NULL)
     return Bool(cutoff[])
 end
 
-# Solve LP relaxation of current node and return whether or not LP is feasible 
+"""
+ Solve LP relaxation of current node and return whether or not LP is feasible 
+"""
 function solve_lp_relaxation(scip::SCIP.SCIPData)::Bool
     if SCIP.SCIPisLPConstructed(scip) == 0
         lp_infeasible = Ref{SCIP.SCIP_Bool}(0)
@@ -85,13 +89,13 @@ function get_dual_bound(scip::SCIP.SCIPData, action::Action)::SCIP.SCIP_Real
 
     pruneable = propagate!(scip)
     if pruneable
-        @info "Pruning action $(action)"
+        SCIP.SCIPbacktrackProbing(scip, depth)
         return SCIP.SCIPinfinity(scip)
     end
 
     feasible = solve_lp_relaxation(scip)
     if !feasible
-        @info "Infeasible action $(action)"
+        SCIP.SCIPbacktrackProbing(scip, depth)
         return SCIP.SCIPinfinity(scip)
     end
 

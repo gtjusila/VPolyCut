@@ -1,6 +1,5 @@
 using DataStructures
 using Random
-
 abstract type NodeQueue end
 
 function node_queue_push!(node_queue::T, node::Node) where {T<:NodeQueue}
@@ -13,6 +12,10 @@ end
 
 function node_queue_empty(node_queue::T)::Bool where {T<:NodeQueue}
     error("Method node_queue_empty not implemented for type $(T)")
+end
+
+function Base.length(node_queue::T)::Int where {T<:NodeQueue}
+    error("Method length not implemented for type $(T)")
 end
 
 @kwdef mutable struct RandomNodeQueue <: NodeQueue
@@ -31,6 +34,10 @@ function node_queue_empty(node_queue::RandomNodeQueue)::Bool
     return isempty(node_queue._queue)
 end
 
+function Base.length(node_queue::RandomNodeQueue)::Int
+    return length(node_queue._queue)
+end
+
 @kwdef mutable struct BFSQueue <: NodeQueue
     _queue::Queue{Node} = Queue{Node}()
 end
@@ -47,6 +54,10 @@ function node_queue_empty(node_queue::BFSQueue)::Bool
     return isempty(node_queue._queue)
 end
 
+function Base.length(node_queue::BFSQueue)::Int
+    return length(node_queue._queue)
+end
+
 @kwdef mutable struct DFSQueue <: NodeQueue
     _queue::Stack{Node} = Stack{Node}()
 end
@@ -61,6 +72,10 @@ end
 
 function node_queue_empty(node_queue::DFSQueue)::Bool
     return isempty(node_queue._queue)
+end
+
+function Base.length(node_queue::DFSQueue)::Int
+    return length(node_queue._queue)
 end
 
 mutable struct BestFirstQueue <: NodeQueue
@@ -96,4 +111,8 @@ end
 
 function node_queue_empty(node_queue::BestFirstQueue)::Bool
     return isempty(node_queue._queue)
+end
+
+function Base.length(node_queue::BestFirstQueue)::Int
+    return length(node_queue._queue)
 end

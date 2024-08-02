@@ -11,30 +11,13 @@ using SparseArrays
 end
 
 # upper and lower bounds for the slack variables are the left and right hand side of the constraint
-function get_ub(row::LPRow)::SCIP.SCIP_Real
-    return row.rhs
-end
-
-function get_lb(row::LPRow)::SCIP.SCIP_Real
-    return row.lhs
-end
-
-# the solution of the slack variable is minus the row activity 
-function get_sol(row::LPRow)::SCIP.SCIP_Real
-    return row.minus_row_activity
-end
-
-function get_basis_status(row::LPRow)::SCIP.SCIP_BASESTAT
-    return row.basis_status
-end
-
-function get_symbolic_representation(row::LPRow)::Symbol
-    return :ROW
-end
-
-function get_scip_index(row::LPRow)::Int
-    return row.scip_index
-end
+get_ub(row::LPRow) = row.rhs
+get_lb(row::LPRow) = row.lhs
+get_sol(row::LPRow) = row.minus_row_activity # the solution of the slack variable is minus the row activity
+get_basis_status(row::LPRow) = row.basis_status
+get_symbolic_representation(row::LPRow) = :ROW
+get_scip_index(row::LPRow) = row.scip_index
+isarow(var::Variable) = isa(var, LPRow)
 
 function set_scip_index!(row::LPRow, index::Integer)
     row.scip_index = index
@@ -54,8 +37,4 @@ end
 
 function set_sol!(row::LPRow, minus_row_activity::SCIP.SCIP_Real)
     row.minus_row_activity = minus_row_activity
-end
-
-function isarow(var::Variable)
-    return isa(var, LPRow)
 end

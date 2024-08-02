@@ -41,14 +41,14 @@ Additionally Tableau may store a constraint matrix that represents the LP in SCI
     constraint_matrix::Union{Nothing,ConstraintMatrix} = nothing
 end
 
-# Allow LPTableau to behave as if it is a matrix
-function Base.size(tableau::Tableau)
-    return size(tableau.tableau_matrix)
-end
+get_nvars(tableau::Tableau) = size(tableau)[2]
+get_nbasis(tableau::Tableau) = size(tableau)[1] # Get number of variables in the basis
+get_noriginalrows(tableau::Tableau) = tableau.noriginalrows # Get number of rows in the original problem
+get_noriginalcols(tableau::Tableau) = tableau.noriginalcols # Get number of variables in the original problem
 
-function Base.getindex(tableau::Tableau, i::Int, j::Int)
-    return tableau.tableau_matrix[i, j]
-end
+# Allow LPTableau to behave as if it is a matrix
+Base.size(tableau::Tableau) = size(tableau.tableau_matrix)
+Base.getindex(tableau::Tableau, i::Int, j::Int) = tableau.tableau_matrix[i, j]
 
 function Base.setindex!(tableau::Tableau, v, i::Int, j::Int)
     tableau.tableau_matrix[i, j] = v
@@ -64,31 +64,6 @@ function get_constraint_matrix(tableau::Tableau)::Union{Nothing,ConstraintMatrix
         error("Tableau does not have constraint matrix information")
     end
     return tableau.constraint_matrix
-end
-
-function get_nvars(tableau::Tableau)::Int
-    return size(tableau)[2]
-end
-
-"""
-get number of variables in the basis
-"""
-function get_nbasis(tableau::Tableau)::Int
-    return size(tableau)[1]
-end
-
-"""
-get number of rows in the original problem
-"""
-function get_noriginalrows(tableau::Tableau)::Int
-    return tableau.noriginalrows
-end
-
-"""
-get number of variables in the original problem
-"""
-function get_noriginalcols(tableau::Tableau)::Int
-    return tableau.noriginalcols
 end
 
 function get_var_from_column(tableau::Tableau, col_index::Int)::Variable
