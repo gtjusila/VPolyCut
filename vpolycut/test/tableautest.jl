@@ -32,9 +32,9 @@ using SCIPExperimentUtils
             @test VPolyCut.get_nbasis(tableau) == 1
             @test VPolyCut.get_sol(col) == 1.5
             row = VPolyCut.get_var_from_column(tableau, 3)
-            @test VPolyCut.get_lb(row) == -SCIP.SCIPinfinity(scip)
-            @test VPolyCut.get_basis_status(row) == SCIP.SCIP_BASESTAT_UPPER
-            @test VPolyCut.get_ub(row) == 1.5
+            @test VPolyCut.get_lb(row) == -1.5
+            @test VPolyCut.get_basis_status(row) == SCIP.SCIP_BASESTAT_LOWER
+            @test VPolyCut.get_ub(row) == SCIP.SCIPinfinity(scip)
             @test VPolyCut.get_sol(row) == -1.5
         end
     end

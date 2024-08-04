@@ -36,7 +36,7 @@ function fetch_tableau_matrix_from_scip(scip::SCIP.SCIPData)::Matrix{SCIP.SCIP_R
     nlprows = SCIP.SCIPgetNLPRows(scip)
     tableau = Matrix{SCIP.SCIP_Real}(undef, nlprows, nlpcols + nlprows)
 
-    for i = 1:nlprows
+    for i in 1:nlprows
         tableau[i, :] = fetch_tableau_row(scip, i)
     end
 
@@ -49,9 +49,13 @@ function fetch_tableau_row(scip::SCIP.SCIPData, row_index::Int)::Vector{SCIP.SCI
 
     buffer = Vector{SCIP.SCIP_Real}(undef, nlpcols + nlprows)
     # The last `nlprows` entries of the row contains B^{-1}
-    SCIP.@SCIP_CALL SCIP.SCIPgetLPBInvRow(scip, row_index - 1, Ref(buffer, nlpcols + 1), C_NULL, C_NULL)
+    SCIP.@SCIP_CALL SCIP.SCIPgetLPBInvRow(
+        scip, row_index - 1, Ref(buffer, nlpcols + 1), C_NULL, C_NULL
+    )
     # Get the first `nlpcols` entries
-    SCIP.@SCIP_CALL SCIP.SCIPgetLPBInvARow(scip, row_index - 1, C_NULL, Ref(buffer, 1), C_NULL, C_NULL)
+    SCIP.@SCIP_CALL SCIP.SCIPgetLPBInvARow(
+        scip, row_index - 1, C_NULL, Ref(buffer, 1), C_NULL, C_NULL
+    )
 
     return buffer
 end
@@ -102,12 +106,28 @@ function add_variables_from_scip_rows!(tableau::Tableau, scip::SCIP.SCIPData)
     end
 end
 
-function create_variable_from_row_pointer(scip::SCIP.SCIPData, scip_ptr::Ptr{SCIP.SCIP_ROW})::Variable
+function create_variable_from_row_pointer(
+    scip::SCIP.SCIPData, scip_ptr::Ptr{SCIP.SCIP_ROW}
+)::Variable
     lp_row = LPRow()
     set_scip_index!(lp_row, SCIP.SCIProwGetIndex(scip_ptr))
-    set_basis_status!(lp_row, SCIP.SCIProwGetBasisStatus(scip_ptr))
-    set_ub!(lp_row, SCIP.SCIProwGetRhs(scip_ptr))
-    set_lb!(lp_row, SCIP.SCIProwGetLhs(scip_ptr))
+
+    # Let s be a slack variable arising from a constraint Ax + b - s = 0, p<=s <=q
+    # The basis status of s is SCIP_BASESTAT_LOWER if s = p, SCIP_BASESTAT_UPPER if s = q
+    # SCIP give us the basis status of S. Since we reformulate our problem to Ax + b + r = 0,
+    # -q <= r <= -p we have r is SCIP_BASESTAT_UPPER if s is SCIP_BASESTAT_LOWER and vice versa.
+    # The next part of the code handles the conversion logic
+    if SCIP.SCIProwGetBasisStatus(scip_ptr) == SCIP.SCIP_BASESTAT_LOWER
+        set_basis_status!(lp_row, SCIP.SCIP_BASESTAT_UPPER)
+    elseif SCIP.SCIProwGetBasisStatus(scip_ptr) == SCIP.SCIP_BASESTAT_UPPER
+        set_basis_status!(lp_row, SCIP.SCIP_BASESTAT_LOWER)
+    else
+        set_basis_status!(lp_row, SCIP.SCIProwGetBasisStatus(scip_ptr))
+    end
+
+    # Ax + b - s = 0, p <= s <= q is equivalent to Ax + b + r = 0, -q <= r <= -p
+    set_lb!(lp_row, -SCIP.SCIProwGetRhs(scip_ptr))
+    set_ub!(lp_row, -SCIP.SCIProwGetLhs(scip_ptr))
     set_sol!(lp_row, -SCIP.SCIPgetRowActivity(scip, scip_ptr))
     return lp_row
 end
@@ -126,10 +146,10 @@ function fetch_basis_data_from_scip!(tableau::Tableau, scip::SCIP.SCIPData)
     for (row, idx) in enumerate(basis_indices)
         if idx < 0
             # Entry is -i, i.e. the ith row is basic
-            var = tableau.mapcol2var[nlpcols+abs(idx)]
+            var = tableau.mapcol2var[nlpcols + abs(idx)]
         else
             # Entry is i, i.e. the (i+1)th column is basic (since indexing in C starts with 0)
-            var = tableau.mapcol2var[idx+1]
+            var = tableau.mapcol2var[idx + 1]
         end
         set_row_var!(tableau, var, row)
     end
@@ -142,7 +162,9 @@ function fetch_basis_indices(scip::SCIP.SCIPData)::Vector{Int}
     return buffer
 end
 
-function fetch_constraint_matrix_from_scip(tableau::Tableau, scip::SCIP.SCIPData)::ConstraintMatrix
+function fetch_constraint_matrix_from_scip(
+    tableau::Tableau, scip::SCIP.SCIPData
+)::ConstraintMatrix
     # Get the coefficients of the row
     noriginalrows = get_noriginalrows(tableau)
     noriginalcols = get_noriginalcols(tableau)
@@ -160,7 +182,9 @@ function fetch_constraint_matrix_from_scip(tableau::Tableau, scip::SCIP.SCIPData
     return matrix
 end
 
-function fetch_non_zero_entries_from_row(row_pointer::Ptr{SCIP.SCIP_ROW})::Vector{Tuple{Int,SCIP.SCIP_Real}}
+function fetch_non_zero_entries_from_row(
+    row_pointer::Ptr{SCIP.SCIP_ROW}
+)::Vector{Tuple{Int,SCIP.SCIP_Real}}
     buffer::Vector{Tuple{Int,SCIP.SCIP_Real}} = []
     nnonzeros = SCIP.SCIProwGetNNonz(row_pointer)
 
@@ -169,7 +193,7 @@ function fetch_non_zero_entries_from_row(row_pointer::Ptr{SCIP.SCIP_ROW})::Vecto
     nonzero_entries = SCIP.SCIProwGetVals(row_pointer)
     nonzero_entries = unsafe_wrap(Vector{SCIP.SCIP_Real}, nonzero_entries, nnonzeros)
 
-    for i = 1:nnonzeros
+    for i in 1:nnonzeros
         col_index = SCIP.SCIPcolGetLPPos(nonzero_columns[i]) + 1
         col_entry = nonzero_entries[i]
         if col_index > 0
@@ -179,6 +203,3 @@ function fetch_non_zero_entries_from_row(row_pointer::Ptr{SCIP.SCIP_ROW})::Vecto
 
     return buffer
 end
-
-
-

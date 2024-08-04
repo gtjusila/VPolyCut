@@ -16,17 +16,28 @@ s.t p <= Ax + b <= q
 We rewrite the lp into an equivalent problem in the SCIP standard form
 
 min c'x
-s.t Ax + b + s = 0
+s.t Ax + b - s = 0
     l <= x <= u
     p <= s <= q
 
 In the SCIP standard form, all of the original constraints have been transformed into 
-variables. We can from here on assume that the problem is in SCIP standard form.
+variables. The motivation behind defining the SCIP standard form this way is because
+SCIP_BASESTAT_UPPER for a row means that s=q and SCIP_BASESTAT_LOWER for a row
+means that s=p. There is however a twist. SCIP LPI requires that the 
+coefficient of slack variables s has to be +1. Defining r = -s, we have
 
-The abstract type `Variable` represents every variable in the SCIP standard form. Subsclass
+min c'x
+s.t. Ax + b + r = 0
+     l <= x <= u
+     -q <= r <= -p
+
+This formulation satisfies the formulation requirement of the LPI. We call this form the SCIP 
+the SCIP Normal FormThe LP tableau assumes the problem is in SCIP Normal Form
+
+The abstract type `Variable` represents every variable in the SCIP normal form. Subsclass
 LPRow represents the slack variables s and LPColumn represents the original variables x.
 
-The LP tableau stores tableau information at the optimal solution of the LP in SCIP standard form.
+The LP tableau stores tableau information at the optimal solution of the LP in SCIP normal form.
 Additionally Tableau may store a constraint matrix that represents the LP in SCIP general form.
 """
 @kwdef mutable struct Tableau <: Base.AbstractMatrix{SCIP.SCIP_Real}

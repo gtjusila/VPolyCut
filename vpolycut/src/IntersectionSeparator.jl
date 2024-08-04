@@ -57,25 +57,20 @@ function solve_separating_lp(lp_solution, intersection_points, pararrel_rays)
 
     @assert SCIP.SCIPgetSubscipsOff(unsafe_backend(separating_lp).inner) != 0
 
-    @variable(separating_lp, -10_000 <= x[1:dim] <= 10_000)
-    @variable(separating_lp, z[1:dim])
-
+    @variable(separating_lp, -100_000 <= x[1:dim] <= 100_000)
     for point in intersection_points
         new_point = point - lp_solution
-        @constraint(separating_lp, sum(x[i] * new_point[i] for i in 1:dim) == 1)
+        @constraint(separating_lp, sum(x[i] * new_point[i] for i in 1:dim) >= 1)
     end
 
     for ray in pararrel_rays
-        @constraint(separating_lp, sum(x[i] * ray[i] for i in 1:dim) == 0)
+        @constraint(separating_lp, sum(x[i] * ray[i] for i in 1:dim) >= 0)
     end
 
-    @constraint(separating_lp, x <= z)
-    @constraint(separating_lp, -x <= z)
-
-    @objective(separating_lp, Min, 0)
+    @objective(separating_lp, Min, sum(x))
 
     optimize!(separating_lp)
-
+    println(separating_lp)
     if is_solved_and_feasible(separating_lp)
         return Point(value.(x))
     end
@@ -93,13 +88,20 @@ function find_cut_from_split(
     tableau::Tableau
 )::Bool
     scip = sepa.scipd
-    lp_sol = corner_polyhedron.lp_sol
-    lp_rays = corner_polyhedron.lp_rays
+    complemented_tableau = copy_and_complement(tableau)
+    corner = construct_corner_polyhedron(complemented_tableau)
+    lp_sol = corner.lp_sol
+    lp_rays = corner.lp_rays
+    tableau = get_tableau(complemented_tableau)
+    @info "Complemented Corner Polyhedron" [lp_sol] lp_rays complemented_tableau.complemented_columns
 
-    # STEP 1: Compute intersection points 
+    # STEP 1: Compute intersection points
     intersection_points, parallel_ray = compute_intersection_points(
         scip, split_index, lp_sol, lp_rays
     )
+    parallel_ray = lp_rays
+    @info "Intersection Points:" intersection_points
+    @info "Rays" parallel_ray
 
     # Create a projection object 
     projection = create_projection_to_nonbasic_space(tableau)
@@ -110,22 +112,33 @@ function find_cut_from_split(
         project_point(projection, point) for point in intersection_points
     ]
     projected_parallel_ray = [project_point(projection, ray) for ray in parallel_ray]
+    @info "Projected Sol" [projected_lp_sol]
+    @info "Projected Intersection" projected_intersection_points
+    @info "Projected Ray" projected_parallel_ray
 
     # Step 3: Solve the seperating LP
     separating_sol = solve_separating_lp(
         projected_lp_sol, projected_intersection_points, projected_parallel_ray
     )
+    @info "Seperating Solution" [separating_sol]
     if isnothing(separating_sol)
         return false
     end
-    b = dot(separating_sol, projected_lp_sol) + 1
 
     # Step 4: Convert the seperating solution to the original space
     full_seperating_sol = undo_projection(projection, separating_sol)
+    # Undo Complementation
+    full_uncomplemented_sol = get_uncomplemented_vector(
+        full_seperating_sol, complemented_tableau
+    )
+    uncomplmented_lp_sol = get_uncomplemented_vector(lp_sol, complemented_tableau)
+    println(full_uncomplemented_sol)
+    b = dot(full_uncomplemented_sol, uncomplmented_lp_sol) + 1
 
     # Step 5: Convert the seperating solution to a cut in general form
+    # This uses tableau rows from constraint_matrix so complementaztion does not matter
     cut_vector, b = convert_standard_inequality_to_general(
-        scip, tableau, full_seperating_sol, b
+        scip, tableau, full_uncomplemented_sol, b
     )
 
     # Step 6: Add the cut to the SCIP
@@ -150,7 +163,9 @@ function find_cut_from_split(
         end
     end
 
-    #SCIP.@SCIP_CALL SCIP.SCIPprintRow(scip, row[], C_NULL)
+    @info begin
+        SCIP.@SCIP_CALL SCIP.SCIPprintRow(scip, row[], C_NULL)
+    end
     SCIP.@SCIP_CALL SCIP.SCIPaddRow(scip, row[], true, infeasible)
     SCIP.@SCIP_CALL SCIP.SCIPreleaseRow(scip, row)
     return true
@@ -171,13 +186,14 @@ function SCIP.exec_lp(sepa::IntersectionSeparator)
 
     # STEP 1: Get Corner Polyhedron of current LP solution
     corner = construct_corner_polyhedron(tableau)
-
+    @info "Corner Polyhedron" [corner.lp_sol] corner.lp_rays
     # STEP 2: Get the set of fractional indices 
     split_indices = get_branching_indices(scip, tableau)
     separated = false
 
     # STEP 3: For each fractional indices try to find a cut
     for (i, index) in enumerate(split_indices)
+        @info "Splitting at index $(index)"
         if i % 10 == 0
             println("Cut Generated $(i)")
         end
