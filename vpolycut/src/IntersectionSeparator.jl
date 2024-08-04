@@ -61,7 +61,7 @@ function solve_separating_lp(lp_solution, intersection_points, pararrel_rays)
 
     for point in intersection_points
         new_point = point - lp_solution
-        @constraint(separating_lp, sum(x[i] * new_point[i] for i in 1:dim) == 1)
+        @constraint(separating_lp, sum(x[i] * new_point[i] for i in 1:dim) >= 1)
     end
 
     for ray in pararrel_rays
@@ -97,6 +97,8 @@ function find_cut_from_split(
     tableau::Tableau
 )::Union{Nothing,Ref{Ptr{SCIP.SCIP_ROW}}}
     scip = sepa.scipd
+    lp_sol = corner_polyhedron.lp_sol
+    lp_rays = corner_polyhedron.lp_rays
 
     # Setup Point Ray Gatherer
     println("Starting Branch and Bound")
@@ -132,22 +134,33 @@ function find_cut_from_split(
         project_point(projection, point) for point in intersection_points
     ]
     projected_parallel_ray = [project_point(projection, ray) for ray in parallel_ray]
+    @info "Projected Sol" [projected_lp_sol]
+    @info "Projected Intersection" projected_intersection_points
+    @info "Projected Ray" projected_parallel_ray
 
     # Step 3: Solve the seperating LP
     separating_sol = solve_separating_lp(
         projected_lp_sol, projected_intersection_points, projected_parallel_ray
     )
+    @info "Seperating Solution" [separating_sol]
     if isnothing(separating_sol)
         return nothing
     end
-    b = dot(separating_sol, projected_lp_sol) + 1
 
     # Step 4: Convert the seperating solution to the original space
     full_seperating_sol = undo_projection(projection, separating_sol)
+    # Undo Complementation
+    full_uncomplemented_sol = get_uncomplemented_vector(
+        full_seperating_sol, complemented_tableau
+    )
+    uncomplmented_lp_sol = get_uncomplemented_vector(lp_sol, complemented_tableau)
+    println(full_uncomplemented_sol)
+    b = dot(full_uncomplemented_sol, uncomplmented_lp_sol) + 1
 
     # Step 5: Convert the seperating solution to a cut in general form
+    # This uses tableau rows from constraint_matrix so complementaztion does not matter
     cut_vector, b = convert_standard_inequality_to_general(
-        scip, tableau, full_seperating_sol, b
+        scip, tableau, full_uncomplemented_sol, b
     )
 
     # Step 6: Add the cut to the SCIP
@@ -194,7 +207,7 @@ function SCIP.exec_lp(sepa::IntersectionSeparator)
 
     # STEP 1: Get Corner Polyhedron of current LP solution
     corner = construct_corner_polyhedron(tableau)
-
+    @info "Corner Polyhedron" [corner.lp_sol] corner.lp_rays
     # STEP 2: Get the set of fractional indices 
     split_indices = get_branching_indices(scip, tableau)
     pool::Vector{Ref{Ptr{SCIP.SCIP_ROW}}} = []

@@ -578,6 +578,15 @@ version = "0.16.4"
     DataFrames = "a93c6f00-e57d-5684-b7b6-d8193f3e46c0"
     SymEngine = "123dc426-2d89-5057-bbad-38513e3affd8"
 
+<<<<<<< HEAD
+=======
+[[deps.Lazy]]
+deps = ["MacroTools"]
+git-tree-sha1 = "1370f8202dac30758f3c345f9909b97f53d87d3f"
+uuid = "50d2b5c4-7a5e-59d5-8109-a42b560f39c0"
+version = "0.15.1"
+
+>>>>>>> a10fa4f (Solved Seperation On Complemented Space)
 [[deps.LibCURL]]
 deps = ["LibCURL_jll", "MozillaCACerts_jll"]
 uuid = "b27032c2-a3e7-50c8-80cd-2d36dbcbfd21"
@@ -1239,7 +1248,11 @@ uuid = "41fe7b60-77ed-43a1-b4f0-825fd5a5650d"
 version = "0.2.0"
 
 [[deps.VPolyCut]]
+<<<<<<< HEAD
 deps = ["AbstractTrees", "Coverage", "D3Trees", "DataStructures", "Dates", "GraphRecipes", "JuMP", "JuliaFormatter", "LinearAlgebra", "LoggingExtras", "MathOptInterface", "Plots", "Printf", "Random", "Revise", "SCIP", "SCIPExperimentUtils", "SparseArrays", "Test", "TestItems"]
+=======
+deps = ["AbstractTrees", "Coverage", "D3Trees", "DataStructures", "GraphRecipes", "JuMP", "JuliaFormatter", "Lazy", "LinearAlgebra", "MathOptInterface", "Plots", "Printf", "Random", "Revise", "SCIP", "SCIPExperimentUtils", "SparseArrays", "Test", "TestItems"]
+>>>>>>> a10fa4f (Solved Seperation On Complemented Space)
 path = "../vpolycut"
 uuid = "30e0ccad-023c-46ac-94d4-180deda341f2"
 version = "0.1.0"

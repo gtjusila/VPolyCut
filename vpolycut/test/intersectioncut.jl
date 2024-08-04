@@ -1,6 +1,7 @@
 using SCIP
 using VPolyCut
 using JuMP
+using Test
 using SCIPExperimentUtils
 using Test
 

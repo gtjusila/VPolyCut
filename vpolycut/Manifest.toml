@@ -2,7 +2,11 @@
 
 julia_version = "1.9.4"
 manifest_format = "2.0"
+<<<<<<< HEAD
 project_hash = "75937e1d4f0c1cddbc3baf31bd72593be747b61a"
+=======
+project_hash = "a3ac8ff73dfa26b3d8b713eea1b8ddac231caec7"
+>>>>>>> a10fa4f (Solved Seperation On Complemented Space)
 
 [[deps.ASL_jll]]
 deps = ["Artifacts", "JLLWrappers", "Libdl", "Pkg"]
@@ -571,6 +575,12 @@ version = "0.16.4"
     [deps.Latexify.weakdeps]
     DataFrames = "a93c6f00-e57d-5684-b7b6-d8193f3e46c0"
     SymEngine = "123dc426-2d89-5057-bbad-38513e3affd8"
+
+[[deps.Lazy]]
+deps = ["MacroTools"]
+git-tree-sha1 = "1370f8202dac30758f3c345f9909b97f53d87d3f"
+uuid = "50d2b5c4-7a5e-59d5-8109-a42b560f39c0"
+version = "0.15.1"
 
 [[deps.LibCURL]]
 deps = ["LibCURL_jll", "MozillaCACerts_jll"]

@@ -8,6 +8,7 @@ include("tableau/LPColumn.jl")
 include("tableau/ConstraintMatrix.jl")
 include("tableau/Tableau.jl")
 include("tableau/scip_connector.jl")
+include("tableau/ComplementedTableau.jl")
 
 # Branch and Bound
 include("branchandbound/Node.jl")

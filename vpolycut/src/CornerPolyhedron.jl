@@ -24,6 +24,12 @@ function construct_corner_polyhedron(tableau::Tableau)::CornerPolyhedron
     return CornerPolyhedron(sol, rays)
 end
 
+function construct_corner_polyhedron(
+    complemented_tableau::ComplementedTableau
+)::CornerPolyhedron
+    return construct_corner_polyhedron(complemented_tableau.complemented_tableau)
+end
+
 function get_solution_vector(tableau::Tableau)::Point
     dim = get_nvars(tableau)
     solution = zeros(dim)
@@ -70,14 +76,7 @@ function construct_non_basic_ray(tableau::Tableau, var::Variable)::Union{Ray,Not
         error("Invalid basis status encountered: $(get_basis_status(var))")
     end
 
-    # SCIP assumes that the constraint matrix is in the form [A I] where I
-    # are columns corresponding to the slack variables. Hence, if the 
-    # nonbasic column is a slack variable, then the direction is reversed
     col_idx = get_column_from_var(tableau, var)
-    if col_idx > get_noriginalcols(tableau)
-        direction = -direction
-    end
-
     # Construct ray r
     dim = get_nvars(tableau)
     ray = zeros(dim)
