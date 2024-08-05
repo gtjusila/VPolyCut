@@ -2,11 +2,7 @@
 
 julia_version = "1.9.4"
 manifest_format = "2.0"
-<<<<<<< HEAD
-project_hash = "75937e1d4f0c1cddbc3baf31bd72593be747b61a"
-=======
-project_hash = "a3ac8ff73dfa26b3d8b713eea1b8ddac231caec7"
->>>>>>> a10fa4f (Solved Seperation On Complemented Space)
+project_hash = "62c936eb5a326b965035ca38c6db4d28a2cc1ea3"
 
 [[deps.ASL_jll]]
 deps = ["Artifacts", "JLLWrappers", "Libdl", "Pkg"]

@@ -22,4 +22,5 @@ include("helper.jl")
 include("Projection.jl")
 include("CornerPolyhedron.jl")
 include("IntersectionSeparator.jl")
+include("VPolyhedralSeparator.jl")
 end # module VPolyCut
