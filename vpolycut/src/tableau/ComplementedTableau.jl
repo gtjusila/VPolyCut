@@ -15,12 +15,13 @@ function ComplementedTableau(tableau::Tableau)
     noriginalcols = get_noriginalcols(tableau)
     noriginalrows = get_noriginalrows(tableau)
     complemented_columns = Vector{Int}()
+    @info "Original Tableau" tableau.tableau_matrix
     for i in 1:get_nvars(tableau)
         var = get_var_from_column(tableau, i)
         println(i, " Status ", get_basis_status(var))
         if is_at_upper_bound(var)
             println("Complementing $i")
-            complement_column(var)
+            complement_column(tableau, var)
             push!(complemented_columns, i)
             println(var)
         end
@@ -34,12 +35,14 @@ function copy_and_complement(tableau::Tableau)
     return ComplementedTableau(new_tableau)
 end
 
-function complement_column(var::Variable)
+function complement_column(tableau::Tableau, var::Variable)
     set_basis_status!(var, SCIP.SCIP_BASESTAT_LOWER)
     lb = get_lb(var)
     set_lb!(var, -get_ub(var))
     set_ub!(var, -lb)
     set_sol!(var, -get_sol(var))
+    col_idx = get_column_from_var(tableau, var)
+    tableau[:, col_idx] = -tableau[:, col_idx]
 end
 
 function get_tableau(complemented_tableau::ComplementedTableau)
