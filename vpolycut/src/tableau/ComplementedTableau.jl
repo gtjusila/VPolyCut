@@ -11,19 +11,48 @@ struct ComplementedTableau
     complemented_columns::Vector{Int}
 end
 
+get_complemented_columns(ctableau::ComplementedTableau) = ctableau.complemented_columns
+
+# Forwarding Functions
+function get_var_from_column(ctableau::ComplementedTableau, i::Int)
+    get_var_from_column(ctableau.complemented_tableau, i)
+end
+
+function get_column_from_var(ctableau::ComplementedTableau, var::Variable)
+    get_column_from_var(ctableau.complemented_tableau, var)
+end
+
+@forward ComplementedTableau.complemented_tableau get_nvars
+@forward ComplementedTableau.complemented_tableau create_projection_to_nonbasic_space
+@forward ComplementedTableau.complemented_tableau get_solution_vector
+@forward ComplementedTableau.complemented_tableau get_objective_direction
+@forward ComplementedTableau.complemented_tableau get_problem_variables_pointers
+
+function convert_standard_inequality_to_general(
+    scip::SCIP.SCIPData,
+    ctableau::ComplementedTableau,
+    standard_row::Vector{SCIP.SCIP_Real},
+    b::SCIP.SCIP_Real
+)
+    convert_standard_inequality_to_general(
+        scip, ctableau.complemented_tableau, standard_row, b
+    )
+end
+
+"""
+Create a ComplementedTableau structure that wraps around an existing tableau
+and modify the existing tableau accordingly
+"""
 function ComplementedTableau(tableau::Tableau)
     noriginalcols = get_noriginalcols(tableau)
     noriginalrows = get_noriginalrows(tableau)
     complemented_columns = Vector{Int}()
-    @info "Original Tableau" tableau.tableau_matrix
+    #@info "Original Tableau" tableau.tableau_matrix
     for i in 1:get_nvars(tableau)
         var = get_var_from_column(tableau, i)
-        println(i, " Status ", get_basis_status(var))
         if is_at_upper_bound(var)
-            println("Complementing $i")
             complement_column(tableau, var)
             push!(complemented_columns, i)
-            println(var)
         end
     end
 
@@ -35,10 +64,18 @@ function copy_and_complement(tableau::Tableau)
     return ComplementedTableau(new_tableau)
 end
 
+"""
+complement the variable along with its corresponding column in the tableau
+"""
 function complement_column(tableau::Tableau, var::Variable)
-    set_basis_status!(var, SCIP.SCIP_BASESTAT_LOWER)
+    if get_basis_status(var) == SCIP.SCIP_BASESTAT_LOWER
+        set_basis_status!(var, SCIP.SCIP_BASESTAT_UPPER)
+    elseif get_basis_status(var) == SCIP.SCIP_BASESTAT_UPPER
+        set_basis_status!(var, SCIP.SCIP_BASESTAT_LOWER)
+    end
     lb = get_lb(var)
     set_lb!(var, -get_ub(var))
+    set_obj!(var, -get_obj(var))
     set_ub!(var, -lb)
     set_sol!(var, -get_sol(var))
     col_idx = get_column_from_var(tableau, var)

@@ -1,5 +1,6 @@
 module VPolyCut
 include("utilities.jl")
+include("numerical_methods.jl")
 
 # Tableau
 include("tableau/Variable.jl")
@@ -18,7 +19,6 @@ include("branchandbound/BranchAndBound.jl")
 include("branchandbound/scip_connector.jl")
 include("branchandbound/execute.jl")
 
-include("helper.jl")
 include("Projection.jl")
 include("CornerPolyhedron.jl")
 include("IntersectionSeparator.jl")

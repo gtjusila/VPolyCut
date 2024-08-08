@@ -100,7 +100,7 @@ function node_queue_push!(node_queue::BestFirstQueue, node::Node)
 
     scip = get_scip(node_queue)
     bound = get_dual_bound(scip, get_action(node))
-    if SCIP.SCIPisInfinity(scip, bound) == 0
+    if !is_infinity(scip, bound)
         enqueue!(node_queue._queue, node, bound)
     end
 end

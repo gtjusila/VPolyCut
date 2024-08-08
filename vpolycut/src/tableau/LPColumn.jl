@@ -7,11 +7,13 @@
     ub::SCIP.SCIP_Real = -1
     lb::SCIP.SCIP_Real = -1
     sol::SCIP.SCIP_Real = -1
+    obj::SCIP.SCIP_Real = -1
     variable_pointer::Ptr{SCIP.SCIP_VAR} = C_NULL
 end
 
 get_lb(col::LPColumn) = col.lb
 get_ub(col::LPColumn) = col.ub
+get_obj(col::LPColumn) = col.obj
 get_sol(col::LPColumn) = col.sol   # The solution of a problem variable is the primal solution
 get_basis_status(col::LPColumn) = col.basis_status
 get_symbolic_representation(col::LPColumn) = :COLUMN
@@ -36,6 +38,10 @@ end
 
 function set_sol!(col::LPColumn, sol::SCIP.SCIP_Real)
     col.sol = sol
+end
+
+function set_obj!(col::LPColumn, obj::SCIP.SCIP_Real)
+    col.obj = obj
 end
 
 function set_var_pointer!(col::LPColumn, pointer::Ptr{SCIP.SCIP_VAR})

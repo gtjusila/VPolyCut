@@ -16,6 +16,14 @@ function include_separators(scip::SCIP.SCIPData, separator::Type{GomorySeparator
     setter("separating/gmi/forcecuts", true)
 end
 
-function include_separators(scip::SCIP.SCIPData, separator::Type{VPolyCut.IntersectionSeparator})
+function include_separators(
+    scip::SCIP.SCIPData, separator::Type{VPolyCut.IntersectionSeparator}
+)
     VPolyCut.include_intersection_sepa(scip)
+end
+
+function include_separators(
+    scip::SCIP.SCIPData, separator::Type{VPolyCut.VPolyhedralSeparator}
+)
+    VPolyCut.include_vpolyhedral_sepa(scip)
 end

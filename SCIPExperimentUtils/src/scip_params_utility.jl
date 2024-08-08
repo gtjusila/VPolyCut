@@ -143,5 +143,5 @@ function set_mode_cutting_plane_experiment(model::JuMP.AbstractModel)
 
     # Other settings
     setter("display/verblevel", 5)
-    setter("limits/nodes", 1)
+    setter("limits/nodes", 2)
 end

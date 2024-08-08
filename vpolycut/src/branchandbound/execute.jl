@@ -55,7 +55,7 @@ function _execute_branchandbound(branchandbound::BranchAndBound)::Bool
         # If LP Objective is greater than lower bound then prune
         lp_objective = SCIP.SCIPgetLPObjval(scip)
         @info "LP Objective: $(lp_objective)"
-        if SCIP.SCIPisGE(scip, lp_objective, get_primal_bound(branchandbound)) == 1
+        if is_GE(scip, lp_objective, get_primal_bound(branchandbound))
             @info "Node can be pruned by bounding"
             deactivate!(current_node)
             continue
@@ -70,7 +70,7 @@ function _execute_branchandbound(branchandbound::BranchAndBound)::Bool
             push_leaf!(branchandbound, current_node)
 
             # If new solution is better than lower bound then update
-            if SCIP.SCIPisLT(scip, lp_objective, get_primal_bound(branchandbound)) == 1
+            if is_LT(scip, lp_objective, get_primal_bound(branchandbound))
                 @info "New Best Solution Found"
                 @info "Objective: $(lp_objective)"
                 set_best_solution(branchandbound, sol)

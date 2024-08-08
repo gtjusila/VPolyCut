@@ -31,10 +31,10 @@ function compute_intersection_points(
         up = ceil(current_solution[split_index])
         epsilon = 0
 
-        if SCIP.SCIPisNegative(scip, ray[split_index]) == 1
+        if is_negative(scip, ray[split_index])
             # Ray will hit lower bound
             epsilon = (low - current_solution[split_index]) / ray[split_index]
-        elseif SCIP.SCIPisPositive(scip, ray[split_index]) == 1
+        elseif is_positive(scip, ray[split_index])
             # Ray will hit upper bound
             epsilon = (up - current_solution[split_index]) / ray[split_index]
         else
@@ -157,15 +157,13 @@ function find_cut_from_split(
     infeasible = Ref{SCIP.SCIP_Bool}(0)
 
     for (idx, sol) in enumerate(cut_vector)
-        if SCIP.SCIPisZero(scip, sol) == 0
+        if is_non_zero(scip, sol)
             var = get_var_from_column(tableau, idx)
             SCIP.@SCIP_CALL SCIP.SCIPaddVarToRow(scip, row[], get_var_pointer(var), sol)
         end
     end
 
-    @info begin
-        SCIP.@SCIP_CALL SCIP.SCIPprintRow(scip, row[], C_NULL)
-    end
+    SCIP.@SCIP_CALL SCIP.SCIPprintRow(scip, row[], C_NULL)
     SCIP.@SCIP_CALL SCIP.SCIPaddRow(scip, row[], true, infeasible)
     SCIP.@SCIP_CALL SCIP.SCIPreleaseRow(scip, row)
     return true

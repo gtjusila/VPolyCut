@@ -14,6 +14,7 @@ end
 get_ub(row::LPRow) = row.rhs
 get_lb(row::LPRow) = row.lhs
 get_sol(row::LPRow) = row.minus_row_activity # the solution of the slack variable is minus the row activity
+get_obj(row::LPRow) = 0.0
 get_basis_status(row::LPRow) = row.basis_status
 get_symbolic_representation(row::LPRow) = :ROW
 get_scip_index(row::LPRow) = row.scip_index
@@ -33,6 +34,10 @@ end
 
 function set_lb!(row::LPRow, lb::SCIP.SCIP_Real)
     row.lhs = lb
+end
+
+function set_obj!(row::LPRow, obj::SCIP.SCIP_Real)
+    return nothing
 end
 
 function set_sol!(row::LPRow, minus_row_activity::SCIP.SCIP_Real)

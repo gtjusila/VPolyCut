@@ -60,7 +60,7 @@ function get_branching_variable(
     prio_var = get_priority_var(branching)
     if SCIP.SCIPvarIsInLP(prio_var) == 1 &&
         SCIP.SCIPvarIsIntegral(prio_var) == 1 &&
-        SCIP.SCIPisFeasIntegral(scip, SCIP.SCIPvarGetLPSol(prio_var)) == 0
+        !is_integral(scip, SCIP.SCIPvarGetLPSol(prio_var))
         return prio_var
     end
     return get_branching_variable(PseudoCostBranching(), scip)

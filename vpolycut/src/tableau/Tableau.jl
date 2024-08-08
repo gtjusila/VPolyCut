@@ -125,7 +125,7 @@ function is_branchable(scip::SCIP.SCIPData, var::Variable)::Bool
     end
 
     # If the primal is integral we cannot branch
-    if SCIP.SCIPisFeasIntegral(scip, get_sol(var)) == 1
+    if is_integral(scip, get_sol(var))
         return false
     end
 
@@ -145,7 +145,7 @@ function convert_standard_inequality_to_general(
     constraint_matrix = get_constraint_matrix(tableau)
 
     for i in 1:nvars
-        if SCIP.SCIPisZero(scip, standard_row[i]) == 1
+        if is_zero(scip, standard_row[i])
             continue
         end
         var = get_var_from_column(tableau, i)
@@ -162,4 +162,26 @@ function convert_standard_inequality_to_general(
     end
 
     return general_row, b
+end
+
+function get_objective_direction(tableau::Tableau)::Ray
+    dim = get_nvars(tableau)
+    objective_direction = zeros(dim)
+    for i in 1:dim
+        var = get_var_from_column(tableau, i)
+        objective_direction[i] = get_obj(var)
+    end
+    return objective_direction
+end
+
+"""
+Get Pointers to problem variables ordered by their column index in the tableau
+"""
+function get_problem_variables_pointers(tableau::Tableau)::Vector{Ptr{SCIP.SCIP_VAR}}
+    noriginalcols = get_noriginalcols(tableau)
+    pointers = Vector{Ptr{SCIP.SCIP_VAR}}(undef, noriginalcols)
+    for i in 1:noriginalcols
+        pointers[i] = get_var_pointer(get_var_from_column(tableau, i))
+    end
+    return pointers
 end
