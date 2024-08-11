@@ -107,11 +107,11 @@ function find_cut_from_split(
     projection = create_projection_to_nonbasic_space(tableau)
 
     # STEP 2: Project the intersection points and rays to the non-basic space
-    projected_lp_sol = project_point(projection, lp_sol)
+    projected_lp_sol = project(projection, lp_sol)
     projected_intersection_points = [
-        project_point(projection, point) for point in intersection_points
+        project(projection, point) for point in intersection_points
     ]
-    projected_parallel_ray = [project_point(projection, ray) for ray in parallel_ray]
+    projected_parallel_ray = [project(projection, ray) for ray in parallel_ray]
     @info "Projected Sol" [projected_lp_sol]
     @info "Projected Intersection" projected_intersection_points
     @info "Projected Ray" projected_parallel_ray

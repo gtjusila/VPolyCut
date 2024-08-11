@@ -164,6 +164,9 @@ function convert_standard_inequality_to_general(
     return general_row, b
 end
 
+"""
+The Objective function is stored such that it is a function of nonbasic variables 
+"""
 function get_objective_direction(tableau::Tableau)::Ray
     dim = get_nvars(tableau)
     objective_direction = zeros(dim)

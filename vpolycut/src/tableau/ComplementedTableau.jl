@@ -24,6 +24,7 @@ end
 
 @forward ComplementedTableau.complemented_tableau get_nvars
 @forward ComplementedTableau.complemented_tableau create_projection_to_nonbasic_space
+@forward ComplementedTableau.complemented_tableau create_trivial_projection
 @forward ComplementedTableau.complemented_tableau get_solution_vector
 @forward ComplementedTableau.complemented_tableau get_objective_direction
 @forward ComplementedTableau.complemented_tableau get_problem_variables_pointers
@@ -47,7 +48,7 @@ function ComplementedTableau(tableau::Tableau)
     noriginalcols = get_noriginalcols(tableau)
     noriginalrows = get_noriginalrows(tableau)
     complemented_columns = Vector{Int}()
-    #@info "Original Tableau" tableau.tableau_matrix
+
     for i in 1:get_nvars(tableau)
         var = get_var_from_column(tableau, i)
         if is_at_upper_bound(var)

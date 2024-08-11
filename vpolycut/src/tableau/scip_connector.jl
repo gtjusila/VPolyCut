@@ -65,7 +65,7 @@ function add_variables_from_scip_columns!(tableau::Tableau, scip::SCIP.SCIPData)
     cols_pointers = fetch_column_pointers(scip)
 
     for col_pointer in cols_pointers
-        var = create_variable_from_column_pointer(col_pointer)
+        var = create_variable_from_column_pointer(scip, col_pointer)
         # Casted because SCIP returns Int32 for indices
         # Plus 1 because C index start with 0
         index::Int = SCIP.SCIPcolGetLPPos(col_pointer) + 1
@@ -73,15 +73,20 @@ function add_variables_from_scip_columns!(tableau::Tableau, scip::SCIP.SCIPData)
     end
 end
 
-function create_variable_from_column_pointer(scip_ptr::Ptr{SCIP.SCIP_COL})::Variable
+function create_variable_from_column_pointer(
+    scip::SCIP.SCIPData, scip_ptr::Ptr{SCIP.SCIP_COL}
+)::Variable
     lp_col = LPColumn()
+
     set_scip_index!(lp_col, SCIP.SCIPcolGetIndex(scip_ptr))
     set_basis_status!(lp_col, SCIP.SCIPcolGetBasisStatus(scip_ptr))
     set_ub!(lp_col, SCIP.SCIPcolGetUb(scip_ptr))
     set_lb!(lp_col, SCIP.SCIPcolGetLb(scip_ptr))
-    set_obj!(lp_col, SCIP.SCIPcolGetObj(scip_ptr))
+    # We store the objective as a function of nonbasic variable (for more info see Tableau.jl get_objective_direction)
+    set_obj!(lp_col, SCIP.SCIPgetColRedcost(scip, scip_ptr))
     set_sol!(lp_col, SCIP.SCIPcolGetPrimsol(scip_ptr))
     set_var_pointer!(lp_col, SCIP.SCIPcolGetVar(scip_ptr))
+
     return lp_col
 end
 
@@ -126,10 +131,18 @@ function create_variable_from_row_pointer(
         set_basis_status!(lp_row, SCIP.SCIProwGetBasisStatus(scip_ptr))
     end
 
+    # Again objective is set as a function of nonbasic variable
+    set_obj!(lp_row, -SCIP.SCIProwGetDualsol(scip_ptr))
     # Ax + b - s = 0, p <= s <= q is equivalent to Ax + b + r = 0, -q <= r <= -p
     set_lb!(lp_row, -SCIP.SCIProwGetRhs(scip_ptr))
     set_ub!(lp_row, -SCIP.SCIProwGetLhs(scip_ptr))
-    set_sol!(lp_row, -SCIP.SCIPgetRowActivity(scip, scip_ptr))
+    # [TODO] No reasoning here just trial and error but I assume it should have been minus or SCIP
+    # interpret the constant shift of a row such that Ax + s = b
+    set_sol!(
+        lp_row,
+        -SCIP.SCIPgetRowActivity(scip, scip_ptr)
+    )
+
     return lp_row
 end
 

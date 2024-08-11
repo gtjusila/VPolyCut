@@ -25,5 +25,5 @@ end
 function include_separators(
     scip::SCIP.SCIPData, separator::Type{VPolyCut.VPolyhedralSeparator}
 )
-    VPolyCut.include_vpolyhedral_sepa(scip)
+    VPolyCut.include_vpolyhedral_sepa(scip; n_leaves=64)
 end

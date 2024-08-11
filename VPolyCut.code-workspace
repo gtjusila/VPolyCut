@@ -8,6 +8,9 @@
 		},
 		{
 			"path": "SCIPExperimentUtils"
+		},
+		{
+			"path": "../scipsuite/scip/src/scip"
 		}
 	],
 	"settings": {
