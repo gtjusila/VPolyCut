@@ -13,6 +13,7 @@ Disjunction are obtained from partial branch and bound trees
 
 # Required Parameters
 - scipd::SCIP.SCIPData Reference to the SCIPData object
+
 # Optional Parameters
 - n_leaves::Int Number of leaves in the disjunction
 - cut_limit::Int Number of cuts to generate (-1 if no limit, -2 if limit is the number of fractional variable)
@@ -86,8 +87,8 @@ function vpolyhedralcut_separation(sepa::VPolyhedralSeparator)
     # Preparation
     #
     scip = sepa.scipd
-    # If cut limit is not set then set it to the number of branch candidates
-    sepa.cut_limit = Int(SCIP.SCIPgetNLPBranchCands(scip))
+    # If cut limit is -1 or -2 convert them to the actual limit 
+    sepa.cut_limit = get_cut_limit(sepa)
 
     # Step 0: Get complemented tableau
     construct_complemented_tableau(sepa)
@@ -112,6 +113,16 @@ function vpolyhedralcut_separation(sepa::VPolyhedralSeparator)
 
     # Step 4: Solve Separation Problem
     solve_separation_problems(sepa)
+end
+
+function get_cut_limit(sepa::VPolyhedralSeparator)
+    if sepa.cut_limit == -1
+        return typemax(INT)
+    elseif sepa.cut_limit == -2
+        return SCIP.SCIPgetNLPBranchCands(sepa.scipd)
+    else
+        return sepa.cut_limit
+    end
 end
 
 function construct_complemented_tableau(sepa::VPolyhedralSeparator)
