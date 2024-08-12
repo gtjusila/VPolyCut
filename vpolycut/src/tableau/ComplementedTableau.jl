@@ -90,6 +90,8 @@ end
 function get_uncomplemented_vector(
     seperating_sol::Vector{SCIP.SCIP_Real}, complemented_tableau::ComplementedTableau
 )::Vector{SCIP.SCIP_Real}
+    # Force a copy
+    seperating_sol = copy(seperating_sol)
     for i in complemented_tableau.complemented_columns
         seperating_sol[i] = -seperating_sol[i]
     end
