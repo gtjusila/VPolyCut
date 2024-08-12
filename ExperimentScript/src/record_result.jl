@@ -1,5 +1,4 @@
 function record_result(experiment_store::ExperimentStore)
-    experiment_store.feasible = check_debug_solution_feasibility(experiment_store)
     write_output(experiment_store)
 end
 
@@ -10,9 +9,11 @@ function write_output(experiment_store::ExperimentStore)
     println(output, "Instance: $(experiment_store.instance)")
     println(output, "OutputDirectory: $(experiment_store.result_path)")
     println(output, "SCIPStatus: $(SCIP.SCIPgetStatus(experiment_store.scip))")
-    println(output, "DbgSolFeasible: $(experiment_store.feasible)")
 
-    println(output, "ReferenceObjective: $(round(experiment_store.reference_objective,sigdigits = 6))")
+    println(
+        output,
+        "ReferenceObjective: $(round(experiment_store.reference_objective,sigdigits = 6))"
+    )
 
     initialdualbound = SCIP.SCIPgetFirstLPDualboundRoot(experiment_store.scip)
     println(output, "FirstLPObj: $(round(initialdualbound,sigdigits = 6))")
@@ -29,6 +30,20 @@ function write_output(experiment_store::ExperimentStore)
     gapclosed = 1 - finalgap / initialgap
     println(output, "GapClosed: $(round(gapclosed, sigdigits=6))")
 
+    check = false
+    if (SCIP.SCIPgetObjsense(experiment_store.scip) == SCIP.SCIP_OBJSENSE_MINIMIZE)
+        check = experiment_store.reference_objective > finaldualbound
+    elseif (SCIP.SCIPgetObjsense(experiment_store.scip) == SCIP.SCIP_OBJSENSE_MAXIMIZE)
+        check = experiment_store.reference_objective < finaldualbound
+    end
+    println(output, "Check: $(check)")
+
+    @info "GapClosed: $(round(gapclosed, sigdigits=3)*100)%"
+    if check
+        @info "Check: OK"
+    else
+        @error "Check: Failed"
+    end
     write_solving_statistic(experiment_store)
 end
 

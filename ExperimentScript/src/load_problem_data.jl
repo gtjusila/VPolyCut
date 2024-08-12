@@ -15,26 +15,10 @@ end
 function set_reference_solution_objective(experiment_store::ExperimentStore)
     @assert SCIP.SCIPgetStage(experiment_store.scip) == SCIP.SCIP_STAGE_PROBLEM
     debug_sol = load_debug_solution(experiment_store)
-    experiment_store.reference_objective = SCIP.SCIPgetSolOrigObj(experiment_store.scip, debug_sol[])
+    experiment_store.reference_objective = SCIP.SCIPgetSolOrigObj(
+        experiment_store.scip, debug_sol[]
+    )
     free_debug_sol(experiment_store, debug_sol)
-end
-
-function check_debug_solution_feasibility(experiment_store::ExperimentStore)
-    debug_sol = load_debug_solution(experiment_store)
-    feasible = Ref{SCIP.SCIP_Bool}(C_NULL)
-    free_debug_sol(experiment_store, debug_sol)
-    return (feasible != 0)
-end
-
-function is_debug_solution_feasible(scip::SCIP.SCIPData, debug_sol::Ref{Ptr{SCIP.SCIP_Sol}})
-    feasible = Ref{SCIP.SCIP_Bool}(C_NULL)
-    SCIP.@SCIP_CALL SCIP.SCIPcheckSol(scip, debug_sol[], true, true, true, true, true, feasible)
-    return feasible[]
-end
-
-function free_debug_sol(experiment_store::ExperimentStore, debug_sol::Ref{Ptr{SCIP.SCIP_Sol}})
-    SCIP.@SCIP_CALL SCIP.SCIPfreeSol(experiment_store.scip, debug_sol)
-
 end
 
 function load_debug_solution(experiment_store::ExperimentStore)::Ref{Ptr{SCIP.SCIP_Sol}}
@@ -44,7 +28,15 @@ function load_debug_solution(experiment_store::ExperimentStore)::Ref{Ptr{SCIP.SC
     return debug_sol
 end
 
-function load_solution_from_path(scip::SCIP.SCIPData, sol::Ref{Ptr{SCIP.SCIP_Sol}}, path::String)
+function free_debug_sol(
+    experiment_store::ExperimentStore, debug_sol::Ref{Ptr{SCIP.SCIP_Sol}}
+)
+    SCIP.@SCIP_CALL SCIP.SCIPfreeSol(experiment_store.scip, debug_sol)
+end
+
+function load_solution_from_path(
+    scip::SCIP.SCIPData, sol::Ref{Ptr{SCIP.SCIP_Sol}}, path::String
+)
     partial = Ref{SCIP.SCIP_Bool}(false)
     error = Ref{SCIP.SCIP_Bool}(false)
     SCIP.@SCIP_CALL SCIP.SCIPcreateOrigSol(scip, sol, C_NULL)

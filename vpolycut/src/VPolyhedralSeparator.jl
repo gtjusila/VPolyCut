@@ -2,20 +2,20 @@ using SCIP
 using JuMP
 using LinearAlgebra
 import MathOptInterface as MOI
-using HiGHS: HiGHS
+using HiGHS
 
 """
 VPolyhedral Cut Separator
 
-Implementation based on Algorithm 1 of:
+Implementation of Algorithm 1 from 
 Balas, Egon, and Aleksandr M. Kazachkov. "V-polyhedral disjunctive cuts." arXiv preprint arXiv:2207.13619 (2022).
 Disjunction are obtained from partial branch and bound trees
 
-# Constructor Parameters
+# Required Parameters
 - scipd::SCIP.SCIPData Reference to the SCIPData object
+# Optional Parameters
 - n_leaves::Int Number of leaves in the disjunction
-
-and datastructures for the separator
+- cut_limit::Int Number of cuts to generate (-1 if no limit, -2 if limit is the number of fractional variable)
 """
 @kwdef mutable struct VPolyhedralSeparator <: SCIP.AbstractSeparator
     "Pointer to SCIP"
@@ -25,7 +25,7 @@ and datastructures for the separator
     "Number of times the separator is called"
     called::Int = 0
     "Cut Limit"
-    cut_limit::Int = -1
+    cut_limit::Int = -2
     "Is LP solution separated?"
     separated::Bool = false
 
@@ -41,6 +41,8 @@ and datastructures for the separator
     cutpool::Union{Nothing,CutPool} = nothing
     "Separating Problem"
     separating_problem::Union{Nothing,AbstractModel} = nothing
+    "LP Solution"
+    lp_sol::Union{Nothing,Vector{SCIP.SCIP_Real}} = nothing
 end
 
 # Include Helper
@@ -100,7 +102,6 @@ function vpolyhedralcut_separation(sepa::VPolyhedralSeparator)
     # Step 2: Setup projection used and get the points and rays from the disjunctions
     sepa.projection = create_projection_to_nonbasic_space(sepa.complemented_tableau)
     get_point_ray_collection(sepa)
-
     with_logger(ConsoleLogger()) do
         @info "Number of points: $(num_points(sepa.point_ray_collection))"
         @info "Number of rays: $(num_rays(sepa.point_ray_collection))"
@@ -111,41 +112,6 @@ function vpolyhedralcut_separation(sepa::VPolyhedralSeparator)
 
     # Step 4: Solve Separation Problem
     solve_separation_problems(sepa)
-    #projected_lp_sol = project_point(projection, lp_sol)
-    #projected_points = [project_point(projection, point) for point in points_collection]
-    #projected_rays = [project_point(projection, ray) for ray in rays_collection]
-    #=
-    separating_collection = Point[]
-    with_logger(ConsoleLogger()) do
-        separating_collection = get_cuts(
-            scip,
-            projected_lp_sol,
-            projected_points,
-            projected_rays,
-            solution_values, cut_limit
-        )
-    end
-
-    if length(separating_collection) == 0
-        return nothing
-    end
-    for (idx, separating_sol) in enumerate(separating_collection)
-        # Step 4: Convert the seperating solution back to the original space
-        full_seperating_sol = undo_projection(projection, separating_sol)
-        # Undo Complementation
-        full_uncomplemented_sol = get_uncomplemented_vector(
-            full_seperating_sol, complemented_tableau
-        )
-        uncomplmented_lp_sol = get_uncomplemented_vector(lp_sol, complemented_tableau)
-        b = dot(full_uncomplemented_sol, uncomplmented_lp_sol) + 1
-        cut_vector, b = convert_standard_inequality_to_general(
-            scip, complemented_tableau, full_uncomplemented_sol, b
-        )
-        # Step 5: Add the cut to SCIP
-        variable_pointers = get_problem_variables_pointers(complemented_tableau)
-        add_sepa_row!(scip, sepa, -cut_vector, variable_pointers, -b)
-    end
-    =#
 end
 
 function construct_complemented_tableau(sepa::VPolyhedralSeparator)
@@ -198,7 +164,6 @@ function get_disjunctive_term_information(
     scip = sepa.scipd
 
     SCIP.SCIPstartProbing(scip)
-
     # Get To Node
     for node in path
         if isroot(node)
@@ -220,7 +185,6 @@ function get_disjunctive_term_information(
         SCIP.SCIPendProbing(scip)
         return nothing, [], 0
     end
-
     # Get Optimal Tableau
     tableau = construct_tableau(scip)
 
@@ -230,12 +194,10 @@ function get_disjunctive_term_information(
         var = get_var_from_column(tableau, i)
         complement_column(tableau, var)
     end
-
     corner = construct_corner_polyhedron(tableau)
     solution = SCIP.SCIPgetSolOrigObj(scip, C_NULL)
     point = get_lp_sol(corner)
     @assert get_nvars(tableau) == get_nvars(root_tableau)
-
     # Leave Probing mode
     SCIP.SCIPendProbing(scip)
 
@@ -250,7 +212,6 @@ function solve_separation_problems(sepa::VPolyhedralSeparator)
     scip = sepa.scipd
     lp_solution = get_solution_vector(sepa.complemented_tableau)
     lp_solution = project(sepa.projection, lp_solution)
-    cut_limit = sepa.cut_limit
     dimension = length(lp_solution)
 
     separating_lp = Model(HiGHS.Optimizer)
@@ -293,7 +254,7 @@ function solve_separation_problems(sepa::VPolyhedralSeparator)
     p_star = argmin(point -> get_objective_value(point), translated_points)
     @objective(separating_lp, Min, sum(x[i] * p_star[i] for i in 1:dimension))
     optimize!(separating_lp)
-    write_to_file(separating_lp, "separating_lp_p*2.lp")
+
     if is_solved_and_feasible(separating_lp)
         cut = get_cut_from_separating_solution(sepa, value.(x))
         push!(sepa.cutpool, cut)
@@ -306,31 +267,31 @@ function solve_separation_problems(sepa::VPolyhedralSeparator)
     end
 
     # Now transition to PRLP= 
-    a_bar = value.(x)
-    @constraint(separating_lp, sum(x[i] * p_star[i] for i in 1:dimension) == 1)
+    # a_bar = value.(x)
+    # @constraint(separating_lp, sum(x[i] * p_star[i] for i in 1:dimension) == 1)
 
-    r_bar = filter(ray -> !is_zero(scip, dot(a_bar, ray)), rays)
-    sort!(r_bar; by=ray -> abs(get_obj(get_generating_variable(ray))))
+    # r_bar = filter(ray -> !is_zero(scip, dot(a_bar, ray)), rays)
+    # sort!(r_bar; by=ray -> abs(get_obj(get_generating_variable(ray))))
 
-    marked = fill(false, length(r_bar))
-    for ray in r_bar
-        @objective(
-            separating_lp, Min, sum(x[i] * ray[i] for i in 1:dimension)
-        )
-        optimize!(separating_lp)
-        if is_solved_and_feasible(separating_lp)
-            cut = get_cut_from_separating_solution(sepa, value.(x))
-            push!(sepa.cutpool, cut)
-        else
-            with_logger(ConsoleLogger()) do
-                @error "Failed to find a cut"
-            end
-        end
+    # marked = fill(false, length(r_bar))
+    # for ray in r_bar
+    #     @objective(
+    #         separating_lp, Min, sum(x[i] * ray[i] for i in 1:dimension)
+    #     )
+    #     optimize!(separating_lp)
+    #     if is_solved_and_feasible(separating_lp)
+    #         cut = get_cut_from_separating_solution(sepa, value.(x))
+    #         push!(sepa.cutpool, cut)
+    #     else
+    #         with_logger(ConsoleLogger()) do
+    #             @error "Failed to find a cut"
+    #         end
+    #     end
 
-        if length(sepa.cutpool) >= cut_limit
-            break
-        end
-    end
+    #     if length(sepa.cutpool) >= cut_limit
+    #         break
+    #     end
+    # end
     add_all_cuts!(sepa.cutpool, sepa)
 end
 
@@ -354,160 +315,3 @@ function get_cut_from_separating_solution(
     # We normalize the cut to the form ax <= b
     return Cut(-cut_vector, -b)
 end
-#=
-function solve_separation(
-    sepa::VPolyhedralSeparator,
-    solution_values::Vector{SCIP.SCIP_Real},
-    projection::Projection
-)
-    scip = sepa.scipd
-    lp_solution = get_solution_vector(sepa.complemented_tableau)
-    lp_solution = project(projection, lp_solution)
-    point_collection = get_points(point_ray_collection)
-    point_collection = map(p -> project(projection, p), point_collection)
-    ray_collection = get_rays(point_ray_collection)
-    ray_collection = map(r -> project(projection, r), ray_collection)
-    cut_limit = sepa.cut_limit
-    dimension = length(lp_solution)
-
-    separating_lp = Model(HiGHS.Optimizer)
-    set_optimizer_attribute(separating_lp, "output_flag", false)
-
-    # Translate the points to nonbasic space
-    point_collection = map(p -> p - lp_solution, point_collection)
-
-    # Construct (PRLP0)
-    @variable(separating_lp, x[1:dimension] >= 0)
-    for point in point_collection
-        @constraint(separating_lp, sum(x[i] * point[i] for i in 1:dimension) >= 1)
-    end
-    for ray in ray_collection
-        @constraint(separating_lp, sum(x[i] * ray[i] for i in 1:dimension) >= 0)
-    end
-
-    # First check if the LP is feasible by optimizing using all 0s objective
-    optimize!(separating_lp)
-    if !is_solved_and_feasible(separating_lp)
-        error("Separating LP is infeasible")
-    end
-
-    # Now optimize with all 1s objective
-    @objective(separating_lp, Min, sum(x))
-    optimize!(separating_lp)
-
-    if is_solved_and_feasible(separating_lp)
-        #push!(cut_collection, value.(x))
-    else
-        @error ("All ones objective is unbounded")
-    end
-
-    # Now Optimize with p as objective
-    p_idx = argmin(solution_values)
-    p_star = point_collection[p_idx]
-    @objective(separating_lp, Min, sum(x[i] * p_star[i] for i in 1:dimension))
-    optimize!(separating_lp)
-
-    if is_solved_and_feasible(separating_lp)
-        #push!(cut_collection, value.(x))
-    else
-        @error ("p* as objective is unbounded")
-    end
-
-    # Now transition to PRLP=
-    a_bar = value.(x)
-    @constraint(separating_lp, sum(x[i] * p_star[i] for i in 1:dimension) == 1)
-
-    # points_string = fill("point", length(point_collection))
-    # rays_string = fill("ray", length(ray_collection))
-    # @info point_score
-    # score = [point_score; rays_score]
-    # sort = sortperm(score)
-    # @info score[sort][1:10]
-    # string = [points_string; rays_string]
-    # string = string[sort]
-    # point_ray = [point_collection; ray_collection]
-    # point_ray = point_ray[sort]
-    # marker = fill(false, length(point_ray))
-
-    # for i in 1:length(marker)
-    #     if marker[i]
-    #         continue
-    #     end
-    #     if string[i] == "point"
-    #         if is_EQ(scip, dot(a_bar, point_ray[i]), 1.0)
-    #             marker[i] = true
-    #         end
-    #     else
-    #         if is_EQ(scip, dot(a_bar, point_ray[i]), 0.0)
-    #             marker[i] = true
-    #         end
-    #     end
-    # end
-
-    # @info string[1:10]
-    cnt = 0
-    # Ray_collection have been sorted before by orthogonaltiy to the objective
-    for r in ray_collection
-        @objective(separating_lp, Min, sum(x[i] * r[i] for i in 1:dimension))
-        optimize!(separating_lp)
-
-        if cnt < 5
-            write_to_file(separating_lp, "separating_lp_$(cnt).lp")
-        end
-
-        if cnt % 50 == 0
-            @info "Tried $(cnt) rays"
-        end
-        cnt += 1
-
-        if is_solved_and_feasible(separating_lp)
-            sol = value.(x)
-            skip = false
-
-            for v in cut_collection
-                if is_zero(scip, norm(sol - v))
-                    skip = true
-                    break
-                end
-            end
-
-            if skip
-                continue
-            end
-
-            push!(cut_collection, value.(x))
-
-            # for j in 1:length(marker)
-            #     if marker[j]
-            #         continue
-            #     end
-            #     if string[j] == "point"
-            #         if is_EQ(scip, dot(a_bar, point_ray[j]), 1.0)
-            #             marker[j] = true
-            #         end
-            #     else
-            #         if is_EQ(scip, dot(a_bar, point_ray[j]), 0.0)
-            #             marker[j] = true
-            #         end
-            #     end
-            # end
-
-            if length(cut_collection) % 10 == 0
-                @info "Number of cut found: $(length(cut_collection))"
-            end
-        else
-            @info solution_summary(separating_lp)
-            @warn "Failed to find a cut"
-            break
-            fail += 1
-        end
-
-        if length(cut_collection) >= cut_limit
-            break
-        end
-    end
-    @info "Number of cut found: $(length(cut_collection))"
-    @info "Disjunctive Lower Bound: $(min(solution_values...))"
-    return cut_collection
-end
-=#

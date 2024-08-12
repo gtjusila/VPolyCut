@@ -8,7 +8,6 @@ mutable struct Ray <: AbstractVector{SCIP.SCIP_Real}
     coefficients::Vector{SCIP.SCIP_Real}
     generating_variable::Variable
 end
-
 function get_coefficients(ray::Ray)
     return ray.coefficients
 end

@@ -54,16 +54,16 @@ function get_non_basic_rays(tableau::Tableau)::Vector{Ray}
             end
         end
     end
-
     return ray_collection
 end
 
 """
 Construct non basic ray from the ith column
 """
-function construct_non_basic_ray(tableau::Tableau, var::Variable)::Union{Ray,Nothing}
+function construct_non_basic_ray(
+    tableau::Tableau, var::Variable
+)::Union{Ray,Nothing}
     direction = 1.0
-    @info "Constructing Ray from Column $(get_column_from_var(tableau, var)) of tableau"
 
     if get_ub(var) == get_lb(var)
         return nothing
