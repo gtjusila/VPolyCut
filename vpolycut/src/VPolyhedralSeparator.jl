@@ -117,7 +117,7 @@ end
 
 function get_cut_limit(sepa::VPolyhedralSeparator)
     if sepa.cut_limit == -1
-        return typemax(INT)
+        return typemax(Int)
     elseif sepa.cut_limit == -2
         return SCIP.SCIPgetNLPBranchCands(sepa.scipd)
     else
