@@ -47,7 +47,7 @@ Disjunction are obtained from partial branch and bound trees
 end
 
 # Include Helper
-function include_vpolyhedral_sepa(scip::SCIP.SCIPData; n_leaves=2, cut_limit=-1)
+function include_vpolyhedral_sepa(scip::SCIP.SCIPData; n_leaves=2, cut_limit=-2)
     sepa = VPolyhedralSeparator(; cut_limit=cut_limit, scipd=scip, n_leaves=n_leaves)
     SCIP.include_sepa(
         scip.scip[], scip.sepas, sepa; priority=9999, freq=0, usessubscip=true
@@ -88,8 +88,9 @@ function vpolyhedralcut_separation(sepa::VPolyhedralSeparator)
     #
     scip = sepa.scipd
     # If cut limit is -1 or -2 convert them to the actual limit 
+    println(sepa.cut_limit)
     sepa.cut_limit = get_cut_limit(sepa)
-
+    println("Cut limit is $(sepa.cut_limit)")
     # Step 0: Get complemented tableau
     construct_complemented_tableau(sepa)
 
@@ -278,31 +279,31 @@ function solve_separation_problems(sepa::VPolyhedralSeparator)
     end
 
     # Now transition to PRLP= 
-    # a_bar = value.(x)
-    # @constraint(separating_lp, sum(x[i] * p_star[i] for i in 1:dimension) == 1)
+    a_bar = value.(x)
+    @constraint(separating_lp, sum(x[i] * p_star[i] for i in 1:dimension) == 1)
 
-    # r_bar = filter(ray -> !is_zero(scip, dot(a_bar, ray)), rays)
-    # sort!(r_bar; by=ray -> abs(get_obj(get_generating_variable(ray))))
+    r_bar = filter(ray -> !is_zero(scip, dot(a_bar, ray)), rays)
+    sort!(r_bar; by=ray -> abs(get_obj(get_generating_variable(ray))))
 
-    # marked = fill(false, length(r_bar))
-    # for ray in r_bar
-    #     @objective(
-    #         separating_lp, Min, sum(x[i] * ray[i] for i in 1:dimension)
-    #     )
-    #     optimize!(separating_lp)
-    #     if is_solved_and_feasible(separating_lp)
-    #         cut = get_cut_from_separating_solution(sepa, value.(x))
-    #         push!(sepa.cutpool, cut)
-    #     else
-    #         with_logger(ConsoleLogger()) do
-    #             @error "Failed to find a cut"
-    #         end
-    #     end
-
-    #     if length(sepa.cutpool) >= cut_limit
-    #         break
-    #     end
-    # end
+    marked = fill(false, length(r_bar))
+    for ray in r_bar
+        @objective(
+            separating_lp, Min, sum(x[i] * ray[i] for i in 1:dimension)
+        )
+        optimize!(separating_lp)
+        if is_solved_and_feasible(separating_lp)
+            cut = get_cut_from_separating_solution(sepa, value.(x))
+            push!(sepa.cutpool, cut)
+        else
+            with_logger(ConsoleLogger()) do
+                @error "Failed to find a cut"
+            end
+        end
+        println("Generated $(length(sepa.cutpool)) cuts. Cutlimit is $(sepa.cut_limit)")
+        if length(sepa.cutpool) >= sepa.cut_limit
+            break
+        end
+    end
     add_all_cuts!(sepa.cutpool, sepa)
 end
 
