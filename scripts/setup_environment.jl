@@ -23,6 +23,9 @@ function setup_environment(execution_parameters::ExecutionParameters)
     JuMP.set_attribute(model, "limits/restarts", 0)
     JuMP.set_attribute(model, "limits/nodes", 1)
     JuMP.set_attribute(model, "separating/maxroundsroot", 1)
+    if execution_parameters.easy
+        set_presolving_emphasis_off(model)
+    end
 
     scip = get_scip_data_from_model(model)
     result_path = setup_experiment_directory(execution_parameters)

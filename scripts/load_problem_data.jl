@@ -28,6 +28,10 @@ function load_debug_solution(experiment_store::ExperimentStore)::Ref{Ptr{SCIP.SC
     return debug_sol
 end
 
+function get_solution_path(instance::String)::String
+    return normpath(joinpath(@__DIR__, "../instances_data/", "$(instance).sol"))
+end
+
 function free_debug_sol(
     experiment_store::ExperimentStore, debug_sol::Ref{Ptr{SCIP.SCIP_Sol}}
 )
@@ -45,10 +49,6 @@ function load_solution_from_path(
         @error "Error when reading solution"
     end
     if partial[] == true
-        @error "Solution cannot a parial solution"
+        @error "Solution cannot be partial solution"
     end
-end
-
-function get_solution_path(instance::String)::String
-    return normpath(joinpath(@__DIR__, "../instances_data/", "$(instance).sol"))
 end

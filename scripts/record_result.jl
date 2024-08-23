@@ -48,7 +48,9 @@ function write_output(experiment_store::ExperimentStore)
 end
 
 function write_solving_statistic(experiment_store::ExperimentStore)
-    solv_stats = open(joinpath(experiment_store.result_path, "solving_statistic.txt"), "w")
-    solv_stats_ptr = Libc.FILE(solv_stats)
+    solv_stats_path = open(
+        joinpath(experiment_store.result_path, "solving_statistic.txt"), "w"
+    )
+    solv_stats_ptr = Libc.FILE(solv_stats_path)
     SCIP.SCIPprintStatistics(experiment_store.scip, solv_stats_ptr)
 end

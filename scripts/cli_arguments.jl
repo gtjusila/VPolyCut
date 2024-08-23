@@ -31,8 +31,8 @@ function setup_cli_arguments()
 end
 
 function read_cli_arguments(commandline_arguments::Dict)::ExecutionParameters
-    instance = remove_whitespaces(commandline_arguments["instance"])
-    mode_text = remove_whitespaces(commandline_arguments["mode"])
+    instance = commandline_arguments["instance"]
+    mode_text = commandline_arguments["mode"]
     separator = get_separator_type_from_string(mode_text)
     easy = commandline_arguments["easy"]
     return ExecutionParameters(instance, mode_text, separator, easy)
@@ -41,7 +41,6 @@ end
 function get_separator_type_from_string(
     separator_type::String
 )::Type{<:SCIP.AbstractSeparator}
-    separator_type = remove_whitespaces(separator_type)
     if separator_type == "gomory"
         return GomorySeparator
     elseif separator_type == "vpc"
@@ -50,8 +49,4 @@ function get_separator_type_from_string(
         @error "Argument `mode` does not match any known modes. Using gomory mode"
         return GomorySeparator
     end
-end
-
-function remove_whitespaces(original_string::String)::String
-    return string(strip(original_string))
 end

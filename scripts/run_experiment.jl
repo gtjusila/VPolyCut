@@ -1,6 +1,5 @@
 include("cli_arguments.jl")
 include("separator_wrappers.jl")
-include("scip_settings.jl")
 include("setup_environment.jl")
 include("load_problem_data.jl")
 include("record_result.jl")
