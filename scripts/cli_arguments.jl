@@ -43,6 +43,8 @@ function get_separator_type_from_string(
 )::Type{<:SCIP.AbstractSeparator}
     if separator_type == "gomory"
         return GomorySeparator
+    elseif separator_type == "intersection"
+        return VPolyhedralCut.IntersectionSeparator
     elseif separator_type == "vpc"
         return VPolyhedralCut.VPolyhedralSeparator
     else

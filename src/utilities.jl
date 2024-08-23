@@ -1,6 +1,7 @@
 using SCIP
 using LoggingExtras
 using JuMP
+using .SCIPJLUtils
 using MathOptInterface
 using Lazy
 
@@ -37,18 +38,6 @@ function setup_file_logger(filename::String)
         # Write the module, level and message only
         println(io, "[", args.level, "] ", args.message)
     end
-end
-
-# A Hack to allow calls to SCIP for julia model
-function create_subscip_model()
-    inner = MOI.Bridges.full_bridge_optimizer(SCIP.Optimizer(), Float64)
-    model = direct_generic_model(Float64, inner)
-    set_attribute(model, "display/verblevel", 0)
-    set_attribute(model, "presolving/maxrounds", 0)
-    backend = unsafe_backend(model)
-    scip = backend.inner
-    SCIP.@SCIP_CALL SCIP.SCIPsetSubscipsOff(scip, SCIP.SCIP_Bool(true))
-    return model
 end
 
 # Add Row alpha * x <= beta to scip 

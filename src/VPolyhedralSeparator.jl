@@ -1,8 +1,8 @@
 using SCIP
 using JuMP
+using HiGHS
 using LinearAlgebra
 import MathOptInterface as MOI
-using HiGHS
 
 """
 VPolyhedral Cut Separator

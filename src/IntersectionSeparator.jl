@@ -53,18 +53,22 @@ end
 function solve_intersection_separating_lp(lp_solution, intersection_points, pararrel_rays)
     dim = length(lp_solution)
 
-    separating_lp = create_subscip_model()
+    separating_lp = setup_scip_safe_jump_model()
+    set_attribute(separating_lp, "display/verblevel", 0)
+    set_attribute(separating_lp, "presolving/maxrounds", 0)
+    scip = get_scip_data_from_model(separating_lp)
+    SCIP.@SCIP_CALL SCIP.SCIPsetSubscipsOff(scip, true)
 
     @assert SCIP.SCIPgetSubscipsOff(unsafe_backend(separating_lp).inner) != 0
 
-    @variable(separating_lp, -100_000 <= x[1:dim] <= 100_000)
+    @variable(separating_lp, 0 <= x[1:dim] <= 100_000)
     for point in intersection_points
         new_point = point - lp_solution
-        @constraint(separating_lp, sum(x[i] * new_point[i] for i in 1:dim) >= 1)
+        @constraint(separating_lp, sum(x[i] * new_point[i] for i in 1:dim) == 1)
     end
 
     for ray in pararrel_rays
-        @constraint(separating_lp, sum(x[i] * ray[i] for i in 1:dim) >= 0)
+        @constraint(separating_lp, sum(x[i] * ray[i] for i in 1:dim) == 0)
     end
 
     @objective(separating_lp, Min, sum(x))
