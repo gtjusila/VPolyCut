@@ -15,8 +15,8 @@ function get_execution_parameters()::ExecutionParameters
 end
 
 function setup_cli_arguments()
-    settings = ArgParse.ArgParseSettings()
-    ArgParse.@add_arg_table settings begin
+    settings = ArgParseSettings()
+    @add_arg_table settings begin
         "--instance", "-i"
         help = "Name of instance. instance.sol and instance.mps should be in the data folder"
         required = true
@@ -27,7 +27,7 @@ function setup_cli_arguments()
         help = "Disable Presolving and Propagation for easy instances"
         action = :store_true
     end
-    return ArgParse.parse_args(settings)
+    return parse_args(settings)
 end
 
 function read_cli_arguments(commandline_arguments::Dict)::ExecutionParameters
