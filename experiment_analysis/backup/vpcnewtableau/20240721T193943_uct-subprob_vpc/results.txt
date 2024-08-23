@@ -1,0 +1,11 @@
+ExperimentMode: vpc
+Instance: uct-subprob
+OutputDirectory: /home/htc/gtjusila/new_vpolycut/ExperimentScript/results/20240721T193943_uct-subprob_vpc
+SCIPStatus: SCIP_STATUS_NODELIMIT
+DbgSolFeasible: true
+ReferenceObjective: 314.0
+FirstLPObj: 242.0
+InitialGap: 72.0
+FinalLPObj: 244.546
+FinalGap: 69.4536
+GapClosed: 0.0353667

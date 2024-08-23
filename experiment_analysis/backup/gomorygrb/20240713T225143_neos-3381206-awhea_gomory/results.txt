@@ -1,0 +1,12 @@
+ExperimentMode: gomory
+Instance: neos-3381206-awhea
+OutputDirectory: /home/htc/gtjusila/vpolycut/vpolycut/results/20240713T225143_neos-3381206-awhea_gomory
+RunTime: SCIP_STATUS_NODELIMIT
+DbgSolFeasible: true
+ReferenceObjective: 453.0
+FirstLPObj: 415.24
+InitialGap: 37.76
+FinalLPObj: 415.24
+FinalGap: 37.76
+GapClosed: 1.55431e-15
+SCIPStatus: SCIP_STATUS_NODELIMIT

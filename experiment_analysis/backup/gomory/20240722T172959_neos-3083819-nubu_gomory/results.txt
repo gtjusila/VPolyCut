@@ -1,0 +1,11 @@
+ExperimentMode: gomory
+Instance: neos-3083819-nubu
+OutputDirectory: /home/htc/gtjusila/Project/vpolycut/ExperimentScript/results/20240722T172959_neos-3083819-nubu_gomory
+SCIPStatus: SCIP_STATUS_NODELIMIT
+DbgSolFeasible: true
+ReferenceObjective: 6.308e6
+FirstLPObj: 6.29058e6
+InitialGap: 17420.4
+FinalLPObj: 6.30028e6
+FinalGap: 7713.07
+GapClosed: 0.55724

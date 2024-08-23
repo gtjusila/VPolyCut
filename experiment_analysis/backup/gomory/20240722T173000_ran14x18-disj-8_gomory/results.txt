@@ -1,0 +1,11 @@
+ExperimentMode: gomory
+Instance: ran14x18-disj-8
+OutputDirectory: /home/htc/gtjusila/Project/vpolycut/ExperimentScript/results/20240722T173000_ran14x18-disj-8_gomory
+SCIPStatus: SCIP_STATUS_NODELIMIT
+DbgSolFeasible: true
+ReferenceObjective: 3712.0
+FirstLPObj: 3444.42
+InitialGap: 267.579
+FinalLPObj: 3444.86
+FinalGap: 267.14
+GapClosed: 0.00163866

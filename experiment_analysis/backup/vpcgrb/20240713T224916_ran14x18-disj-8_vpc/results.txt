@@ -1,0 +1,12 @@
+ExperimentMode: vpc
+Instance: ran14x18-disj-8
+OutputDirectory: /home/htc/gtjusila/vpolycut/vpolycut/results/20240713T224916_ran14x18-disj-8_vpc
+RunTime: SCIP_STATUS_NODELIMIT
+DbgSolFeasible: true
+ReferenceObjective: 3712.0
+FirstLPObj: 3444.42
+InitialGap: 267.579
+FinalLPObj: 3444.78
+FinalGap: 267.224
+GapClosed: 0.0013267
+SCIPStatus: SCIP_STATUS_NODELIMIT

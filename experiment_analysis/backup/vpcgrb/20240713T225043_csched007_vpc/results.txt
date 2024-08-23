@@ -1,0 +1,12 @@
+ExperimentMode: vpc
+Instance: csched007
+OutputDirectory: /home/htc/gtjusila/vpolycut/vpolycut/results/20240713T225043_csched007_vpc
+RunTime: SCIP_STATUS_NODELIMIT
+DbgSolFeasible: false
+ReferenceObjective: 351.0
+FirstLPObj: 269.252
+InitialGap: 81.7484
+FinalLPObj: 272.023
+FinalGap: 78.9774
+GapClosed: 0.0338965
+SCIPStatus: SCIP_STATUS_NODELIMIT

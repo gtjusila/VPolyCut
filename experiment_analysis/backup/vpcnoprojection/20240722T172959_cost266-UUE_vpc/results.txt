@@ -1,0 +1,11 @@
+ExperimentMode: vpc
+Instance: cost266-UUE
+OutputDirectory: /home/htc/gtjusila/Project/vpolycut/ExperimentScript/results/20240722T172959_cost266-UUE_vpc
+SCIPStatus: SCIP_STATUS_NODELIMIT
+DbgSolFeasible: true
+ReferenceObjective: 2.51489e7
+FirstLPObj: 2.01615e7
+InitialGap: 4.98742e6
+FinalLPObj: 2.1218e7
+FinalGap: 3.9309e6
+GapClosed: 0.211838

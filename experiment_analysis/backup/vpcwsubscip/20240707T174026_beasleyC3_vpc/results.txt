@@ -1,0 +1,12 @@
+ExperimentMode: vpc
+Instance: beasleyC3
+OutputDirectory: /home/htc/gtjusila/vpolycut/vpolycut/results/20240707T174026_beasleyC3_vpc
+RunTime: SCIP_STATUS_NODELIMIT
+DbgSolFeasible: true
+ReferenceObjective: 754.0
+FirstLPObj: 237.988
+InitialGap: 516.012
+FinalLPObj: 244.075
+FinalGap: 509.925
+GapClosed: 0.0117961
+SCIPStatus: SCIP_STATUS_NODELIMIT

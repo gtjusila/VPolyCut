@@ -1,0 +1,12 @@
+ExperimentMode: vpc
+Instance: 30n20b8
+OutputDirectory: /home/htc/gtjusila/vpolycut/vpolycut/results/20240713T225043_30n20b8_vpc
+RunTime: SCIP_STATUS_NODELIMIT
+DbgSolFeasible: false
+ReferenceObjective: 302.0
+FirstLPObj: 107.728
+InitialGap: 194.272
+FinalLPObj: 122.695
+FinalGap: 179.305
+GapClosed: 0.0770445
+SCIPStatus: SCIP_STATUS_NODELIMIT

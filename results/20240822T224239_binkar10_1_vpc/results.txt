@@ -1,0 +1,11 @@
+ExperimentMode: vpc
+Instance: binkar10_1
+OutputDirectory: /Users/gtjusila/Documents/Project/VPolyCut/results/20240822T224239_binkar10_1_vpc
+SCIPStatus: SCIP_STATUS_NODELIMIT
+ReferenceObjective: 6742.2
+FirstLPObj: 6637.19
+InitialGap: 105.012
+FinalLPObj: 6647.44
+FinalGap: 94.7625
+GapClosed: 0.0976018
+Check: true

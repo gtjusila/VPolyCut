@@ -1,0 +1,12 @@
+ExperimentMode: vpc
+Instance: gen-ip002
+OutputDirectory: /home/htc/gtjusila/vpolycut/vpolycut/results/20240713T225043_gen-ip002_vpc
+RunTime: SCIP_STATUS_NODELIMIT
+DbgSolFeasible: true
+ReferenceObjective: -4783.73
+FirstLPObj: -4840.54
+InitialGap: 56.8086
+FinalLPObj: -4840.03
+FinalGap: 56.2936
+GapClosed: 0.00906481
+SCIPStatus: SCIP_STATUS_NODELIMIT

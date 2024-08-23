@@ -1,0 +1,11 @@
+ExperimentMode: gomory
+Instance: mc11
+OutputDirectory: /home/htc/gtjusila/Project/vpolycut/ExperimentScript/results/20240722T172959_mc11_gomory
+SCIPStatus: SCIP_STATUS_NODELIMIT
+DbgSolFeasible: true
+ReferenceObjective: 11689.0
+FirstLPObj: 608.844
+InitialGap: 11080.2
+FinalLPObj: 1004.93
+FinalGap: 10684.1
+GapClosed: 0.035747

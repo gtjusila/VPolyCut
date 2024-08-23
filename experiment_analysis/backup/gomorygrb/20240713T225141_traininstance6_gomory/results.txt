@@ -1,0 +1,12 @@
+ExperimentMode: gomory
+Instance: traininstance6
+OutputDirectory: /home/htc/gtjusila/vpolycut/vpolycut/results/20240713T225141_traininstance6_gomory
+RunTime: SCIP_STATUS_NODELIMIT
+DbgSolFeasible: false
+ReferenceObjective: 28290.0
+FirstLPObj: 0.0
+InitialGap: 28290.0
+FinalLPObj: 0.0
+FinalGap: 28290.0
+GapClosed: 0.0
+SCIPStatus: SCIP_STATUS_NODELIMIT

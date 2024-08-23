@@ -1,0 +1,11 @@
+ExperimentMode: gomory
+Instance: cod105
+OutputDirectory: /home/htc/gtjusila/Project/vpolycut/ExperimentScript/results/20240722T173000_cod105_gomory
+SCIPStatus: SCIP_STATUS_NODELIMIT
+DbgSolFeasible: true
+ReferenceObjective: -12.0
+FirstLPObj: -15.2374
+InitialGap: 3.23744
+FinalLPObj: -15.2087
+FinalGap: 3.20868
+GapClosed: 0.00888399

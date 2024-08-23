@@ -1,0 +1,12 @@
+ExperimentMode: gomory
+Instance: graphdraw-domain
+OutputDirectory: /home/htc/gtjusila/vpolycut/vpolycut/results/20240713T225143_graphdraw-domain_gomory
+RunTime: SCIP_STATUS_NODELIMIT
+DbgSolFeasible: true
+ReferenceObjective: 19686.0
+FirstLPObj: 12672.0
+InitialGap: 7014.0
+FinalLPObj: 12680.1
+FinalGap: 7005.94
+GapClosed: 0.00114949
+SCIPStatus: SCIP_STATUS_NODELIMIT

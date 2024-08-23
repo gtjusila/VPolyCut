@@ -1,0 +1,12 @@
+ExperimentMode: vpc
+Instance: graph20-20-1rand
+OutputDirectory: /home/htc/gtjusila/vpolycut/vpolycut/results/20240713T225043_graph20-20-1rand_vpc
+RunTime: SCIP_STATUS_NODELIMIT
+DbgSolFeasible: false
+ReferenceObjective: -9.0
+FirstLPObj: -13.0
+InitialGap: 4.0
+FinalLPObj: -13.0
+FinalGap: 4.0
+GapClosed: 0.0
+SCIPStatus: SCIP_STATUS_NODELIMIT

@@ -1,0 +1,12 @@
+ExperimentMode: vpc
+Instance: reblock115
+OutputDirectory: /home/htc/gtjusila/vpolycut/vpolycut/results/20240713T224916_reblock115_vpc
+RunTime: SCIP_STATUS_NODELIMIT
+DbgSolFeasible: true
+ReferenceObjective: -3.68006e7
+FirstLPObj: -3.88164e7
+InitialGap: 2.01579e6
+FinalLPObj: -3.86155e7
+FinalGap: 1.8149e6
+GapClosed: 0.0996603
+SCIPStatus: SCIP_STATUS_NODELIMIT

@@ -1,0 +1,11 @@
+ExperimentMode: vpc
+Instance: pg5_34
+OutputDirectory: /home/htc/gtjusila/new_vpolycut/ExperimentScript/results/20240721T192922_pg5_34_vpc
+SCIPStatus: SCIP_STATUS_NODELIMIT
+DbgSolFeasible: true
+ReferenceObjective: -14339.4
+FirstLPObj: -16646.6
+InitialGap: 2307.23
+FinalLPObj: -16105.6
+FinalGap: 1766.2
+GapClosed: 0.234496

@@ -1,0 +1,12 @@
+ExperimentMode: gomory
+Instance: seymour1
+OutputDirectory: /home/htc/gtjusila/vpolycut/vpolycut/results/20240713T225112_seymour1_gomory
+RunTime: SCIP_STATUS_NODELIMIT
+DbgSolFeasible: true
+ReferenceObjective: 410.764
+FirstLPObj: 403.846
+InitialGap: 6.91723
+FinalLPObj: 404.778
+FinalGap: 5.98571
+GapClosed: 0.134667
+SCIPStatus: SCIP_STATUS_NODELIMIT

@@ -1,0 +1,12 @@
+ExperimentMode: gomory
+Instance: roll3000
+OutputDirectory: /home/htc/gtjusila/vpolycut/vpolycut/results/20240713T225112_roll3000_gomory
+RunTime: SCIP_STATUS_NODELIMIT
+DbgSolFeasible: false
+ReferenceObjective: 12890.0
+FirstLPObj: 11098.0
+InitialGap: 1791.95
+FinalLPObj: 11315.6
+FinalGap: 1574.43
+GapClosed: 0.121388
+SCIPStatus: SCIP_STATUS_NODELIMIT

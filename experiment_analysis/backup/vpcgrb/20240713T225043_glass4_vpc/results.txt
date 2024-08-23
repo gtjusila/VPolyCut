@@ -1,0 +1,12 @@
+ExperimentMode: vpc
+Instance: glass4
+OutputDirectory: /home/htc/gtjusila/vpolycut/vpolycut/results/20240713T225043_glass4_vpc
+RunTime: SCIP_STATUS_NODELIMIT
+DbgSolFeasible: false
+ReferenceObjective: 9399.98
+FirstLPObj: 8.00002e8
+InitialGap: 7.99993e8
+FinalLPObj: 8.00002e8
+FinalGap: 7.99993e8
+GapClosed: -8.88178e-15
+SCIPStatus: SCIP_STATUS_NODELIMIT

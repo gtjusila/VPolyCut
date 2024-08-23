@@ -1,0 +1,11 @@
+ExperimentMode: gomory
+Instance: rococoC10-001000
+OutputDirectory: /home/htc/gtjusila/Project/vpolycut/ExperimentScript/results/20240722T173000_rococoC10-001000_gomory
+SCIPStatus: SCIP_STATUS_NODELIMIT
+DbgSolFeasible: true
+ReferenceObjective: 11460.0
+FirstLPObj: 7515.27
+InitialGap: 3944.73
+FinalLPObj: 8559.04
+FinalGap: 2900.96
+GapClosed: 0.264599

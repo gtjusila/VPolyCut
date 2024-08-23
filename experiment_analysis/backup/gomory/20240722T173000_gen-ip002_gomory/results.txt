@@ -1,0 +1,11 @@
+ExperimentMode: gomory
+Instance: gen-ip002
+OutputDirectory: /home/htc/gtjusila/Project/vpolycut/ExperimentScript/results/20240722T173000_gen-ip002_gomory
+SCIPStatus: SCIP_STATUS_NODELIMIT
+DbgSolFeasible: true
+ReferenceObjective: -4783.73
+FirstLPObj: -4840.54
+InitialGap: 56.8086
+FinalLPObj: -4839.32
+FinalGap: 55.5882
+GapClosed: 0.0214825

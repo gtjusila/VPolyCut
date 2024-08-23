@@ -1,0 +1,987 @@
+[Info] Starting Branch and Bound
+[Info] Node #1: Root Depth: 0
+[Info] LP Objective: 5830.168036943388
+[Info] Total Leaves So Far: 0
+[Info] Branching on t_C2241 with LP Solution: 0.3654913191337033
+[Info] Created Node t_C2241>=1.0
+[Info] Created Node t_C2241<=0.0
+[Info] Node #2: t_C2241 <= 0.0 Depth: 1
+[Info] Switching from Root to t_C2241 <= 0.0
+[Info] Common Ancestor: Root
+[Info] Applying Action: t_C2241 <= 0.0
+[Info] LP Objective: 5830.68252651956
+[Info] Total Leaves So Far: 1
+[Info] Branching on t_C2260 with LP Solution: 0.49774799185649266
+[Info] Created Node t_C2260>=1.0
+[Info] Created Node t_C2260<=0.0
+[Info] Node #3: t_C2260 <= 0.0 Depth: 2
+[Info] Switching from t_C2241 <= 0.0 to t_C2260 <= 0.0
+[Info] Common Ancestor: t_C2241 <= 0.0
+[Info] Applying Action: t_C2260 <= 0.0
+[Info] LP Objective: 5831.701417891539
+[Info] Total Leaves So Far: 2
+[Info] Branching on t_C2210 with LP Solution: 0.513154401066319
+[Info] Created Node t_C2210>=1.0
+[Info] Created Node t_C2210<=0.0
+[Info] Node #4: t_C2241 >= 1.0 Depth: 1
+[Info] Switching from t_C2260 <= 0.0 to t_C2241 >= 1.0
+[Info] Common Ancestor: Root
+[Info] Undoing Action: t_C2260 <= 0.0
+[Info] Undoing Action: t_C2241 <= 0.0
+[Info] Applying Action: t_C2241 >= 1.0
+[Info] LP Objective: 5832.731071541878
+[Info] Total Leaves So Far: 3
+[Info] Branching on t_C2242 with LP Solution: 0.4669791471304243
+[Info] Created Node t_C2242>=1.0
+[Info] Created Node t_C2242<=0.0
+[Info] Node #5: t_C2242 >= 1.0 Depth: 2
+[Info] Switching from t_C2241 >= 1.0 to t_C2242 >= 1.0
+[Info] Common Ancestor: t_C2241 >= 1.0
+[Info] Applying Action: t_C2242 >= 1.0
+[Info] LP Objective: 5833.41086322149
+[Info] Total Leaves So Far: 4
+[Info] Branching on t_C2134 with LP Solution: 0.4750069085944617
+[Info] Created Node t_C2134>=1.0
+[Info] Created Node t_C2134<=0.0
+[Info] Node #6: t_C2210 <= 0.0 Depth: 3
+[Info] Switching from t_C2242 >= 1.0 to t_C2210 <= 0.0
+[Info] Common Ancestor: Root
+[Info] Undoing Action: t_C2242 >= 1.0
+[Info] Undoing Action: t_C2241 >= 1.0
+[Info] Applying Action: t_C2241 <= 0.0
+[Info] Applying Action: t_C2260 <= 0.0
+[Info] Applying Action: t_C2210 <= 0.0
+[Info] LP Objective: 5833.514573212151
+[Info] Total Leaves So Far: 5
+[Info] Branching on t_C2240 with LP Solution: 0.4740427032321253
+[Info] Created Node t_C2240>=1.0
+[Info] Created Node t_C2240<=0.0
+[Info] Node #7: t_C2134 <= 0.0 Depth: 3
+[Info] Switching from t_C2210 <= 0.0 to t_C2134 <= 0.0
+[Info] Common Ancestor: Root
+[Info] Undoing Action: t_C2210 <= 0.0
+[Info] Undoing Action: t_C2260 <= 0.0
+[Info] Undoing Action: t_C2241 <= 0.0
+[Info] Applying Action: t_C2241 >= 1.0
+[Info] Applying Action: t_C2242 >= 1.0
+[Info] Applying Action: t_C2134 <= 0.0
+[Info] LP Objective: 5833.597820222483
+[Info] Total Leaves So Far: 6
+[Info] Branching on t_C2247 with LP Solution: 0.51885278891229
+[Info] Created Node t_C2247>=1.0
+[Info] Created Node t_C2247<=0.0
+[Info] Node #8: t_C2242 <= 0.0 Depth: 2
+[Info] Switching from t_C2134 <= 0.0 to t_C2242 <= 0.0
+[Info] Common Ancestor: t_C2241 >= 1.0
+[Info] Undoing Action: t_C2134 <= 0.0
+[Info] Undoing Action: t_C2242 >= 1.0
+[Info] Applying Action: t_C2242 <= 0.0
+[Info] LP Objective: 5834.808234923813
+[Info] Total Leaves So Far: 7
+[Info] Branching on t_C2210 with LP Solution: 0.4703099548111994
+[Info] Created Node t_C2210>=1.0
+[Info] Created Node t_C2210<=0.0
+[Info] Node #9: t_C2134 >= 1.0 Depth: 3
+[Info] Switching from t_C2242 <= 0.0 to t_C2134 >= 1.0
+[Info] Common Ancestor: t_C2241 >= 1.0
+[Info] Undoing Action: t_C2242 <= 0.0
+[Info] Applying Action: t_C2242 >= 1.0
+[Info] Applying Action: t_C2134 >= 1.0
+[Info] LP Objective: 5834.846384378349
+[Info] Total Leaves So Far: 8
+[Info] Branching on t_C2212 with LP Solution: 0.43633545955960595
+[Info] Created Node t_C2212>=1.0
+[Info] Created Node t_C2212<=0.0
+[Info] Node #10: t_C2260 >= 1.0 Depth: 2
+[Info] Switching from t_C2134 >= 1.0 to t_C2260 >= 1.0
+[Info] Common Ancestor: Root
+[Info] Undoing Action: t_C2134 >= 1.0
+[Info] Undoing Action: t_C2242 >= 1.0
+[Info] Undoing Action: t_C2241 >= 1.0
+[Info] Applying Action: t_C2241 <= 0.0
+[Info] Applying Action: t_C2260 >= 1.0
+[Info] LP Objective: 5834.916217402181
+[Info] Total Leaves So Far: 9
+[Info] Branching on t_C2160 with LP Solution: 0.5889410630090015
+[Info] Created Node t_C2160>=1.0
+[Info] Created Node t_C2160<=0.0
+[Info] Node #11: t_C2247 >= 1.0 Depth: 4
+[Info] Switching from t_C2260 >= 1.0 to t_C2247 >= 1.0
+[Info] Common Ancestor: Root
+[Info] Undoing Action: t_C2260 >= 1.0
+[Info] Undoing Action: t_C2241 <= 0.0
+[Info] Applying Action: t_C2241 >= 1.0
+[Info] Applying Action: t_C2242 >= 1.0
+[Info] Applying Action: t_C2134 <= 0.0
+[Info] Applying Action: t_C2247 >= 1.0
+[Info] LP Objective: 5835.17319491923
+[Info] Total Leaves So Far: 10
+[Info] Branching on t_C2291 with LP Solution: 0.4881490299061314
+[Info] Created Node t_C2291>=1.0
+[Info] Created Node t_C2291<=0.0
+[Info] Node #12: t_C2212 <= 0.0 Depth: 4
+[Info] Switching from t_C2247 >= 1.0 to t_C2212 <= 0.0
+[Info] Common Ancestor: t_C2242 >= 1.0
+[Info] Undoing Action: t_C2247 >= 1.0
+[Info] Undoing Action: t_C2134 <= 0.0
+[Info] Applying Action: t_C2134 >= 1.0
+[Info] Applying Action: t_C2212 <= 0.0
+[Info] LP Objective: 5835.961120499951
+[Info] Total Leaves So Far: 11
+[Info] Branching on t_C2159 with LP Solution: 0.3249033433347621
+[Info] Created Node t_C2159>=1.0
+[Info] Created Node t_C2159<=0.0
+[Info] Node #13: t_C2212 >= 1.0 Depth: 4
+[Info] Switching from t_C2212 <= 0.0 to t_C2212 >= 1.0
+[Info] Common Ancestor: t_C2134 >= 1.0
+[Info] Undoing Action: t_C2212 <= 0.0
+[Info] Applying Action: t_C2212 >= 1.0
+[Info] LP Objective: 5836.077586524072
+[Info] Total Leaves So Far: 12
+[Info] Branching on t_C2159 with LP Solution: 0.3249033433347621
+[Info] Created Node t_C2159>=1.0
+[Info] Created Node t_C2159<=0.0
+[Info] Node #14: t_C2247 <= 0.0 Depth: 4
+[Info] Switching from t_C2212 >= 1.0 to t_C2247 <= 0.0
+[Info] Common Ancestor: t_C2242 >= 1.0
+[Info] Undoing Action: t_C2212 >= 1.0
+[Info] Undoing Action: t_C2134 >= 1.0
+[Info] Applying Action: t_C2134 <= 0.0
+[Info] Applying Action: t_C2247 <= 0.0
+[Info] LP Objective: 5836.149540578903
+[Info] Total Leaves So Far: 13
+[Info] Branching on t_C2292 with LP Solution: 0.5606726319627241
+[Info] Created Node t_C2292>=1.0
+[Info] Created Node t_C2292<=0.0
+[Info] Node #15: t_C2210 >= 1.0 Depth: 3
+[Info] Switching from t_C2247 <= 0.0 to t_C2210 >= 1.0
+[Info] Common Ancestor: Root
+[Info] Undoing Action: t_C2247 <= 0.0
+[Info] Undoing Action: t_C2134 <= 0.0
+[Info] Undoing Action: t_C2242 >= 1.0
+[Info] Undoing Action: t_C2241 >= 1.0
+[Info] Applying Action: t_C2241 <= 0.0
+[Info] Applying Action: t_C2260 <= 0.0
+[Info] Applying Action: t_C2210 >= 1.0
+[Info] LP Objective: 5836.246215306222
+[Info] Total Leaves So Far: 14
+[Info] Branching on t_C2245 with LP Solution: 0.5954833597464344
+[Info] Created Node t_C2245>=1.0
+[Info] Created Node t_C2245<=0.0
+[Info] Node #16: t_C2210 <= 0.0 Depth: 3
+[Info] Switching from t_C2210 >= 1.0 to t_C2210 <= 0.0
+[Info] Common Ancestor: Root
+[Info] Undoing Action: t_C2210 >= 1.0
+[Info] Undoing Action: t_C2260 <= 0.0
+[Info] Undoing Action: t_C2241 <= 0.0
+[Info] Applying Action: t_C2241 >= 1.0
+[Info] Applying Action: t_C2242 <= 0.0
+[Info] Applying Action: t_C2210 <= 0.0
+[Info] LP Objective: 5836.284539929013
+[Info] Total Leaves So Far: 15
+[Info] Branching on t_C2291 with LP Solution: 0.5998750544729063
+[Info] Created Node t_C2291>=1.0
+[Info] Created Node t_C2291<=0.0
+[Info] Node #17: t_C2240 >= 1.0 Depth: 4
+[Info] Switching from t_C2210 <= 0.0 to t_C2240 >= 1.0
+[Info] Common Ancestor: Root
+[Info] Undoing Action: t_C2210 <= 0.0
+[Info] Undoing Action: t_C2242 <= 0.0
+[Info] Undoing Action: t_C2241 >= 1.0
+[Info] Applying Action: t_C2241 <= 0.0
+[Info] Applying Action: t_C2260 <= 0.0
+[Info] Applying Action: t_C2210 <= 0.0
+[Info] Applying Action: t_C2240 >= 1.0
+[Info] LP Objective: 5836.644128384086
+[Info] Total Leaves So Far: 16
+[Info] Branching on t_C2245 with LP Solution: 0.5527814279456855
+[Info] Created Node t_C2245>=1.0
+[Info] Created Node t_C2245<=0.0
+[Info] Node #18: t_C2291 <= 0.0 Depth: 5
+[Info] Switching from t_C2240 >= 1.0 to t_C2291 <= 0.0
+[Info] Common Ancestor: Root
+[Info] Undoing Action: t_C2240 >= 1.0
+[Info] Undoing Action: t_C2210 <= 0.0
+[Info] Undoing Action: t_C2260 <= 0.0
+[Info] Undoing Action: t_C2241 <= 0.0
+[Info] Applying Action: t_C2241 >= 1.0
+[Info] Applying Action: t_C2242 >= 1.0
+[Info] Applying Action: t_C2134 <= 0.0
+[Info] Applying Action: t_C2247 >= 1.0
+[Info] Applying Action: t_C2291 <= 0.0
+[Info] LP Objective: 5836.77963150546
+[Info] Total Leaves So Far: 17
+[Info] Branching on t_C2243 with LP Solution: 0.4245832204862029
+[Info] Created Node t_C2243>=1.0
+[Info] Created Node t_C2243<=0.0
+[Info] Node #19: t_C2292 >= 1.0 Depth: 5
+[Info] Switching from t_C2291 <= 0.0 to t_C2292 >= 1.0
+[Info] Common Ancestor: t_C2134 <= 0.0
+[Info] Undoing Action: t_C2291 <= 0.0
+[Info] Undoing Action: t_C2247 >= 1.0
+[Info] Applying Action: t_C2247 <= 0.0
+[Info] Applying Action: t_C2292 >= 1.0
+[Info] LP Objective: 5837.188768871886
+[Info] Total Leaves So Far: 18
+[Info] Branching on t_C2296 with LP Solution: 0.5344232523812156
+[Info] Created Node t_C2296>=1.0
+[Info] Created Node t_C2296<=0.0
+[Info] Node #20: t_C2296 <= 0.0 Depth: 6
+[Info] Switching from t_C2292 >= 1.0 to t_C2296 <= 0.0
+[Info] Common Ancestor: t_C2292 >= 1.0
+[Info] Applying Action: t_C2296 <= 0.0
+[Info] LP Objective: 5837.413618754531
+[Info] Total Leaves So Far: 19
+[Info] Branching on t_C2243 with LP Solution: 0.5725037242472268
+[Info] Created Node t_C2243>=1.0
+[Info] Created Node t_C2243<=0.0
+[Info] Node #21: t_C2292 <= 0.0 Depth: 5
+[Info] Switching from t_C2296 <= 0.0 to t_C2292 <= 0.0
+[Info] Common Ancestor: t_C2247 <= 0.0
+[Info] Undoing Action: t_C2296 <= 0.0
+[Info] Undoing Action: t_C2292 >= 1.0
+[Info] Applying Action: t_C2292 <= 0.0
+[Info] LP Objective: 5837.622054526115
+[Info] Total Leaves So Far: 20
+[Info] Branching on t_C2291 with LP Solution: 0.4769685746919977
+[Info] Created Node t_C2291>=1.0
+[Info] Created Node t_C2291<=0.0
+[Info] Node #22: t_C2291 >= 1.0 Depth: 5
+[Info] Switching from t_C2292 <= 0.0 to t_C2291 >= 1.0
+[Info] Common Ancestor: t_C2134 <= 0.0
+[Info] Undoing Action: t_C2292 <= 0.0
+[Info] Undoing Action: t_C2247 <= 0.0
+[Info] Applying Action: t_C2247 >= 1.0
+[Info] Applying Action: t_C2291 >= 1.0
+[Info] LP Objective: 5837.837532277083
+[Info] Total Leaves So Far: 21
+[Info] Branching on t_C2243 with LP Solution: 0.4828596963761015
+[Info] Created Node t_C2243>=1.0
+[Info] Created Node t_C2243<=0.0
+[Info] Node #23: t_C2243 >= 1.0 Depth: 7
+[Info] Switching from t_C2291 >= 1.0 to t_C2243 >= 1.0
+[Info] Common Ancestor: t_C2134 <= 0.0
+[Info] Undoing Action: t_C2291 >= 1.0
+[Info] Undoing Action: t_C2247 >= 1.0
+[Info] Applying Action: t_C2247 <= 0.0
+[Info] Applying Action: t_C2292 >= 1.0
+[Info] Applying Action: t_C2296 <= 0.0
+[Info] Applying Action: t_C2243 >= 1.0
+[Info] LP Objective: 5837.914463084051
+[Info] Total Leaves So Far: 22
+[Info] Branching on t_C2132 with LP Solution: 0.5849054801530865
+[Info] Created Node t_C2132>=1.0
+[Info] Created Node t_C2132<=0.0
+[Info] Node #24: t_C2245 <= 0.0 Depth: 4
+[Info] Switching from t_C2243 >= 1.0 to t_C2245 <= 0.0
+[Info] Common Ancestor: Root
+[Info] Undoing Action: t_C2243 >= 1.0
+[Info] Undoing Action: t_C2296 <= 0.0
+[Info] Undoing Action: t_C2292 >= 1.0
+[Info] Undoing Action: t_C2247 <= 0.0
+[Info] Undoing Action: t_C2134 <= 0.0
+[Info] Undoing Action: t_C2242 >= 1.0
+[Info] Undoing Action: t_C2241 >= 1.0
+[Info] Applying Action: t_C2241 <= 0.0
+[Info] Applying Action: t_C2260 <= 0.0
+[Info] Applying Action: t_C2210 >= 1.0
+[Info] Applying Action: t_C2245 <= 0.0
+[Info] LP Objective: 5837.931472547541
+[Info] Total Leaves So Far: 23
+[Info] Branching on t_C2134 with LP Solution: 0.45156435955528834
+[Info] Created Node t_C2134>=1.0
+[Info] Created Node t_C2134<=0.0
+[Info] Node #25: t_C2243 >= 1.0 Depth: 6
+[Info] Switching from t_C2245 <= 0.0 to t_C2243 >= 1.0
+[Info] Common Ancestor: Root
+[Info] Undoing Action: t_C2245 <= 0.0
+[Info] Undoing Action: t_C2210 >= 1.0
+[Info] Undoing Action: t_C2260 <= 0.0
+[Info] Undoing Action: t_C2241 <= 0.0
+[Info] Applying Action: t_C2241 >= 1.0
+[Info] Applying Action: t_C2242 >= 1.0
+[Info] Applying Action: t_C2134 <= 0.0
+[Info] Applying Action: t_C2247 >= 1.0
+[Info] Applying Action: t_C2291 <= 0.0
+[Info] Applying Action: t_C2243 >= 1.0
+[Info] LP Objective: 5838.1623406715125
+[Info] Total Leaves So Far: 24
+[Info] Branching on t_C2223 with LP Solution: 0.5640252117588442
+[Info] Created Node t_C2223>=1.0
+[Info] Created Node t_C2223<=0.0
+[Info] Node #26: t_C2132 >= 1.0 Depth: 8
+[Info] Switching from t_C2243 >= 1.0 to t_C2132 >= 1.0
+[Info] Common Ancestor: t_C2134 <= 0.0
+[Info] Undoing Action: t_C2243 >= 1.0
+[Info] Undoing Action: t_C2291 <= 0.0
+[Info] Undoing Action: t_C2247 >= 1.0
+[Info] Applying Action: t_C2247 <= 0.0
+[Info] Applying Action: t_C2292 >= 1.0
+[Info] Applying Action: t_C2296 <= 0.0
+[Info] Applying Action: t_C2243 >= 1.0
+[Info] Applying Action: t_C2132 >= 1.0
+[Info] LP Objective: 5838.252413614323
+[Info] Total Leaves So Far: 25
+[Info] Branching on t_C2212 with LP Solution: 0.6749447835344217
+[Info] Created Node t_C2212>=1.0
+[Info] Created Node t_C2212<=0.0
+[Info] Node #27: t_C2291 >= 1.0 Depth: 4
+[Info] Switching from t_C2132 >= 1.0 to t_C2291 >= 1.0
+[Info] Common Ancestor: t_C2241 >= 1.0
+[Info] Undoing Action: t_C2132 >= 1.0
+[Info] Undoing Action: t_C2243 >= 1.0
+[Info] Undoing Action: t_C2296 <= 0.0
+[Info] Undoing Action: t_C2292 >= 1.0
+[Info] Undoing Action: t_C2247 <= 0.0
+[Info] Undoing Action: t_C2134 <= 0.0
+[Info] Undoing Action: t_C2242 >= 1.0
+[Info] Applying Action: t_C2242 <= 0.0
+[Info] Applying Action: t_C2210 <= 0.0
+[Info] Applying Action: t_C2291 >= 1.0
+[Info] LP Objective: 5838.28332175557
+[Info] Total Leaves So Far: 26
+[Info] Branching on t_C2297 with LP Solution: 0.5998750544729069
+[Info] Created Node t_C2297>=1.0
+[Info] Created Node t_C2297<=0.0
+[Info] Node #28: t_C2245 <= 0.0 Depth: 5
+[Info] Switching from t_C2291 >= 1.0 to t_C2245 <= 0.0
+[Info] Common Ancestor: Root
+[Info] Undoing Action: t_C2291 >= 1.0
+[Info] Undoing Action: t_C2210 <= 0.0
+[Info] Undoing Action: t_C2242 <= 0.0
+[Info] Undoing Action: t_C2241 >= 1.0
+[Info] Applying Action: t_C2241 <= 0.0
+[Info] Applying Action: t_C2260 <= 0.0
+[Info] Applying Action: t_C2210 <= 0.0
+[Info] Applying Action: t_C2240 >= 1.0
+[Info] Applying Action: t_C2245 <= 0.0
+[Info] LP Objective: 5838.3952989299305
+[Info] Total Leaves So Far: 27
+[Info] Branching on t_C2297 with LP Solution: 0.45390723272862565
+[Info] Created Node t_C2297>=1.0
+[Info] Created Node t_C2297<=0.0
+[Info] Node #29: t_C2223 <= 0.0 Depth: 7
+[Info] Switching from t_C2245 <= 0.0 to t_C2223 <= 0.0
+[Info] Common Ancestor: Root
+[Info] Undoing Action: t_C2245 <= 0.0
+[Info] Undoing Action: t_C2240 >= 1.0
+[Info] Undoing Action: t_C2210 <= 0.0
+[Info] Undoing Action: t_C2260 <= 0.0
+[Info] Undoing Action: t_C2241 <= 0.0
+[Info] Applying Action: t_C2241 >= 1.0
+[Info] Applying Action: t_C2242 >= 1.0
+[Info] Applying Action: t_C2134 <= 0.0
+[Info] Applying Action: t_C2247 >= 1.0
+[Info] Applying Action: t_C2291 <= 0.0
+[Info] Applying Action: t_C2243 >= 1.0
+[Info] Applying Action: t_C2223 <= 0.0
+[Info] LP Objective: 5838.435768350908
+[Info] Total Leaves So Far: 28
+[Info] Branching on t_C2159 with LP Solution: 0.3249033433347617
+[Info] Created Node t_C2159>=1.0
+[Info] Created Node t_C2159<=0.0
+[Info] Node #30: t_C2210 >= 1.0 Depth: 3
+[Info] Switching from t_C2223 <= 0.0 to t_C2210 >= 1.0
+[Info] Common Ancestor: t_C2241 >= 1.0
+[Info] Undoing Action: t_C2223 <= 0.0
+[Info] Undoing Action: t_C2243 >= 1.0
+[Info] Undoing Action: t_C2291 <= 0.0
+[Info] Undoing Action: t_C2247 >= 1.0
+[Info] Undoing Action: t_C2134 <= 0.0
+[Info] Undoing Action: t_C2242 >= 1.0
+[Info] Applying Action: t_C2242 <= 0.0
+[Info] Applying Action: t_C2210 >= 1.0
+[Info] LP Objective: 5838.6278107514
+[Info] Total Leaves So Far: 29
+[Info] Branching on t_C2243 with LP Solution: 0.5888582358617902
+[Info] Created Node t_C2243>=1.0
+[Info] Created Node t_C2243<=0.0
+[Info] Node #31: t_C2297 >= 1.0 Depth: 5
+[Info] Switching from t_C2210 >= 1.0 to t_C2297 >= 1.0
+[Info] Common Ancestor: t_C2242 <= 0.0
+[Info] Undoing Action: t_C2210 >= 1.0
+[Info] Applying Action: t_C2210 <= 0.0
+[Info] Applying Action: t_C2291 >= 1.0
+[Info] Applying Action: t_C2297 >= 1.0
+[Info] LP Objective: 5838.656165308974
+[Info] Total Leaves So Far: 30
+[Info] Branching on t_C2223 with LP Solution: 0.5330901868143009
+[Info] Created Node t_C2223>=1.0
+[Info] Created Node t_C2223<=0.0
+[Info] Node #32: t_C2297 <= 0.0 Depth: 6
+[Info] Switching from t_C2297 >= 1.0 to t_C2297 <= 0.0
+[Info] Common Ancestor: Root
+[Info] Undoing Action: t_C2297 >= 1.0
+[Info] Undoing Action: t_C2291 >= 1.0
+[Info] Undoing Action: t_C2210 <= 0.0
+[Info] Undoing Action: t_C2242 <= 0.0
+[Info] Undoing Action: t_C2241 >= 1.0
+[Info] Applying Action: t_C2241 <= 0.0
+[Info] Applying Action: t_C2260 <= 0.0
+[Info] Applying Action: t_C2210 <= 0.0
+[Info] Applying Action: t_C2240 >= 1.0
+[Info] Applying Action: t_C2245 <= 0.0
+[Info] Applying Action: t_C2297 <= 0.0
+[Info] LP Objective: 5838.723932587842
+[Info] Total Leaves So Far: 31
+[Info] Branching on t_C2246 with LP Solution: 0.5527814279456853
+[Info] Created Node t_C2246>=1.0
+[Info] Created Node t_C2246<=0.0
+[Info] Node #33: t_C2240 <= 0.0 Depth: 4
+[Info] Switching from t_C2297 <= 0.0 to t_C2240 <= 0.0
+[Info] Common Ancestor: t_C2210 <= 0.0
+[Info] Undoing Action: t_C2297 <= 0.0
+[Info] Undoing Action: t_C2245 <= 0.0
+[Info] Undoing Action: t_C2240 >= 1.0
+[Info] Applying Action: t_C2240 <= 0.0
+[Info] LP Objective: 5838.731272823747
+[Info] Total Leaves So Far: 32
+[Info] Branching on t_C2247 with LP Solution: 0.44913503026511803
+[Info] Created Node t_C2247>=1.0
+[Info] Created Node t_C2247<=0.0
+[Info] Node #34: t_C2243 <= 0.0 Depth: 6
+[Info] Switching from t_C2240 <= 0.0 to t_C2243 <= 0.0
+[Info] Common Ancestor: Root
+[Info] Undoing Action: t_C2240 <= 0.0
+[Info] Undoing Action: t_C2210 <= 0.0
+[Info] Undoing Action: t_C2260 <= 0.0
+[Info] Undoing Action: t_C2241 <= 0.0
+[Info] Applying Action: t_C2241 >= 1.0
+[Info] Applying Action: t_C2242 >= 1.0
+[Info] Applying Action: t_C2134 <= 0.0
+[Info] Applying Action: t_C2247 >= 1.0
+[Info] Applying Action: t_C2291 <= 0.0
+[Info] Applying Action: t_C2243 <= 0.0
+[Info] LP Objective: 5838.793868688953
+[Info] Total Leaves So Far: 33
+[Info] Branching on t_C2164 with LP Solution: 0.5455907746159793
+[Info] Created Node t_C2164>=1.0
+[Info] Created Node t_C2164<=0.0
+[Info] Node #35: t_C2296 >= 1.0 Depth: 6
+[Info] Switching from t_C2243 <= 0.0 to t_C2296 >= 1.0
+[Info] Common Ancestor: t_C2134 <= 0.0
+[Info] Undoing Action: t_C2243 <= 0.0
+[Info] Undoing Action: t_C2291 <= 0.0
+[Info] Undoing Action: t_C2247 >= 1.0
+[Info] Applying Action: t_C2247 <= 0.0
+[Info] Applying Action: t_C2292 >= 1.0
+[Info] Applying Action: t_C2296 >= 1.0
+[Info] LP Objective: 5838.859620980349
+[Info] Total Leaves So Far: 34
+[Info] Branching on t_C2163 with LP Solution: 0.4764546734079077
+[Info] Created Node t_C2163>=1.0
+[Info] Created Node t_C2163<=0.0
+[Info] Node #36: t_C2134 >= 1.0 Depth: 5
+[Info] Switching from t_C2296 >= 1.0 to t_C2134 >= 1.0
+[Info] Common Ancestor: Root
+[Info] Undoing Action: t_C2296 >= 1.0
+[Info] Undoing Action: t_C2292 >= 1.0
+[Info] Undoing Action: t_C2247 <= 0.0
+[Info] Undoing Action: t_C2134 <= 0.0
+[Info] Undoing Action: t_C2242 >= 1.0
+[Info] Undoing Action: t_C2241 >= 1.0
+[Info] Applying Action: t_C2241 <= 0.0
+[Info] Applying Action: t_C2260 <= 0.0
+[Info] Applying Action: t_C2210 >= 1.0
+[Info] Applying Action: t_C2245 <= 0.0
+[Info] Applying Action: t_C2134 >= 1.0
+[Info] LP Objective: 5839.118691856798
+[Info] Total Leaves So Far: 35
+[Info] Branching on t_C2246 with LP Solution: 0.42397743300423096
+[Info] Created Node t_C2246>=1.0
+[Info] Created Node t_C2246<=0.0
+[Info] Node #37: t_C2297 <= 0.0 Depth: 5
+[Info] Switching from t_C2134 >= 1.0 to t_C2297 <= 0.0
+[Info] Common Ancestor: Root
+[Info] Undoing Action: t_C2134 >= 1.0
+[Info] Undoing Action: t_C2245 <= 0.0
+[Info] Undoing Action: t_C2210 >= 1.0
+[Info] Undoing Action: t_C2260 <= 0.0
+[Info] Undoing Action: t_C2241 <= 0.0
+[Info] Applying Action: t_C2241 >= 1.0
+[Info] Applying Action: t_C2242 <= 0.0
+[Info] Applying Action: t_C2210 <= 0.0
+[Info] Applying Action: t_C2291 >= 1.0
+[Info] Applying Action: t_C2297 <= 0.0
+[Info] LP Objective: 5839.507546180396
+[Info] Total Leaves So Far: 36
+[Info] Branching on t_C2246 with LP Solution: 0.5171368266405465
+[Info] Created Node t_C2246>=1.0
+[Info] Created Node t_C2246<=0.0
+[Info] Node #38: t_C2245 >= 1.0 Depth: 4
+[Info] Switching from t_C2297 <= 0.0 to t_C2245 >= 1.0
+[Info] Common Ancestor: Root
+[Info] Undoing Action: t_C2297 <= 0.0
+[Info] Undoing Action: t_C2291 >= 1.0
+[Info] Undoing Action: t_C2210 <= 0.0
+[Info] Undoing Action: t_C2242 <= 0.0
+[Info] Undoing Action: t_C2241 >= 1.0
+[Info] Applying Action: t_C2241 <= 0.0
+[Info] Applying Action: t_C2260 <= 0.0
+[Info] Applying Action: t_C2210 >= 1.0
+[Info] Applying Action: t_C2245 >= 1.0
+[Info] LP Objective: 5839.52861679811
+[Info] Total Leaves So Far: 37
+[Info] Branching on t_C2154 with LP Solution: 0.4199024988844262
+[Info] Created Node t_C2154>=1.0
+[Info] Created Node t_C2154<=0.0
+[Info] Node #39: t_C2246 <= 0.0 Depth: 6
+[Info] Switching from t_C2245 >= 1.0 to t_C2246 <= 0.0
+[Info] Common Ancestor: Root
+[Info] Undoing Action: t_C2245 >= 1.0
+[Info] Undoing Action: t_C2210 >= 1.0
+[Info] Undoing Action: t_C2260 <= 0.0
+[Info] Undoing Action: t_C2241 <= 0.0
+[Info] Applying Action: t_C2241 >= 1.0
+[Info] Applying Action: t_C2242 <= 0.0
+[Info] Applying Action: t_C2210 <= 0.0
+[Info] Applying Action: t_C2291 >= 1.0
+[Info] Applying Action: t_C2297 <= 0.0
+[Info] Applying Action: t_C2246 <= 0.0
+[Info] LP Objective: 5839.623322345508
+[Info] Total Leaves So Far: 38
+[Info] Branching on t_C2163 with LP Solution: 0.4688386052329458
+[Info] Created Node t_C2163>=1.0
+[Info] Created Node t_C2163<=0.0
+[Info] Node #40: t_C2291 >= 1.0 Depth: 6
+[Info] Switching from t_C2246 <= 0.0 to t_C2291 >= 1.0
+[Info] Common Ancestor: t_C2241 >= 1.0
+[Info] Undoing Action: t_C2246 <= 0.0
+[Info] Undoing Action: t_C2297 <= 0.0
+[Info] Undoing Action: t_C2291 >= 1.0
+[Info] Undoing Action: t_C2210 <= 0.0
+[Info] Undoing Action: t_C2242 <= 0.0
+[Info] Applying Action: t_C2242 >= 1.0
+[Info] Applying Action: t_C2134 <= 0.0
+[Info] Applying Action: t_C2247 <= 0.0
+[Info] Applying Action: t_C2292 <= 0.0
+[Info] Applying Action: t_C2291 >= 1.0
+[Info] LP Objective: 5839.637723592252
+[Info] Total Leaves So Far: 39
+[Info] Branching on t_C2243 with LP Solution: 0.5561811704153594
+[Info] Created Node t_C2243>=1.0
+[Info] Created Node t_C2243<=0.0
+[Info] Node #41: t_C2154 <= 0.0 Depth: 5
+[Info] Switching from t_C2291 >= 1.0 to t_C2154 <= 0.0
+[Info] Common Ancestor: Root
+[Info] Undoing Action: t_C2291 >= 1.0
+[Info] Undoing Action: t_C2292 <= 0.0
+[Info] Undoing Action: t_C2247 <= 0.0
+[Info] Undoing Action: t_C2134 <= 0.0
+[Info] Undoing Action: t_C2242 >= 1.0
+[Info] Undoing Action: t_C2241 >= 1.0
+[Info] Applying Action: t_C2241 <= 0.0
+[Info] Applying Action: t_C2260 <= 0.0
+[Info] Applying Action: t_C2210 >= 1.0
+[Info] Applying Action: t_C2245 >= 1.0
+[Info] Applying Action: t_C2154 <= 0.0
+[Info] LP Objective: 5839.771397103788
+[Info] Total Leaves So Far: 40
+[Info] Branching on t_C2242 with LP Solution: 0.5954833597464347
+[Info] Created Node t_C2242>=1.0
+[Info] Created Node t_C2242<=0.0
+[Info] Node #42: t_C2159 <= 0.0 Depth: 5
+[Info] Switching from t_C2154 <= 0.0 to t_C2159 <= 0.0
+[Info] Common Ancestor: Root
+[Info] Undoing Action: t_C2154 <= 0.0
+[Info] Undoing Action: t_C2245 >= 1.0
+[Info] Undoing Action: t_C2210 >= 1.0
+[Info] Undoing Action: t_C2260 <= 0.0
+[Info] Undoing Action: t_C2241 <= 0.0
+[Info] Applying Action: t_C2241 >= 1.0
+[Info] Applying Action: t_C2242 >= 1.0
+[Info] Applying Action: t_C2134 >= 1.0
+[Info] Applying Action: t_C2212 >= 1.0
+[Info] Applying Action: t_C2159 <= 0.0
+[Info] LP Objective: 5839.790505905703
+[Info] Total Leaves So Far: 41
+[Info] Branching on t_C2244 with LP Solution: 0.5858428326290893
+[Info] Created Node t_C2244>=1.0
+[Info] Created Node t_C2244<=0.0
+[Info] Node #43: t_C2243 <= 0.0 Depth: 6
+[Info] Switching from t_C2159 <= 0.0 to t_C2243 <= 0.0
+[Info] Common Ancestor: t_C2242 >= 1.0
+[Info] Undoing Action: t_C2159 <= 0.0
+[Info] Undoing Action: t_C2212 >= 1.0
+[Info] Undoing Action: t_C2134 >= 1.0
+[Info] Applying Action: t_C2134 <= 0.0
+[Info] Applying Action: t_C2247 >= 1.0
+[Info] Applying Action: t_C2291 >= 1.0
+[Info] Applying Action: t_C2243 <= 0.0
+[Info] LP Objective: 5839.798532380257
+[Info] Total Leaves So Far: 42
+[Info] Branching on t_C2244 with LP Solution: 0.4828596963761016
+[Info] Created Node t_C2244>=1.0
+[Info] Created Node t_C2244<=0.0
+[Info] Node #44: t_C2134 <= 0.0 Depth: 5
+[Info] Switching from t_C2243 <= 0.0 to t_C2134 <= 0.0
+[Info] Common Ancestor: Root
+[Info] Undoing Action: t_C2243 <= 0.0
+[Info] Undoing Action: t_C2291 >= 1.0
+[Info] Undoing Action: t_C2247 >= 1.0
+[Info] Undoing Action: t_C2134 <= 0.0
+[Info] Undoing Action: t_C2242 >= 1.0
+[Info] Undoing Action: t_C2241 >= 1.0
+[Info] Applying Action: t_C2241 <= 0.0
+[Info] Applying Action: t_C2260 <= 0.0
+[Info] Applying Action: t_C2210 >= 1.0
+[Info] Applying Action: t_C2245 <= 0.0
+[Info] Applying Action: t_C2134 <= 0.0
+[Info] LP Objective: 5839.811994074479
+[Info] Total Leaves So Far: 43
+[Info] Branching on t_C2297 with LP Solution: 0.40960833781038486
+[Info] Created Node t_C2297>=1.0
+[Info] Created Node t_C2297<=0.0
+[Info] Node #45: t_C2243 >= 1.0 Depth: 6
+[Info] Switching from t_C2134 <= 0.0 to t_C2243 >= 1.0
+[Info] Common Ancestor: Root
+[Info] Undoing Action: t_C2134 <= 0.0
+[Info] Undoing Action: t_C2245 <= 0.0
+[Info] Undoing Action: t_C2210 >= 1.0
+[Info] Undoing Action: t_C2260 <= 0.0
+[Info] Undoing Action: t_C2241 <= 0.0
+[Info] Applying Action: t_C2241 >= 1.0
+[Info] Applying Action: t_C2242 >= 1.0
+[Info] Applying Action: t_C2134 <= 0.0
+[Info] Applying Action: t_C2247 >= 1.0
+[Info] Applying Action: t_C2291 >= 1.0
+[Info] Applying Action: t_C2243 >= 1.0
+[Info] LP Objective: 5839.878176703114
+[Info] Total Leaves So Far: 44
+[Info] Branching on t_C2216 with LP Solution: 0.5656487579843855
+[Info] Created Node t_C2216>=1.0
+[Info] Created Node t_C2216<=0.0
+[Info] Node #46: t_C2216 >= 1.0 Depth: 7
+[Info] Switching from t_C2243 >= 1.0 to t_C2216 >= 1.0
+[Info] Common Ancestor: t_C2243 >= 1.0
+[Info] Applying Action: t_C2216 >= 1.0
+[Info] LP Objective: 5839.878176703114
+[Info] Total Leaves So Far: 45
+[Info] Branching on t_C2215 with LP Solution: 0.5656487579843865
+[Info] Created Node t_C2215>=1.0
+[Info] Created Node t_C2215<=0.0
+[Info] Node #47: t_C2164 <= 0.0 Depth: 7
+[Info] Switching from t_C2216 >= 1.0 to t_C2164 <= 0.0
+[Info] Common Ancestor: t_C2247 >= 1.0
+[Info] Undoing Action: t_C2216 >= 1.0
+[Info] Undoing Action: t_C2243 >= 1.0
+[Info] Undoing Action: t_C2291 >= 1.0
+[Info] Applying Action: t_C2291 <= 0.0
+[Info] Applying Action: t_C2243 <= 0.0
+[Info] Applying Action: t_C2164 <= 0.0
+[Info] LP Objective: 5839.951816347434
+[Info] Total Leaves So Far: 46
+[Info] Branching on t_C2294 with LP Solution: 0.5317812515214836
+[Info] Created Node t_C2294>=1.0
+[Info] Created Node t_C2294<=0.0
+[Info] Node #48: t_C2212 >= 1.0 Depth: 9
+[Info] Switching from t_C2164 <= 0.0 to t_C2212 >= 1.0
+[Info] Common Ancestor: t_C2134 <= 0.0
+[Info] Undoing Action: t_C2164 <= 0.0
+[Info] Undoing Action: t_C2243 <= 0.0
+[Info] Undoing Action: t_C2291 <= 0.0
+[Info] Undoing Action: t_C2247 >= 1.0
+[Info] Applying Action: t_C2247 <= 0.0
+[Info] Applying Action: t_C2292 >= 1.0
+[Info] Applying Action: t_C2296 <= 0.0
+[Info] Applying Action: t_C2243 >= 1.0
+[Info] Applying Action: t_C2132 >= 1.0
+[Info] Applying Action: t_C2212 >= 1.0
+[Info] LP Objective: 5840.131706784518
+[Info] Total Leaves So Far: 47
+[Info] Branching on t_C2191 with LP Solution: 0.5864445972495089
+[Info] Created Node t_C2191>=1.0
+[Info] Created Node t_C2191<=0.0
+[Info] Node #49: t_C2215 >= 1.0 Depth: 8
+[Info] Switching from t_C2212 >= 1.0 to t_C2215 >= 1.0
+[Info] Common Ancestor: t_C2134 <= 0.0
+[Info] Undoing Action: t_C2212 >= 1.0
+[Info] Undoing Action: t_C2132 >= 1.0
+[Info] Undoing Action: t_C2243 >= 1.0
+[Info] Undoing Action: t_C2296 <= 0.0
+[Info] Undoing Action: t_C2292 >= 1.0
+[Info] Undoing Action: t_C2247 <= 0.0
+[Info] Applying Action: t_C2247 >= 1.0
+[Info] Applying Action: t_C2291 >= 1.0
+[Info] Applying Action: t_C2243 >= 1.0
+[Info] Applying Action: t_C2216 >= 1.0
+[Info] Applying Action: t_C2215 >= 1.0
+[Info] LP Objective: 5840.153625343233
+[Info] Total Leaves So Far: 48
+[Info] Branching on t_C2223 with LP Solution: 0.5640252117588451
+[Info] Created Node t_C2223>=1.0
+[Info] Created Node t_C2223<=0.0
+[Info] Node #50: t_C2243 >= 1.0 Depth: 7
+[Info] Switching from t_C2215 >= 1.0 to t_C2243 >= 1.0
+[Info] Common Ancestor: t_C2134 <= 0.0
+[Info] Undoing Action: t_C2215 >= 1.0
+[Info] Undoing Action: t_C2216 >= 1.0
+[Info] Undoing Action: t_C2243 >= 1.0
+[Info] Undoing Action: t_C2291 >= 1.0
+[Info] Undoing Action: t_C2247 >= 1.0
+[Info] Applying Action: t_C2247 <= 0.0
+[Info] Applying Action: t_C2292 <= 0.0
+[Info] Applying Action: t_C2291 >= 1.0
+[Info] Applying Action: t_C2243 >= 1.0
+[Info] LP Objective: 5840.1641929633815
+[Info] Total Leaves So Far: 49
+[Info] Branching on t_C2213 with LP Solution: 0.5656487579843861
+[Info] Created Node t_C2213>=1.0
+[Info] Created Node t_C2213<=0.0
+[Info] Node #51: t_C2213 >= 1.0 Depth: 8
+[Info] Switching from t_C2243 >= 1.0 to t_C2213 >= 1.0
+[Info] Common Ancestor: t_C2243 >= 1.0
+[Info] Applying Action: t_C2213 >= 1.0
+[Info] LP Objective: 5840.164980354598
+[Info] Total Leaves So Far: 50
+[Info] Branching on t_C2244 with LP Solution: 0.33320051505546777
+[Info] Created Node t_C2244>=1.0
+[Info] Created Node t_C2244<=0.0
+[Info] Node #52: t_C2245 >= 1.0 Depth: 5
+[Info] Switching from t_C2213 >= 1.0 to t_C2245 >= 1.0
+[Info] Common Ancestor: Root
+[Info] Undoing Action: t_C2213 >= 1.0
+[Info] Undoing Action: t_C2243 >= 1.0
+[Info] Undoing Action: t_C2291 >= 1.0
+[Info] Undoing Action: t_C2292 <= 0.0
+[Info] Undoing Action: t_C2247 <= 0.0
+[Info] Undoing Action: t_C2134 <= 0.0
+[Info] Undoing Action: t_C2242 >= 1.0
+[Info] Undoing Action: t_C2241 >= 1.0
+[Info] Applying Action: t_C2241 <= 0.0
+[Info] Applying Action: t_C2260 <= 0.0
+[Info] Applying Action: t_C2210 <= 0.0
+[Info] Applying Action: t_C2240 >= 1.0
+[Info] Applying Action: t_C2245 >= 1.0
+[Info] LP Objective: 5840.196777825218
+[Info] Total Leaves So Far: 51
+[Info] Branching on t_C2150 with LP Solution: 0.560463632307006
+[Info] Created Node t_C2150>=1.0
+[Info] Created Node t_C2150<=0.0
+[Info] Node #53: t_C2244 <= 0.0 Depth: 9
+[Info] Switching from t_C2245 >= 1.0 to t_C2244 <= 0.0
+[Info] Common Ancestor: Root
+[Info] Undoing Action: t_C2245 >= 1.0
+[Info] Undoing Action: t_C2240 >= 1.0
+[Info] Undoing Action: t_C2210 <= 0.0
+[Info] Undoing Action: t_C2260 <= 0.0
+[Info] Undoing Action: t_C2241 <= 0.0
+[Info] Applying Action: t_C2241 >= 1.0
+[Info] Applying Action: t_C2242 >= 1.0
+[Info] Applying Action: t_C2134 <= 0.0
+[Info] Applying Action: t_C2247 <= 0.0
+[Info] Applying Action: t_C2292 <= 0.0
+[Info] Applying Action: t_C2291 >= 1.0
+[Info] Applying Action: t_C2243 >= 1.0
+[Info] Applying Action: t_C2213 >= 1.0
+[Info] Applying Action: t_C2244 <= 0.0
+[Info] LP Objective: 5840.211120769593
+[Info] Total Leaves So Far: 52
+[Info] Branching on t_C2214 with LP Solution: 0.4464151880766503
+[Info] Created Node t_C2214>=1.0
+[Info] Created Node t_C2214<=0.0
+[Info] Node #54: t_C2247 >= 1.0 Depth: 5
+[Info] Switching from t_C2244 <= 0.0 to t_C2247 >= 1.0
+[Info] Common Ancestor: Root
+[Info] Undoing Action: t_C2244 <= 0.0
+[Info] Undoing Action: t_C2213 >= 1.0
+[Info] Undoing Action: t_C2243 >= 1.0
+[Info] Undoing Action: t_C2291 >= 1.0
+[Info] Undoing Action: t_C2292 <= 0.0
+[Info] Undoing Action: t_C2247 <= 0.0
+[Info] Undoing Action: t_C2134 <= 0.0
+[Info] Undoing Action: t_C2242 >= 1.0
+[Info] Undoing Action: t_C2241 >= 1.0
+[Info] Applying Action: t_C2241 <= 0.0
+[Info] Applying Action: t_C2260 <= 0.0
+[Info] Applying Action: t_C2210 <= 0.0
+[Info] Applying Action: t_C2240 <= 0.0
+[Info] Applying Action: t_C2247 >= 1.0
+[Info] LP Objective: 5840.254887576597
+[Info] Total Leaves So Far: 53
+[Info] Branching on t_C2291 with LP Solution: 0.448345115090516
+[Info] Created Node t_C2291>=1.0
+[Info] Created Node t_C2291<=0.0
+[Info] Node #55: t_C2154 >= 1.0 Depth: 5
+[Info] Switching from t_C2247 >= 1.0 to t_C2154 >= 1.0
+[Info] Common Ancestor: t_C2260 <= 0.0
+[Info] Undoing Action: t_C2247 >= 1.0
+[Info] Undoing Action: t_C2240 <= 0.0
+[Info] Undoing Action: t_C2210 <= 0.0
+[Info] Applying Action: t_C2210 >= 1.0
+[Info] Applying Action: t_C2245 >= 1.0
+[Info] Applying Action: t_C2154 >= 1.0
+[Info] LP Objective: 5840.282294938299
+[Info] Total Leaves So Far: 54
+[Info] Branching on t_C2160 with LP Solution: 0.6095154307758255
+[Info] Created Node t_C2160>=1.0
+[Info] Created Node t_C2160<=0.0
+[Info] Node #56: t_C2223 >= 1.0 Depth: 7
+[Info] Switching from t_C2154 >= 1.0 to t_C2223 >= 1.0
+[Info] Common Ancestor: Root
+[Info] Undoing Action: t_C2154 >= 1.0
+[Info] Undoing Action: t_C2245 >= 1.0
+[Info] Undoing Action: t_C2210 >= 1.0
+[Info] Undoing Action: t_C2260 <= 0.0
+[Info] Undoing Action: t_C2241 <= 0.0
+[Info] Applying Action: t_C2241 >= 1.0
+[Info] Applying Action: t_C2242 >= 1.0
+[Info] Applying Action: t_C2134 <= 0.0
+[Info] Applying Action: t_C2247 >= 1.0
+[Info] Applying Action: t_C2291 <= 0.0
+[Info] Applying Action: t_C2243 >= 1.0
+[Info] Applying Action: t_C2223 >= 1.0
+[Info] LP Objective: 5840.285804944956
+[Info] Total Leaves So Far: 55
+[Info] Branching on t_C2213 with LP Solution: 0.37899119943222126
+[Info] Created Node t_C2213>=1.0
+[Info] Created Node t_C2213<=0.0
+[Info] Node #57: t_C2213 <= 0.0 Depth: 8
+[Info] Switching from t_C2223 >= 1.0 to t_C2213 <= 0.0
+[Info] Common Ancestor: t_C2134 <= 0.0
+[Info] Undoing Action: t_C2223 >= 1.0
+[Info] Undoing Action: t_C2243 >= 1.0
+[Info] Undoing Action: t_C2291 <= 0.0
+[Info] Undoing Action: t_C2247 >= 1.0
+[Info] Applying Action: t_C2247 <= 0.0
+[Info] Applying Action: t_C2292 <= 0.0
+[Info] Applying Action: t_C2291 >= 1.0
+[Info] Applying Action: t_C2243 >= 1.0
+[Info] Applying Action: t_C2213 <= 0.0
+[Info] LP Objective: 5840.291605925161
+[Info] Total Leaves So Far: 56
+[Info] Branching on t_C2296 with LP Solution: 0.47102384987499524
+[Info] Created Node t_C2296>=1.0
+[Info] Created Node t_C2296<=0.0
+[Info] Node #58: t_C2213 >= 1.0 Depth: 8
+[Info] Switching from t_C2213 <= 0.0 to t_C2213 >= 1.0
+[Info] Common Ancestor: t_C2134 <= 0.0
+[Info] Undoing Action: t_C2213 <= 0.0
+[Info] Undoing Action: t_C2243 >= 1.0
+[Info] Undoing Action: t_C2291 >= 1.0
+[Info] Undoing Action: t_C2292 <= 0.0
+[Info] Undoing Action: t_C2247 <= 0.0
+[Info] Applying Action: t_C2247 >= 1.0
+[Info] Applying Action: t_C2291 <= 0.0
+[Info] Applying Action: t_C2243 >= 1.0
+[Info] Applying Action: t_C2223 >= 1.0
+[Info] Applying Action: t_C2213 >= 1.0
+[Info] LP Objective: 5840.292283304696
+[Info] Total Leaves So Far: 57
+[Info] Branching on t_C2212 with LP Solution: 0.3789911994322222
+[Info] Created Node t_C2212>=1.0
+[Info] Created Node t_C2212<=0.0
+[Info] Node #59: t_C2214 >= 1.0 Depth: 10
+[Info] Switching from t_C2213 >= 1.0 to t_C2214 >= 1.0
+[Info] Common Ancestor: t_C2134 <= 0.0
+[Info] Undoing Action: t_C2213 >= 1.0
+[Info] Undoing Action: t_C2223 >= 1.0
+[Info] Undoing Action: t_C2243 >= 1.0
+[Info] Undoing Action: t_C2291 <= 0.0
+[Info] Undoing Action: t_C2247 >= 1.0
+[Info] Applying Action: t_C2247 <= 0.0
+[Info] Applying Action: t_C2292 <= 0.0
+[Info] Applying Action: t_C2291 >= 1.0
+[Info] Applying Action: t_C2243 >= 1.0
+[Info] Applying Action: t_C2213 >= 1.0
+[Info] Applying Action: t_C2244 <= 0.0
+[Info] Applying Action: t_C2214 >= 1.0
+[Info] LP Objective: 5840.296016310251
+[Info] Total Leaves So Far: 58
+[Info] Branching on t_C2296 with LP Solution: 0.3863303424303939
+[Info] Created Node t_C2296>=1.0
+[Info] Created Node t_C2296<=0.0
+[Info] Node #60: t_C2246 >= 1.0 Depth: 6
+[Info] Switching from t_C2214 >= 1.0 to t_C2246 >= 1.0
+[Info] Common Ancestor: t_C2241 >= 1.0
+[Info] Undoing Action: t_C2214 >= 1.0
+[Info] Undoing Action: t_C2244 <= 0.0
+[Info] Undoing Action: t_C2213 >= 1.0
+[Info] Undoing Action: t_C2243 >= 1.0
+[Info] Undoing Action: t_C2291 >= 1.0
+[Info] Undoing Action: t_C2292 <= 0.0
+[Info] Undoing Action: t_C2247 <= 0.0
+[Info] Undoing Action: t_C2134 <= 0.0
+[Info] Undoing Action: t_C2242 >= 1.0
+[Info] Applying Action: t_C2242 <= 0.0
+[Info] Applying Action: t_C2210 <= 0.0
+[Info] Applying Action: t_C2291 >= 1.0
+[Info] Applying Action: t_C2297 <= 0.0
+[Info] Applying Action: t_C2246 >= 1.0
+[Info] LP Objective: 5840.402599875711
+[Info] Total Leaves So Far: 59
+[Info] Branching on t_C2137 with LP Solution: 0.5514937283217874
+[Info] Created Node t_C2137>=1.0
+[Info] Created Node t_C2137<=0.0
+[Info] Node #61: t_C2137 >= 1.0 Depth: 7
+[Info] Switching from t_C2246 >= 1.0 to t_C2137 >= 1.0
+[Info] Common Ancestor: t_C2246 >= 1.0
+[Info] Applying Action: t_C2137 >= 1.0
+[Info] LP Objective: 5840.423018942741
+[Info] Total Leaves So Far: 60
+[Info] Branching on t_C2164 with LP Solution: 0.35019331333047593
+[Info] Created Node t_C2164>=1.0
+[Info] Created Node t_C2164<=0.0
+[Info] Node #62: t_C2212 <= 0.0 Depth: 9
+[Info] Switching from t_C2137 >= 1.0 to t_C2212 <= 0.0
+[Info] Common Ancestor: t_C2241 >= 1.0
+[Info] Undoing Action: t_C2137 >= 1.0
+[Info] Undoing Action: t_C2246 >= 1.0
+[Info] Undoing Action: t_C2297 <= 0.0
+[Info] Undoing Action: t_C2291 >= 1.0
+[Info] Undoing Action: t_C2210 <= 0.0
+[Info] Undoing Action: t_C2242 <= 0.0
+[Info] Applying Action: t_C2242 >= 1.0
+[Info] Applying Action: t_C2134 <= 0.0
+[Info] Applying Action: t_C2247 <= 0.0
+[Info] Applying Action: t_C2292 >= 1.0
+[Info] Applying Action: t_C2296 <= 0.0
+[Info] Applying Action: t_C2243 >= 1.0
+[Info] Applying Action: t_C2132 >= 1.0
+[Info] Applying Action: t_C2212 <= 0.0
+[Info] LP Objective: 5840.517690495887
+[Info] Total Leaves So Far: 61
+[Info] Branching on t_C2158 with LP Solution: 0.6135638554216862
+[Info] Created Node t_C2158>=1.0
+[Info] Created Node t_C2158<=0.0
+[Info] Node #63: t_C2242 <= 0.0 Depth: 6
+[Info] Switching from t_C2212 <= 0.0 to t_C2242 <= 0.0
+[Info] Common Ancestor: Root
+[Info] Undoing Action: t_C2212 <= 0.0
+[Info] Undoing Action: t_C2132 >= 1.0
+[Info] Undoing Action: t_C2243 >= 1.0
+[Info] Undoing Action: t_C2296 <= 0.0
+[Info] Undoing Action: t_C2292 >= 1.0
+[Info] Undoing Action: t_C2247 <= 0.0
+[Info] Undoing Action: t_C2134 <= 0.0
+[Info] Undoing Action: t_C2242 >= 1.0
+[Info] Undoing Action: t_C2241 >= 1.0
+[Info] Applying Action: t_C2241 <= 0.0
+[Info] Applying Action: t_C2260 <= 0.0
+[Info] Applying Action: t_C2210 >= 1.0
+[Info] Applying Action: t_C2245 >= 1.0
+[Info] Applying Action: t_C2154 <= 0.0
+[Info] Applying Action: t_C2242 <= 0.0
+[Info] LP Objective: 5840.593740568729
+[Info] Total Leaves So Far: 62
+[Info] Branching on t_C2221 with LP Solution: 0.5520684603886411
+[Info] Created Node t_C2221>=1.0
+[Info] Created Node t_C2221<=0.0
+[Info] Node #64: t_C2244 <= 0.0 Depth: 7
+[Info] Switching from t_C2242 <= 0.0 to t_C2244 <= 0.0
+[Info] Common Ancestor: Root
+[Info] Undoing Action: t_C2242 <= 0.0
+[Info] Undoing Action: t_C2154 <= 0.0
+[Info] Undoing Action: t_C2245 >= 1.0
+[Info] Undoing Action: t_C2210 >= 1.0
+[Info] Undoing Action: t_C2260 <= 0.0
+[Info] Undoing Action: t_C2241 <= 0.0
+[Info] Applying Action: t_C2241 >= 1.0
+[Info] Applying Action: t_C2242 >= 1.0
+[Info] Applying Action: t_C2134 <= 0.0
+[Info] Applying Action: t_C2247 >= 1.0
+[Info] Applying Action: t_C2291 >= 1.0
+[Info] Applying Action: t_C2243 <= 0.0
+[Info] Applying Action: t_C2244 <= 0.0
+[Info] LP Objective: 5840.62414973408
+[Info] Total Leaves So Far: 63

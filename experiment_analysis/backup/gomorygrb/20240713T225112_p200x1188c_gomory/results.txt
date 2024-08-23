@@ -1,0 +1,12 @@
+ExperimentMode: gomory
+Instance: p200x1188c
+OutputDirectory: /home/htc/gtjusila/vpolycut/vpolycut/results/20240713T225112_p200x1188c_gomory
+RunTime: SCIP_STATUS_NODELIMIT
+DbgSolFeasible: true
+ReferenceObjective: 15078.0
+FirstLPObj: 5678.61
+InitialGap: 9399.39
+FinalLPObj: 5720.66
+FinalGap: 9357.34
+GapClosed: 0.00447448
+SCIPStatus: SCIP_STATUS_NODELIMIT

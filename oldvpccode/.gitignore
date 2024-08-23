@@ -1,0 +1,11 @@
+temp
+.vscode
+vpolycut/.DS_Store
+.DS_Store
+slurm_output
+experiment_analysis
+config.toml
+vpolycut/Manifest.toml
+ExperimentScript/Manifest.toml
+
+vpolycut/lcov.info

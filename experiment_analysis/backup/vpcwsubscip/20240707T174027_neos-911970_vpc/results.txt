@@ -1,0 +1,12 @@
+ExperimentMode: vpc
+Instance: neos-911970
+OutputDirectory: /home/htc/gtjusila/vpolycut/vpolycut/results/20240707T174027_neos-911970_vpc
+RunTime: SCIP_STATUS_NODELIMIT
+DbgSolFeasible: true
+ReferenceObjective: 54.76
+FirstLPObj: 23.26
+InitialGap: 31.5
+FinalLPObj: 23.26
+FinalGap: 31.5
+GapClosed: 0.0
+SCIPStatus: SCIP_STATUS_NODELIMIT

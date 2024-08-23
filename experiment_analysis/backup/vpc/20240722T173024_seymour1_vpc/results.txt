@@ -1,0 +1,11 @@
+ExperimentMode: vpc
+Instance: seymour1
+OutputDirectory: /home/htc/gtjusila/Project/vpolycut/ExperimentScript/results/20240722T173024_seymour1_vpc
+SCIPStatus: SCIP_STATUS_NODELIMIT
+DbgSolFeasible: true
+ReferenceObjective: 410.764
+FirstLPObj: 403.846
+InitialGap: 6.91723
+FinalLPObj: 404.764
+FinalGap: 5.99956
+GapClosed: 0.132665

@@ -1,0 +1,12 @@
+ExperimentMode: gomory
+Instance: icir97_tension
+OutputDirectory: /home/htc/gtjusila/vpolycut/vpolycut/results/20240713T225143_icir97_tension_gomory
+RunTime: SCIP_STATUS_NODELIMIT
+DbgSolFeasible: false
+ReferenceObjective: 6375.0
+FirstLPObj: 6302.0
+InitialGap: 73.0
+FinalLPObj: 6316.71
+FinalGap: 58.2893
+GapClosed: 0.201517
+SCIPStatus: SCIP_STATUS_NODELIMIT

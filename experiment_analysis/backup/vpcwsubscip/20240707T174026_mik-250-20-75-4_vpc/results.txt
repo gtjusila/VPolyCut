@@ -1,0 +1,12 @@
+ExperimentMode: vpc
+Instance: mik-250-20-75-4
+OutputDirectory: /home/htc/gtjusila/vpolycut/vpolycut/results/20240707T174026_mik-250-20-75-4_vpc
+RunTime: SCIP_STATUS_NODELIMIT
+DbgSolFeasible: true
+ReferenceObjective: -52301.0
+FirstLPObj: -61651.2
+InitialGap: 9350.23
+FinalLPObj: -56669.0
+FinalGap: 4368.0
+GapClosed: 0.532846
+SCIPStatus: SCIP_STATUS_NODELIMIT

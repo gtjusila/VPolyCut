@@ -1,0 +1,11 @@
+ExperimentMode: gomory
+Instance: uct-subprob
+OutputDirectory: /home/htc/gtjusila/Project/vpolycut/ExperimentScript/results/20240722T173000_uct-subprob_gomory
+SCIPStatus: SCIP_STATUS_NODELIMIT
+DbgSolFeasible: true
+ReferenceObjective: 314.0
+FirstLPObj: 242.0
+InitialGap: 72.0
+FinalLPObj: 244.546
+FinalGap: 69.4536
+GapClosed: 0.0353667

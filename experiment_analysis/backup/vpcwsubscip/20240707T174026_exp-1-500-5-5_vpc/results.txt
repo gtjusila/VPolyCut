@@ -1,0 +1,12 @@
+ExperimentMode: vpc
+Instance: exp-1-500-5-5
+OutputDirectory: /home/htc/gtjusila/vpolycut/vpolycut/results/20240707T174026_exp-1-500-5-5_vpc
+RunTime: SCIP_STATUS_NODELIMIT
+DbgSolFeasible: true
+ReferenceObjective: 65887.0
+FirstLPObj: 28427.0
+InitialGap: 37460.0
+FinalLPObj: 36567.5
+FinalGap: 29319.5
+GapClosed: 0.217312
+SCIPStatus: SCIP_STATUS_NODELIMIT

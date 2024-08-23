@@ -1,0 +1,11 @@
+ExperimentMode: gomory
+Instance: bnatt400
+OutputDirectory: /home/htc/gtjusila/Project/vpolycut/ExperimentScript/results/20240722T172959_bnatt400_gomory
+SCIPStatus: SCIP_STATUS_NODELIMIT
+DbgSolFeasible: true
+ReferenceObjective: 1.0
+FirstLPObj: 0.0
+InitialGap: 1.0
+FinalLPObj: 0.0
+FinalGap: 1.0
+GapClosed: 0.0

@@ -1,0 +1,11 @@
+ExperimentMode: gomory
+Instance: sp150x300d
+OutputDirectory: /home/htc/gtjusila/Project/vpolycut/ExperimentScript/results/20240722T173000_sp150x300d_gomory
+SCIPStatus: SCIP_STATUS_NODELIMIT
+DbgSolFeasible: true
+ReferenceObjective: 69.0
+FirstLPObj: 34.109
+InitialGap: 34.891
+FinalLPObj: 45.9252
+FinalGap: 23.0748
+GapClosed: 0.338661

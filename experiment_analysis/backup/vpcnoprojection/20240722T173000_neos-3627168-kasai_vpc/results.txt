@@ -1,0 +1,11 @@
+ExperimentMode: vpc
+Instance: neos-3627168-kasai
+OutputDirectory: /home/htc/gtjusila/Project/vpolycut/ExperimentScript/results/20240722T173000_neos-3627168-kasai_vpc
+SCIPStatus: SCIP_STATUS_NODELIMIT
+DbgSolFeasible: true
+ReferenceObjective: 988586.0
+FirstLPObj: 954341.0
+InitialGap: 34244.6
+FinalLPObj: 957254.0
+FinalGap: 31331.8
+GapClosed: 0.0850595

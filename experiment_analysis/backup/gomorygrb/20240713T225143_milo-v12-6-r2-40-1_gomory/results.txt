@@ -1,0 +1,12 @@
+ExperimentMode: gomory
+Instance: milo-v12-6-r2-40-1
+OutputDirectory: /home/htc/gtjusila/vpolycut/vpolycut/results/20240713T225143_milo-v12-6-r2-40-1_gomory
+RunTime: SCIP_STATUS_NODELIMIT
+DbgSolFeasible: false
+ReferenceObjective: 326481.0
+FirstLPObj: 205659.0
+InitialGap: 120822.0
+FinalLPObj: 205659.0
+FinalGap: 120822.0
+GapClosed: 0.0
+SCIPStatus: SCIP_STATUS_NODELIMIT
