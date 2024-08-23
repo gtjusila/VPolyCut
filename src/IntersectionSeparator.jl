@@ -61,7 +61,7 @@ function solve_intersection_separating_lp(lp_solution, intersection_points, para
 
     @assert SCIP.SCIPgetSubscipsOff(unsafe_backend(separating_lp).inner) != 0
 
-    @variable(separating_lp, 0 <= x[1:dim] <= 100_000)
+    @variable(separating_lp, x[1:dim])
     for point in intersection_points
         new_point = point - lp_solution
         @constraint(separating_lp, sum(x[i] * new_point[i] for i in 1:dim) == 1)
@@ -71,7 +71,7 @@ function solve_intersection_separating_lp(lp_solution, intersection_points, para
         @constraint(separating_lp, sum(x[i] * ray[i] for i in 1:dim) == 0)
     end
 
-    @objective(separating_lp, Min, sum(x))
+    @objective(separating_lp, Min, 0)
 
     optimize!(separating_lp)
     println(separating_lp)
