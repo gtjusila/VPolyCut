@@ -66,7 +66,7 @@ function solve_intersection_separating_lp(lp_solution, intersection_points, para
         @constraint(separating_lp, sum(x[i] * ray[i] for i in 1:dim) == 0)
     end
 
-    @objective(separating_lp, Min, sum(x))
+    @objective(separating_lp, Min, 0)
 
     optimize!(separating_lp)
     if is_solved_and_feasible(separating_lp)
