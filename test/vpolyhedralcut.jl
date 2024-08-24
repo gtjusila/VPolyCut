@@ -3,7 +3,6 @@ using VPolyhedralCut
 using VPolyhedralCut.SCIPJLUtils
 using JuMP
 using Test
-
 @testset "VPolyhedral Cut Pentagon" begin
     model = setup_scip_safe_jump_model()
     set_mode_cutting_plane_experiment(model)

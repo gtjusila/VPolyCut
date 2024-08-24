@@ -36,10 +36,11 @@ function project(projection::Projection, point::Vector{SCIP.SCIP_Real})
 end
 
 function project(projection::Projection, ray::Ray)
-    old_coefficients = get_coefficients(ray)
+    new_ray = deepcopy(ray)
+    old_coefficients = get_coefficients(new_ray)
     new_coefficients = project(projection, old_coefficients)
-    set_coefficients!(ray, new_coefficients)
-    return ray
+    set_coefficients!(new_ray, new_coefficients)
+    return new_ray
 end
 
 function undo_projection(projection::Projection, point::Point)

@@ -2,6 +2,7 @@ using SCIP
 using JuMP
 using LinearAlgebra
 import MathOptInterface as MOI
+using HiGHS
 
 """
 Intersection Cut Separator
@@ -53,14 +54,8 @@ end
 function solve_intersection_separating_lp(lp_solution, intersection_points, pararrel_rays)
     dim = length(lp_solution)
 
-    separating_lp = setup_scip_safe_jump_model()
-    set_attribute(separating_lp, "display/verblevel", 0)
-    set_attribute(separating_lp, "presolving/maxrounds", 0)
-    scip = get_scip_data_from_model(separating_lp)
-    SCIP.@SCIP_CALL SCIP.SCIPsetSubscipsOff(scip, true)
-
-    @assert SCIP.SCIPgetSubscipsOff(unsafe_backend(separating_lp).inner) != 0
-
+    separating_lp = Model(HiGHS.Optimizer)
+    set_optimizer_attribute(separating_lp, "output_flag", false)
     @variable(separating_lp, x[1:dim])
     for point in intersection_points
         new_point = point - lp_solution
@@ -71,14 +66,13 @@ function solve_intersection_separating_lp(lp_solution, intersection_points, para
         @constraint(separating_lp, sum(x[i] * ray[i] for i in 1:dim) == 0)
     end
 
-    @objective(separating_lp, Min, 0)
+    @objective(separating_lp, Min, sum(x))
 
     optimize!(separating_lp)
-    println(separating_lp)
     if is_solved_and_feasible(separating_lp)
         return Point(value.(x))
     end
-
+    error("Seperating LP did not return a feasible solution")
     return nothing
 end
 
@@ -88,25 +82,22 @@ Construct the seperating lp return a reference to a pointer to the LPI
 function find_cut_from_split(
     sepa::IntersectionSeparator,
     split_index::Int64,
-    corner_polyhedron::CornerPolyhedron,
+    corner::CornerPolyhedron,
     tableau::Tableau
 )::Bool
     scip = sepa.scipd
-    complemented_tableau = copy_and_complement(tableau)
-    corner = construct_corner_polyhedron(complemented_tableau)
     lp_sol = corner.lp_sol
     lp_rays = corner.lp_rays
-    tableau = get_tableau(complemented_tableau)
-    @info "Complemented Corner Polyhedron" [lp_sol] lp_rays complemented_tableau.complemented_columns
-
+    for ray in corner.lp_rays
+        @assert length(ray) == get_nvars(tableau)
+    end
     # STEP 1: Compute intersection points
     intersection_points, parallel_ray = compute_intersection_points(
         scip, split_index, lp_sol, lp_rays
     )
-    parallel_ray = lp_rays
-    @info "Intersection Points:" intersection_points
-    @info "Rays" parallel_ray
-
+    for ray in corner.lp_rays
+        @assert length(ray) == get_nvars(tableau)
+    end
     # Create a projection object 
     projection = create_projection_to_nonbasic_space(tableau)
 
@@ -115,10 +106,16 @@ function find_cut_from_split(
     projected_intersection_points = [
         project(projection, point) for point in intersection_points
     ]
+    for ray in corner.lp_rays
+        @assert length(ray) == get_nvars(tableau)
+    end
     projected_parallel_ray = [project(projection, ray) for ray in parallel_ray]
     @info "Projected Sol" [projected_lp_sol]
     @info "Projected Intersection" projected_intersection_points
     @info "Projected Ray" projected_parallel_ray
+    for ray in corner.lp_rays
+        @assert length(ray) == get_nvars(tableau)
+    end
 
     # Step 3: Solve the seperating LP
     separating_sol = solve_intersection_separating_lp(
@@ -128,21 +125,21 @@ function find_cut_from_split(
     if isnothing(separating_sol)
         return false
     end
+    b = dot(separating_sol, projected_lp_sol) + 1
 
     # Step 4: Convert the seperating solution to the original space
     full_seperating_sol = undo_projection(projection, separating_sol)
     # Undo Complementation
-    full_uncomplemented_sol = get_uncomplemented_vector(
-        full_seperating_sol, complemented_tableau
-    )
-    uncomplmented_lp_sol = get_uncomplemented_vector(lp_sol, complemented_tableau)
-    println(full_uncomplemented_sol)
-    b = dot(full_uncomplemented_sol, uncomplmented_lp_sol) + 1
+    #full_uncomplemented_sol = get_uncomplemented_vector(
+    #    full_seperating_sol, complemented_tableau
+    #)
+    #uncomplmented_lp_sol = get_uncomplemented_vector(lp_sol, complemented_tableau)
+    #println(full_uncomplemented_sol)
 
     # Step 5: Convert the seperating solution to a cut in general form
     # This uses tableau rows from constraint_matrix so complementaztion does not matter
     cut_vector, b = convert_standard_inequality_to_general(
-        scip, tableau, full_uncomplemented_sol, b
+        scip, tableau, full_seperating_sol, b
     )
 
     # Step 6: Add the cut to the SCIP
@@ -167,9 +164,14 @@ function find_cut_from_split(
         end
     end
 
-    SCIP.@SCIP_CALL SCIP.SCIPprintRow(scip, row[], C_NULL)
+    #SCIP.@SCIP_CALL SCIP.SCIPprintRow(scip, row[], C_NULL)
     SCIP.@SCIP_CALL SCIP.SCIPaddRow(scip, row[], true, infeasible)
     SCIP.@SCIP_CALL SCIP.SCIPreleaseRow(scip, row)
+
+    for ray in corner.lp_rays
+        @assert length(ray) == get_nvars(tableau)
+    end
+    @assert length(lp_sol) == get_nvars(tableau)
     return true
 end
 
@@ -188,7 +190,6 @@ function SCIP.exec_lp(sepa::IntersectionSeparator)
 
     # STEP 1: Get Corner Polyhedron of current LP solution
     corner = construct_corner_polyhedron(tableau)
-    @info "Corner Polyhedron" [corner.lp_sol] corner.lp_rays
     # STEP 2: Get the set of fractional indices 
     split_indices = get_branching_indices(scip, tableau)
     separated = false
@@ -199,7 +200,10 @@ function SCIP.exec_lp(sepa::IntersectionSeparator)
         if i % 10 == 0
             println("Cut Generated $(i)")
         end
-        success = find_cut_from_split(sepa, index, corner, tableau)
+        success = false
+        with_logger(NullLogger()) do
+            success = find_cut_from_split(sepa, index, corner, tableau)
+        end
         separated = separated || success
     end
 
