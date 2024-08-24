@@ -21,7 +21,7 @@ for folder in "$not_sorted"/*; do
             mv "$folder" "$gomory_dir/"
         
         # Move folders containing "vpc" to the vpc directory
-        elif [[ "$folder_name" == *vpc* ]]; then
+        elif [[ "$folder_name" == *intersection* ]]; then
             mv "$folder" "$vpc_dir/"
         fi
     fi

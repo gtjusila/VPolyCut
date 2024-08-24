@@ -72,7 +72,7 @@ function solve_intersection_separating_lp(lp_solution, intersection_points, para
     if is_solved_and_feasible(separating_lp)
         return Point(value.(x))
     end
-    error("Seperating LP did not return a feasible solution")
+    @error "Seperating LP is infeasible"
     return nothing
 end
 
@@ -88,16 +88,12 @@ function find_cut_from_split(
     scip = sepa.scipd
     lp_sol = corner.lp_sol
     lp_rays = corner.lp_rays
-    for ray in corner.lp_rays
-        @assert length(ray) == get_nvars(tableau)
-    end
+
     # STEP 1: Compute intersection points
     intersection_points, parallel_ray = compute_intersection_points(
         scip, split_index, lp_sol, lp_rays
     )
-    for ray in corner.lp_rays
-        @assert length(ray) == get_nvars(tableau)
-    end
+
     # Create a projection object 
     projection = create_projection_to_nonbasic_space(tableau)
 
@@ -106,22 +102,14 @@ function find_cut_from_split(
     projected_intersection_points = [
         project(projection, point) for point in intersection_points
     ]
-    for ray in corner.lp_rays
-        @assert length(ray) == get_nvars(tableau)
-    end
-    projected_parallel_ray = [project(projection, ray) for ray in parallel_ray]
-    @info "Projected Sol" [projected_lp_sol]
-    @info "Projected Intersection" projected_intersection_points
-    @info "Projected Ray" projected_parallel_ray
-    for ray in corner.lp_rays
-        @assert length(ray) == get_nvars(tableau)
-    end
+    projected_parallel_ray = [
+        project(projection, ray) for ray in parallel_ray
+    ]
 
     # Step 3: Solve the seperating LP
     separating_sol = solve_intersection_separating_lp(
         projected_lp_sol, projected_intersection_points, projected_parallel_ray
     )
-    @info "Seperating Solution" [separating_sol]
     if isnothing(separating_sol)
         return false
     end
