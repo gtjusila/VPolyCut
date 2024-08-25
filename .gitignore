@@ -1,3 +1,4 @@
-/Manifest.oml
-/results/
-/logs/
+/Manifest.toml
+results
+logs
+experiment_analysis

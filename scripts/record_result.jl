@@ -1,3 +1,5 @@
+using SCIP
+using VPolyhedralCut
 function record_result(experiment_store::ExperimentStore)
     write_output(experiment_store)
 end
@@ -31,10 +33,22 @@ function write_output(experiment_store::ExperimentStore)
     println(output, "GapClosed: $(round(gapclosed, sigdigits=6))")
 
     check = false
-    if (SCIP.SCIPgetObjsense(experiment_store.scip) == SCIP.SCIP_OBJSENSE_MINIMIZE)
-        check = experiment_store.reference_objective > finaldualbound
-    elseif (SCIP.SCIPgetObjsense(experiment_store.scip) == SCIP.SCIP_OBJSENSE_MAXIMIZE)
-        check = experiment_store.reference_objective < finaldualbound
+    if VPolyhedralCut.is_LE(
+        experiment_store.scip, initialdualbound, experiment_store.reference_objective
+    )
+        check = VPolyhedralCut.is_LE(
+            experiment_store.scip, finaldualbound, experiment_store.reference_objective
+        )
+    elseif VPolyhedralCut.is_GE(
+        experiment_store.scip,
+        initialdualbound,
+        experiment_store.reference_objective
+    )
+        check = VPolyhedralCut.is_GE(
+            experiment_store.scip,
+            finaldualbound,
+            experiment_store.reference_objective
+        )
     end
     println(output, "Check: $(check)")
 
