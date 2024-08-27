@@ -15,6 +15,9 @@ end
 function set_reference_solution_objective(experiment_store::ExperimentStore)
     @assert SCIP.SCIPgetStage(experiment_store.scip) == SCIP.SCIP_STAGE_PROBLEM
     debug_sol = load_debug_solution(experiment_store)
+    println(
+        "Reference objective: ", SCIP.SCIPgetSolOrigObj(experiment_store.scip, debug_sol[])
+    )
     experiment_store.reference_objective = SCIP.SCIPgetSolOrigObj(
         experiment_store.scip, debug_sol[]
     )

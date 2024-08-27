@@ -5,20 +5,9 @@ using LinearAlgebra
 import MathOptInterface as MOI
 
 """
-VPolyhedral Cut Separator
-
-Implementation of Algorithm 1 from 
-Balas, Egon, and Aleksandr M. Kazachkov. "V-polyhedral disjunctive cuts." arXiv preprint arXiv:2207.13619 (2022).
-Disjunction are obtained from partial branch and bound trees
-
-# Required Parameters
-- scipd::SCIP.SCIPData Reference to the SCIPData object
-
-# Optional Parameters
-- n_leaves::Int Number of leaves in the disjunction
-- cut_limit::Int Number of cuts to generate (-1 if no limit, -2 if limit is the number of fractional variable)
+Simple Split VPC 
 """
-@kwdef mutable struct VPolyhedralSeparator <: SCIP.AbstractSeparator
+@kwdef mutable struct SimpleSplitVPC <: SCIP.AbstractSeparator
     "Pointer to SCIP"
     scipd::SCIP.SCIPData
     "Number of leaves in the disjunction"
@@ -54,7 +43,7 @@ function include_vpolyhedral_sepa(scip::SCIP.SCIPData; n_leaves=2, cut_limit=-2)
     )
 end
 
-function SCIP.exec_lp(sepa::VPolyhedralSeparator)
+function SCIP.exec_lp(sepa::SimpleSplitVPC)
     # Aliasing for easier call
     scip = sepa.scipd
     sepa.called += 1
@@ -247,18 +236,14 @@ function solve_separation_problems(sepa::VPolyhedralSeparator)
 
     # First check if the LP is feasible by optimizing using all 0s objective
     @objective(separating_lp, Min, 0)
-    println("Starting Check Feasibility")
     optimize!(separating_lp)
-    println("Finished Check Feasibility")
     if !is_solved_and_feasible(separating_lp)
         error("Separating LP is infeasible")
     end
 
     # Now optimize with all 1s objective
     @objective(separating_lp, Min, sum(x))
-    println("Starting First Optimization")
     optimize!(separating_lp)
-    println("Finished All ones objective")
     if is_solved_and_feasible(separating_lp)
         cut = get_cut_from_separating_solution(sepa, value.(x))
         push!(sepa.cutpool, cut)
@@ -267,11 +252,9 @@ function solve_separation_problems(sepa::VPolyhedralSeparator)
     end
 
     # Now Optimize with p as objective
-    println("Starting P* Optimization")
     p_star = argmin(point -> get_objective_value(point), translated_points)
     @objective(separating_lp, Min, sum(x[i] * p_star[i] for i in 1:dimension))
     optimize!(separating_lp)
-    println("Finished P* Optimization")
 
     if is_solved_and_feasible(separating_lp)
         cut = get_cut_from_separating_solution(sepa, value.(x))
@@ -287,25 +270,23 @@ function solve_separation_problems(sepa::VPolyhedralSeparator)
     # Now transition to PRLP= 
     a_bar = value.(x)
     @constraint(separating_lp, sum(x[i] * p_star[i] for i in 1:dimension) == 1)
-    set_time_limit_sec(separating_lp, 10.0)
+
     r_bar = filter(ray -> !is_zero(scip, dot(a_bar, ray)), rays)
     sort!(r_bar; by=ray -> abs(get_obj(get_generating_variable(ray))))
-    objective_tried = 0
+
     marked = fill(false, length(r_bar))
     for ray in r_bar
         @objective(
             separating_lp, Min, sum(x[i] * ray[i] for i in 1:dimension)
         )
         optimize!(separating_lp)
-        objective_tried += 1
         if is_solved_and_feasible(separating_lp)
             cut = get_cut_from_separating_solution(sepa, value.(x))
             push!(sepa.cutpool, cut)
         else
-            if objective_tried > sepa.cut_limit * 2
-                break
+            with_logger(ConsoleLogger()) do
+                @error "Failed to find a cut"
             end
-            println("Objective tried $(objective_tried)")
         end
         println("Generated $(length(sepa.cutpool)) cuts. Cutlimit is $(sepa.cut_limit)")
         if length(sepa.cutpool) >= sepa.cut_limit
