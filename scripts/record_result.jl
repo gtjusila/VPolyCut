@@ -1,5 +1,6 @@
 using SCIP
 using VPolyhedralCut
+
 function record_result(experiment_store::ExperimentStore)
     write_output(experiment_store)
 end

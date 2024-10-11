@@ -10,25 +10,38 @@ VPolyhedral Cut Separator
 Implementation of Algorithm 1 from 
 Balas, Egon, and Aleksandr M. Kazachkov. "V-polyhedral disjunctive cuts." arXiv preprint arXiv:2207.13619 (2022).
 Disjunction are obtained from partial branch and bound trees
+"""
 
-# Required Parameters
-- scipd::SCIP.SCIPData Reference to the SCIPData object
+"""
+A struct to store the parameters of the VPolyhedralSeparator. An instance of this class
+is passed during the creation of the VPolyhedralSeparator.
+"""
+@kwdef mutable struct VPolyhedralSeparatorParameters
+    "Number of leaves in the disjunction"
+    n_leaves::Int = 2
+    "Maximum number of cuts to generate in a round. -1 for no limit, -2 for the number of fractional variable in LP Solution"
+    cut_limit::Int = -2
+    "Maximum number of separation rounds"
+    call_limit::Int = 1
+end
 
-# Optional Parameters
-- n_leaves::Int Number of leaves in the disjunction
-- cut_limit::Int Number of cuts to generate (-1 if no limit, -2 if limit is the number of fractional variable)
+"""
+VPolyhedralSeparator
+
+A class to hold the separator data.
+
+Constructors:
+- `VPolyhedralSeparator(scipd::SCIP.SCIPData, params::VPolyhedralSeparatorParameters)`: Create a new VPolyhedralSeparator
 """
 @kwdef mutable struct VPolyhedralSeparator <: SCIP.AbstractSeparator
     "Pointer to SCIP"
     scipd::SCIP.SCIPData
     "Number of leaves in the disjunction"
-    n_leaves::Int = 2
-    "Number of times the separator is called"
     called::Int = 0
     "Cut Limit"
-    cut_limit::Int = -2
-    "Is LP solution separated?"
     separated::Bool = false
+    "Parameters"
+    parameters::VPolyhedralSeparatorParameters
 
     "Complemented Tableau"
     complemented_tableau::Union{Nothing,ComplementedTableau} = nothing
@@ -46,11 +59,18 @@ Disjunction are obtained from partial branch and bound trees
     lp_sol::Union{Nothing,Vector{SCIP.SCIP_Real}} = nothing
 end
 
+# Constructor
+
+function VPolyhedralSeparator(scipd::SCIP.SCIPData, params::VPolyhedralSeparatorParameters)
+    return VPolyhedralSeparator(; scipd=scipd, parameters=params)
+end
+
 # Include Helper
-function include_vpolyhedral_sepa(scip::SCIP.SCIPData; n_leaves=2, cut_limit=-2)
-    sepa = VPolyhedralSeparator(; cut_limit=cut_limit, scipd=scip, n_leaves=n_leaves)
+function include_vpolyhedral_sepa(scipd::SCIP.SCIPData; n_leaves=2, cut_limit=-2)
+    parameters = VPolyhedralSeparatorParameters(; n_leaves=n_leaves, cut_limit=cut_limit)
+    sepa = VPolyhedralSeparator(scipd, parameters)
     SCIP.include_sepa(
-        scip.scip[], scip.sepas, sepa; priority=9999, freq=0, usessubscip=true
+        scipd.scip[], scipd.sepas, sepa; priority=9999, freq=0, usessubscip=true
     )
 end
 
@@ -71,9 +91,7 @@ function SCIP.exec_lp(sepa::VPolyhedralSeparator)
     end
 
     # Call Separation Routine
-    with_logger(NullLogger()) do
-        vpolyhedralcut_separation(sepa)
-    end
+    vpolyhedralcut_separation(sepa)
 
     if sepa.separated
         return SCIP.SCIP_SEPARATED
@@ -87,10 +105,10 @@ function vpolyhedralcut_separation(sepa::VPolyhedralSeparator)
     # Preparation
     #
     scip = sepa.scipd
+
     # If cut limit is -1 or -2 convert them to the actual limit 
-    println(sepa.cut_limit)
-    sepa.cut_limit = get_cut_limit(sepa)
-    println("Cut limit is $(sepa.cut_limit)")
+    sepa.parameters.cut_limit = get_cut_limit(sepa.parameters)
+
     # Step 0: Get complemented tableau
     construct_complemented_tableau(sepa)
 
@@ -116,13 +134,13 @@ function vpolyhedralcut_separation(sepa::VPolyhedralSeparator)
     solve_separation_problems(sepa)
 end
 
-function get_cut_limit(sepa::VPolyhedralSeparator)
-    if sepa.cut_limit == -1
+function get_cut_limit(sepa_parameter::VPolyhedralSeparatorParameters)
+    if sepa_parameter.cut_limit == -1
         return typemax(Int)
-    elseif sepa.cut_limit == -2
-        return SCIP.SCIPgetNLPBranchCands(sepa.scipd)
+    elseif sepa_parameter.cut_limit == -2
+        return SCIP.SCIPgetNLPBranchCands(sepa_parameter.scipd)
     else
-        return sepa.cut_limit
+        return sepa_parameter.cut_limit
     end
 end
 

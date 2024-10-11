@@ -282,7 +282,7 @@ end
     # Include Intersection Separator
     scip = get_scip_data_from_model(model)
     VPolyhedralCut.include_intersection_sepa(scip)
-    SCIP.@SCIP_CALL SCIP.SCIPreadProb(scip, "instances_data/neos5.mps", C_NULL)
+    SCIP.@SCIP_CALL SCIP.SCIPreadProb(scip, "../instances_data/neos5.mps", C_NULL)
 
     # We use a callback to check after root node finished processing
     # Setup data dictionary

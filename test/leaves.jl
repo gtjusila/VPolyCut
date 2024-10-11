@@ -169,7 +169,7 @@ end
     JuMP.set_attribute(model, "display/verblevel", 0)
 
     scip = get_scip_data_from_model(model)
-    SCIP.@SCIP_CALL SCIP.SCIPreadProb(scip, "instances_data/neos5.mps", C_NULL)
+    SCIP.@SCIP_CALL SCIP.SCIPreadProb(scip, "../instances_data/neos5.mps", C_NULL)
 
     data = Dict()
     data["scip"] = get_scip_data_from_model(model)
