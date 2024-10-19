@@ -188,6 +188,8 @@ function SCIP.exec_lp(sepa::IntersectionSeparator)
         if i % 10 == 0
             println("Cut Generated $(i)")
         end
+
+        flush(stdout)
         success = false
         with_logger(NullLogger()) do
             success = find_cut_from_split(sepa, index, corner, tableau)

@@ -1,0 +1,15 @@
+modes = [
+    "gomory",
+    "intersection",
+    "vpc"
+]
+instances = [
+  "30n20b8",
+  "beasleyC3",
+  "binkar10_1",
+  "bnatt400",
+  "cod105",
+  "cost266-UUE",
+  "csched007"
+]
+instances_base_path = "/Users/gtjusila/Documents/Project/VPolyCut/instances_data"

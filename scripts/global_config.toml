@@ -1,0 +1,3 @@
+julia_depot_path = "/scratch/htc/gtjusila/julia"
+template_file = "job_script_template.sh"
+path_to_script = "/scratch/htc/gtjusila/job_scripts"

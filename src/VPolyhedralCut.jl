@@ -1,22 +1,34 @@
 module VPolyhedralCut
 
+# SCIPJLUtils
 include("scipjlutils/SCIPJLUtils.jl")
 
 # Main VPolyhedralCut Module
-include("numerical_methods.jl")
 
 # Tableau Object
 # Handles All low level interaction with SCIP
-include("tableau/Variable.jl")
-include("tableau/LPRow.jl")
-include("tableau/LPColumn.jl")
-include("tableau/ConstraintMatrix.jl")
-include("tableau/Tableau.jl")
-include("tableau/scip_connector.jl")
-include("tableau/ComplementedTableau.jl")
+# Also contains some abstract data structure which act as wrappers around SCIP data structures
+include("tableauhandlers/Variable.jl")
+include("tableauhandlers/LPRow.jl")
+include("tableauhandlers/LPColumn.jl")
+include("tableauhandlers/ConstraintMatrix.jl")
+include("tableauhandlers/Tableau.jl")
+include("tableauhandlers/scip_connector.jl")
+include("tableauhandlers/ComplementedTableau.jl")
 
-# utilities
-include("utilities.jl")
+# Common Data Structures
+include("datastructures/Point.jl")
+include("datastructures/Ray.jl")
+include("datastructures/Projection.jl")
+include("datastructures/CutPool.jl")
+include("datastructures/PointRayCollection.jl")
+include("datastructures/CornerPolyhedron.jl")
+
+# Utilities
+include("utilities/sepa_row_helpers.jl")
+include("utilities/log_helpers.jl")
+include("utilities/numerical_methods.jl")
+include("utilities/eliminate_duplicate_rows.jl")
 
 # Branch and Bound
 include("branchandbound/Node.jl")
@@ -26,14 +38,15 @@ include("branchandbound/BranchAndBound.jl")
 include("branchandbound/scip_connector.jl")
 include("branchandbound/execute.jl")
 
-# Common Data Structures
-include("common/Projection.jl")
-include("common/eliminate_duplicate.jl")
-include("common/CutPool.jl")
-include("common/PointRayCollection.jl")
-include("common/CornerPolyhedron.jl")
+# Datastructures for VPolyhedralCut
+include("VPCStructures.jl")
 
+# Parts 
+include("subroutines/collect_point_rays.jl")
+include("subroutines/solve_separation_subproblems.jl")
+
+# Separators
 include("IntersectionSeparator.jl")
-include("VPolyhedralSeparator.jl")
+include("VPCexeclp.jl")
 
 end
