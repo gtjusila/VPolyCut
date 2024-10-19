@@ -1,0 +1,18 @@
+modes = [
+    "gomory",
+    "intersection",
+    "vpc"
+]
+instances = [
+  "30n20b8",
+  "beasleyC3",
+  "binkar10_1",
+  "bnatt400",
+  "cod105",
+  "cost266-UUE",
+  "csched007",
+  "exp-1-500-5-5",
+  "gen-ip002",
+  "glass4",
+  "graph20-20-1rand",
+]
