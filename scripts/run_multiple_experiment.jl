@@ -93,9 +93,8 @@ output_file = joinpath(experiment_path, "job_script.sh")
 open(output_file, "w") do f
     write(f, bash_script)
 end
+
+@info "Since writing TSV is asycnchronous, we will wait for the file to be written"
+sleep(5)
 @info "Running the job script"
 run(`sbatch $output_file`)
-runs_path = joinpath(pwd(), "experiment_runs")
-if !isdir(runs_path)
-    mkdir(runs_path)
-end
