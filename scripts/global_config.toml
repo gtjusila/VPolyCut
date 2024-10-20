@@ -1,4 +1,4 @@
 julia_depot_path = "/scratch/htc/gtjusila/julia"
 template_file = "job_script_template.sh"
-path_to_script = "/scratch/htc/gtjusila/job_scripts"
-instances_base_path = "/Users/gtjusila/Documents/Project/VPolyCut/instances_data"
+path_to_script = "/home/htc/gtjusila/Project/VPolyCut/scripts/run_single_experiment.jl"
+instances_base_path = "/home/htc/gtjusila/Project/VPolyCut/instances_data"
