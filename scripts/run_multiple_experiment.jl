@@ -94,7 +94,7 @@ open(output_file, "w") do f
     write(f, bash_script)
 end
 @info "Running the job script"
-run(`sbatch $bash_script`)
+run(`sbatch $output_file`)
 runs_path = joinpath(pwd(), "experiment_runs")
 if !isdir(runs_path)
     mkdir(runs_path)
