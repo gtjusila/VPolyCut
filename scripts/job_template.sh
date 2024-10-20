@@ -14,11 +14,10 @@
 # module load julia
 export JULIA_DEPOT_PATH="{{{JULIA_DEPOT_PATH}}}"
 
-# The SLURM_ARRY_TASK_ID corresponds to the id in the config.tsv
 id=$SLURM_ARRAY_TASK_ID
 
 # Use awk to search for the line where the id matches
-line=$(awk -F'\t' -v id="$id" '$1 == id {print; exit}' config.tsv)
+line=$(awk -F'\t' -v id="$id" '$1 == id {print; exit}' experiment_list.tsv)
 
 # Check if the line was found
 if [ -z "$line" ]; then
