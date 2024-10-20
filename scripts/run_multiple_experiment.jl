@@ -31,8 +31,10 @@ if isnothing(experiment_config)
 end
 
 # Prepare Experiment Runs Folder
+@info "Checking if experiment_runs folder exists"
 runs_path = joinpath(pwd(), "experiment_runs")
 if !isdir(runs_path)
+    @info "Creating experiment_runs folder"
     mkdir(runs_path)
 end
 
@@ -41,7 +43,7 @@ now = Dates.now()
 timestamp = Dates.format(now, "yyyymmddTHHMMSS")
 folder_name = string(timestamp)
 experiment_path = joinpath(runs_path, timestamp)
-@info "Experiment folder will be done at $experiment_path"
+@info "All runs results will be stored in $experiment_path"
 mkdir(experiment_path)
 
 # Prepare the instances  
@@ -55,6 +57,7 @@ mode = [item[1] for item in mode_instance_combinations]
 instance_path = [
     joinpath(instances_base_path, item[2] * ".mps") for item in mode_instance_combinations
 ]
+@info "There is a total of $(length(mode_instance_combinations)) runs to be executed"
 output_path = [joinpath(experiment_path, item) for item in label]
 for path in output_path
     if !isdir(path)
@@ -76,11 +79,13 @@ run_settings_file = joinpath(experiment_path, "experiment_list.tsv")
 CSV.write(run_settings_file, config_dataframe; delim='\t')
 
 # Read the bash template file and write to the experiment folder
+@info "Creating the job script"
 template_file = joinpath(@__DIR__, "job_template.sh")
 data = Dict(
     "N" => length(mode_instance_combinations),
     "JULIA_DEPOT_PATH" => global_config["julia_depot_path"],
-    "PATH_TO_SCRIPT" => global_config["path_to_script"]
+    "PATH_TO_SCRIPT" => global_config["path_to_script"],
+    "EXPERIMENT_PATH" => experiment_path
 )
 bash_template = read(template_file, String)
 bash_script = Mustache.render(bash_template, data)
@@ -88,7 +93,8 @@ output_file = joinpath(experiment_path, "job_script.sh")
 open(output_file, "w") do f
     write(f, bash_script)
 end
-
+@info "Running the job script"
+run(`sbatch $bash_script`)
 runs_path = joinpath(pwd(), "experiment_runs")
 if !isdir(runs_path)
     mkdir(runs_path)

@@ -1,7 +1,7 @@
 #!/bin/bash
 #SBATCH --job-name=vpolyhedral_experiment
-#SBATCH --output=output_%A_%a.out
-#SBATCH --error=error_%A_%a.err
+#SBATCH --output={{{EXPERIMENT_PATH}}}/slurm_output/output_%A_%a.out
+#SBATCH --error={{{EXPERIMENT_PATH}}}/slurm_output/error_%A_%a.err
 #SBATCH --array=1-{{{N}}}
 #SBATCH --time=02:15:00
 #SBATCH --partition=small
