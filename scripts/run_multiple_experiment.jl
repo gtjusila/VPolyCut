@@ -94,7 +94,5 @@ open(output_file, "w") do f
     write(f, bash_script)
 end
 
-@info "Since writing TSV is asycnchronous, we will wait for the file to be written"
-sleep(5)
 @info "Running the job script"
 run(`sbatch $output_file`)
