@@ -10,6 +10,7 @@ using Mustache
 global_config = open(joinpath(@__DIR__, "global_config.toml")) do file
     return TOML.parse(file)
 end
+instances_base_path = global_config["instances_base_path"]
 
 # Setup and get CLI arguments
 settings = ArgParseSettings()
@@ -46,7 +47,6 @@ mkdir(experiment_path)
 # Prepare the instances  
 modes = experiment_config["modes"]
 instances = experiment_config["instances"]
-instances_base_path = experiment_config["instances_base_path"]
 
 # Generate all combinations of modes and instances
 mode_instance_combinations = vec(collect(Iterators.product(modes, instances)))
