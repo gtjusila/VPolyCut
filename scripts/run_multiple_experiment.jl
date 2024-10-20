@@ -52,7 +52,9 @@ instances = experiment_config["instances"]
 mode_instance_combinations = vec(collect(Iterators.product(modes, instances)))
 label = label = [item[2] * "_" * item[1] for item in mode_instance_combinations]
 mode = [item[1] for item in mode_instance_combinations]
-instance_path = [instances_base_path * item[2] for item in mode_instance_combinations]
+instance_path = [
+    instances_base_path * item[2] * ".mps" for item in mode_instance_combinations
+]
 output_path = [experiment_path * "/" * item for item in label]
 for path in output_path
     if !isdir(path)
