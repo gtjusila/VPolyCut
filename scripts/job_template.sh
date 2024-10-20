@@ -17,7 +17,7 @@ export JULIA_DEPOT_PATH="{{{JULIA_DEPOT_PATH}}}"
 id=$SLURM_ARRAY_TASK_ID
 
 # Use awk to search for the line where the id matches
-line=$(awk -F'\t' -v id="$id" '$1 == id {print; exit}' {{{EXPERIMENT_PATH}}}}/experiment_list.tsv)
+line=$(awk -F'\t' -v id="$id" '$1 == id {print; exit}' {{{EXPERIMENT_PATH}}}/experiment_list.tsv)
 
 # Check if the line was found
 if [ -z "$line" ]; then
