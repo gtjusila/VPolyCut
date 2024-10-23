@@ -13,6 +13,8 @@ mutable struct ExperimentParameters
     presolving::Bool
     "Is domain propagation on?"
     propagation::Bool
+    "Time Limit"
+    time_limit::Int
 end
 
 mutable struct Experiment{T<:JuMP.AbstractModel}
@@ -29,7 +31,7 @@ end
 function Experiment()
     model = setup_scip_safe_jump_model()
     scip = get_scip_data_from_model(model)
-    parameters = ExperimentParameters("", "", "", false, false)
+    parameters = ExperimentParameters("", "", "", false, false, 0)
     return Experiment(model, scip, parameters)
 end
 
@@ -56,6 +58,10 @@ function set_parameter(
         experiment.parameters.propagation = value
         return nothing
     end
+    if parameter_name == "time_limit" && value isa Integer
+        experiment.parameters.time_limit = value
+        return nothing
+    end
     error("Parameter $parameter_name not found or have the wrong type")
 end
 
@@ -74,6 +80,9 @@ function get_parameter(experiment::Experiment, parameter_name::String)
     end
     if parameter_name == "propagation"
         return experiment.parameters.propagation
+    end
+    if parameter_name == "time_limit"
+        return experiment.parameters.time_limit
     end
     error("Parameter $parameter_name not found")
 end

@@ -11,11 +11,7 @@ output_path = abspath(output_path_relative)
 stdout_path = joinpath(output_path, "stdout.txt")
 @info "Output path: $output_path"
 
-open(stdout_path, "w") do io
-    redirect_stdout(io) do
-        setup_scip_parameter(experiment)
-        load_problem_to_scip(experiment)
-        SCIP.@SCIP_CALL SCIP.SCIPsolve(experiment.scip)
-        write_output(experiment)
-    end
-end
+setup_scip_parameter(experiment)
+load_problem_to_scip(experiment)
+SCIP.@SCIP_CALL SCIP.SCIPsolve(experiment.scip)
+write_output(experiment)

@@ -16,28 +16,68 @@ Disjunction are obtained from partial branch and bound trees
 """
 
 function SCIP.exec_lp(sepa::VPCSeparator)
+    # Wrapper for writing logs
+    logger = nothing
+    if sepa.parameters.write_log
+        logger = setup_file_logger(
+            joinpath(sepa.parameters.log_directory, "vpc_separation.log")
+        )
+    else
+        logger = ConsoleLogger(Logging.Debug)
+    end
+
+    with_logger(logger) do
+        return _exec_lp(sepa)
+    end
+end
+
+# Actual function
+function _exec_lp(sepa::VPCSeparator)
     # Aliasing for easier call
     scip = sepa.scipd
+
+    # Increase the call counter and set separated to false (since no cut have been found)
+    @debug "VPC Separator Called"
     sepa.called += 1
+    sepa.separated = false
 
     # Check Preconditions and handle accordingly
     if SCIP.SCIPgetStage(scip) != SCIP.SCIP_STAGE_SOLVING
         return SCIP.SCIP_DIDNOTRUN
     end
     if SCIP.SCIPisLPSolBasic(scip) == 0
+        # LP Solution is not basic 
         return SCIP.SCIP_DELAYED
     end
     if SCIP.SCIPgetLPSolstat(scip) != SCIP.SCIP_LPSOLSTAT_OPTIMAL
+        # LP Solution is not optimal 
         return SCIP.SCIP_DELAYED
     end
+    @debug "Finished checking necessary Preconditions"
 
-    # Call Separation Routine
-    vpolyhedralcut_separation(sepa)
+    # Do everything in a try block to ensure time limit requirement
+    @debug "Starting separation subroutine"
+    try
+        # Call Separation Subroutine
+        vpolyhedralcut_separation(sepa)
+    catch e
+        print(e)
+        if SCIP.SCIPinProbing(scip) == 1
+            SCIP.SCIPendProbing(scip)
+        end
+        if e isa TimeLimitExceeded
+            # Do nothing
+        elseif e isa FailedToProvePRLPFeasibility
+            @debug "Failed to prove PRLP Feasibility"
+        else
+            rethrow(e)
+        end
+    end
 
     if sepa.separated
         return SCIP.SCIP_SEPARATED
     else
-        return SCIP.SCIP_DIDNOTFIND
+        return SCIP.SCIP_DIDNOTRUN
     end
 end
 
@@ -55,8 +95,10 @@ function vpolyhedralcut_separation(sepa::VPCSeparator)
 
     # Step 0: Get complemented tableau
     construct_complemented_tableau(sepa)
+    sepa.lp_obj = SCIP.SCIPgetLPObjval(scip)
 
     # Step 1: Get Disjunction
+    @debug "Getting Disjunction by Branch and Bound"
     get_disjunction_by_branchandbound(sepa)
 
     #
@@ -66,10 +108,8 @@ function vpolyhedralcut_separation(sepa::VPCSeparator)
     # Step 2: Setup projection used and get the points and rays from the disjunctions
     sepa.projection = create_projection_to_nonbasic_space(sepa.complemented_tableau)
     get_point_ray_collection(sepa)
-    with_logger(ConsoleLogger()) do
-        @info "Number of points: $(num_points(sepa.point_ray_collection))"
-        @info "Number of rays: $(num_rays(sepa.point_ray_collection))"
-    end
+    @debug "Number of points: $(num_points(sepa.point_ray_collection))"
+    @debug "Number of rays: $(num_rays(sepa.point_ray_collection))"
 
     # Step 3: Setup Cut Pool 
     sepa.cutpool = CutPool(; tableau=sepa.complemented_tableau, scip=scip)
@@ -97,11 +137,9 @@ function construct_complemented_tableau(sepa::VPCSeparator)
 end
 
 function get_disjunction_by_branchandbound(sepa::VPCSeparator)
-    @info "Starting Branch And Bound to generate disjunction"
     branchandbound = BranchAndBound(
         sepa.scipd; max_leaves=sepa.parameters.n_leaves
     )
     execute_branchandbound(branchandbound)
     sepa.disjunction = get_leaves(branchandbound)
-    @info "Branch and bound completed"
 end

@@ -4,10 +4,12 @@ function get_point_ray_collection(
     scip = sepa.scipd
     disjunction = sepa.disjunction
     projection = sepa.projection
+    @debug "Collecting Points and Rays from disjunction"
 
     # We only need to store projected points and ray
     sepa.point_ray_collection = PointRayCollection(scip; projection=projection)
-    for term in disjunction
+    for (i, term) in enumerate(disjunction)
+        @debug "Collecting Point and Ray from term $i"
         path = get_path(term) # Get all actions from root to leaf
         get_disjunctive_term_information(
             sepa, path
@@ -32,6 +34,7 @@ function get_disjunctive_term_information(
     scip = sepa.scipd
 
     SCIP.SCIPstartProbing(scip)
+
     # Get To Node
     for node in path
         if isroot(node)
@@ -43,6 +46,7 @@ function get_disjunctive_term_information(
     # Propegate
     prunable = propagate!(scip)
     if prunable
+        @debug "Disjunctive term is detected infeasible during propagation"
         SCIP.SCIPendProbing(scip)
         return nothing, [], 0
     end
@@ -50,9 +54,11 @@ function get_disjunctive_term_information(
     # Solve LP
     lp_feasible = solve_lp_relaxation(scip)
     if !lp_feasible
+        @debug "Disjunctive term is detected infeasible during LP solve"
         SCIP.SCIPendProbing(scip)
         return nothing, [], 0
     end
+
     # Get Optimal Tableau
     tableau = construct_tableau(scip)
 
@@ -62,6 +68,7 @@ function get_disjunctive_term_information(
         var = get_var_from_column(tableau, i)
         complement_column(tableau, var)
     end
+
     corner = construct_corner_polyhedron(tableau)
     solution = SCIP.SCIPgetSolOrigObj(scip, C_NULL)
     point = get_lp_sol(corner)
@@ -74,4 +81,5 @@ function get_disjunctive_term_information(
     for ray in get_lp_rays(corner)
         add_ray(sepa.point_ray_collection, ray)
     end
+    @debug "Disjunctive term is feasible. Points and rays added."
 end

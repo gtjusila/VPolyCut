@@ -9,7 +9,7 @@ function get_logfolder_path()
 end
 
 function setup_file_logger(filename::String)
-    return FormatLogger(open(filename, "w")) do io, args
+    return FormatLogger(open(filename, "a")) do io, args
         # Write the module, level and message only
         println(io, "[", args.level, "] ", args.message)
     end
