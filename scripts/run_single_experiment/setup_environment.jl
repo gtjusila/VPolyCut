@@ -19,6 +19,9 @@ function setup_scip_parameter(experiment::Experiment)
 
     JuMP.set_attribute(experiment.model, "limits/restarts", 0)
     JuMP.set_attribute(experiment.model, "limits/nodes", 1)
+    JuMP.set_attribute(
+        experiment.model, "limits/time", get_parameter(experiment, "time_limit")
+    )
     JuMP.set_attribute(experiment.model, "separating/maxroundsroot", 1)
 
     # The following settings are applied optionaly 

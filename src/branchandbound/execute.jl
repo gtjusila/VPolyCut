@@ -3,13 +3,7 @@ using DataStructures
 using Dates
 
 function execute_branchandbound(branchandbound::BranchAndBound)::Bool
-    log_path = get_logfolder_path()
-    timestamp = Dates.format(now(), "yyyy-mm-dd_HH-MM-SS")
-    log_file = joinpath(log_path, "branchandbound_$timestamp.log")
-    bb_logger = setup_file_logger(log_file)
-    with_logger(bb_logger) do
-        return _execute_branchandbound(branchandbound)
-    end
+    return _execute_branchandbound(branchandbound)
 end
 
 function _execute_branchandbound(branchandbound::BranchAndBound)::Bool
@@ -18,7 +12,7 @@ function _execute_branchandbound(branchandbound::BranchAndBound)::Bool
     # Step 1: Initialization
     # We do everything in probing mode
     SCIP.SCIPstartProbing(scip)
-    @info "Starting Branch and Bound"
+    @debug "Starting Branch and Bound"
 
     # Create root node and put it in node_list
     root = Node(nothing, nothing, 0)
@@ -35,7 +29,7 @@ function _execute_branchandbound(branchandbound::BranchAndBound)::Bool
 
         # Step 2: Select next node
         next_node = node_queue_pop!(branchandbound)
-        @info "Node #$(iteration_count): $(next_node) Depth: $(get_depth(next_node))"
+        @debug "Node #$(iteration_count): $(next_node) Depth: $(get_depth(next_node))"
         current_node = switch_node!(scip, current_node, next_node)
         prunable = propagate!(scip)
         if prunable
@@ -47,23 +41,23 @@ function _execute_branchandbound(branchandbound::BranchAndBound)::Bool
         # Compute dual bound
         lp_feasible = solve_lp_relaxation(scip)
         if !lp_feasible
-            @info "LP is infeasible pruning"
+            @debug "LP is infeasible pruning"
             deactivate!(current_node)
             continue
         end
 
         # If LP Objective is greater than lower bound then prune
         lp_objective = SCIP.SCIPgetLPObjval(scip)
-        @info "LP Objective: $(lp_objective)"
+        @debug "LP Objective: $(lp_objective)"
         if is_GE(scip, lp_objective, get_primal_bound(branchandbound))
-            @info "Node can be pruned by bounding"
+            @debug "Node can be pruned by bounding"
             deactivate!(current_node)
             continue
         end
 
         # Step 4: Fathom By Optimality
         if is_sol_integral(scip)
-            @info "Solution is integral"
+            @debug "Solution is integral"
             sol = collect_solution(branchandbound)
             deactivate!(current_node)
             # Integral Nodes are leaf
@@ -71,8 +65,8 @@ function _execute_branchandbound(branchandbound::BranchAndBound)::Bool
 
             # If new solution is better than lower bound then update
             if is_LT(scip, lp_objective, get_primal_bound(branchandbound))
-                @info "New Best Solution Found"
-                @info "Objective: $(lp_objective)"
+                @debug "New Best Solution Found"
+                @debug "Objective: $(lp_objective)"
                 set_best_solution(branchandbound, sol)
                 set_primal_bound(branchandbound, lp_objective)
             end
@@ -85,7 +79,7 @@ function _execute_branchandbound(branchandbound::BranchAndBound)::Bool
         node_leaves = get_node_queue_length(branchandbound)
         total_leaves = integral_leaves + node_leaves
 
-        @info "Total Leaves So Far: $(total_leaves)"
+        @debug "Total Leaves So Far: $(total_leaves)"
         if max_leaves > 0 && total_leaves + 2 > max_leaves
             # End search
             push_leaf!(branchandbound, current_node)
@@ -97,11 +91,11 @@ function _execute_branchandbound(branchandbound::BranchAndBound)::Bool
         lpsol = SCIP.SCIPvarGetLPSol(var)
         name = unsafe_string(SCIP.SCIPvarGetName(var))
         # Warning! Some Node Queuing Procedure may alter the SCIP Internal State (e.g. if you use BestFirst) so store LP Solution before hand   
-        @info "Branching on $(name) with LP Solution: $(lpsol)"
+        @debug "Branching on $(name) with LP Solution: $(lpsol)"
         branch(branchandbound, var, UP, ceil(lpsol), current_node)
-        @info "Created Node $(name)>=$(ceil(lpsol))"
+        @debug "Created Node $(name)>=$(ceil(lpsol))"
         branch(branchandbound, var, DOWN, floor(lpsol), current_node)
-        @info "Created Node $(name)<=$(floor(lpsol))"
+        @debug "Created Node $(name)<=$(floor(lpsol))"
     end
 
     # Collect Leaves
@@ -131,20 +125,20 @@ function switch_node!(
         activate!(new_node)
         return new_node
     end
-    @info "Switching from $(old_node) to $(new_node)"
+    @debug "Switching from $(old_node) to $(new_node)"
 
     # Step 1: Find common ancestor
     q_hat = new_node
     while !isactive(q_hat)
         q_hat = get_parent(q_hat)
     end
-    @info "Common Ancestor: $(q_hat)"
+    @debug "Common Ancestor: $(q_hat)"
 
     # Step 2 undo all changes from q_hat to old_node
     # mark all nodes from old_node to q_hat as inactive
     q = old_node
     while q != q_hat
-        @info "Undoing Action: $(get_action(q))"
+        @debug "Undoing Action: $(get_action(q))"
         deactivate!(q)
         q = get_parent(q)
     end
@@ -163,7 +157,7 @@ function switch_node!(
 
     # Now Apply the actions
     for action in actions
-        @info "Applying Action: $(action)"
+        @debug "Applying Action: $(action)"
         SCIP.SCIPnewProbingNode(scip)
         do_action(scip, action)
     end

@@ -12,6 +12,7 @@ function fill_experiment_parameters_from_cli_arguments(experiment::Experiment)
     set_parameter(experiment, "instance_path", cli_arguments["instance_path"])
     set_parameter(experiment, "presolving", !cli_arguments["easy"])
     set_parameter(experiment, "propagation", !cli_arguments["easy"])
+    set_parameter(experiment, "time_limit", parse(Int64, cli_arguments["time_limit"]))
 end
 
 function setup_cli_arguments()
@@ -28,6 +29,9 @@ function setup_cli_arguments()
         action = :store_true
         "--output", "-o"
         help = "Output directory for the results"
+        "--time_limit", "-t"
+        help = "Time limit for the experiment"
+        default = 3600
     end
     return parse_args(settings)
 end
@@ -38,7 +42,7 @@ function setup_temporary_output_directory()
         mkdir(tmp)
     end
 
-    random_string = uuid4()
+    random_string = string(uuid4())
     tmp_path = joinpath(tmp, random_string)
     if !isdir(tmp_path)
         mkdir(tmp_path)

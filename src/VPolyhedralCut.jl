@@ -17,6 +17,7 @@ include("tableauhandlers/scip_connector.jl")
 include("tableauhandlers/ComplementedTableau.jl")
 
 # Common Data Structures
+include("datastructures/Exceptions.jl")
 include("datastructures/Point.jl")
 include("datastructures/Ray.jl")
 include("datastructures/Projection.jl")

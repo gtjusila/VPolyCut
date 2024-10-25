@@ -9,12 +9,15 @@ function construct_tableau_with_constraint_matrix(scip::SCIP.SCIPData)::Tableau
 end
 
 function construct_tableau(scip::SCIP.SCIPData)::Tableau
+    if SCIP.SCIPgetLPSolstat(scip) == SCIP.SCIP_LPSOLSTAT_TIMELIMIT
+        throw(TimeLimitExceeded())
+    end
     if SCIP.SCIPisLPSolBasic(scip) != 1
-        error("SCIP LP solution is not a basic feasible solution")
+        throw(LPSolNotBasic())
     end
 
     if SCIP.SCIPgetLPSolstat(scip) != SCIP.SCIP_LPSOLSTAT_OPTIMAL
-        error("SCIP LP solution is not optimal")
+        throw(LPSolNotOptimal())
     end
 
     tableau = Tableau()
