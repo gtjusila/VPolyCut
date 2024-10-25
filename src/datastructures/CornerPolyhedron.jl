@@ -65,7 +65,7 @@ function construct_non_basic_ray(
 )::Union{Ray,Nothing}
     direction = 1.0
 
-    if get_ub(var) == get_lb(var)
+    if abs(get_ub(var)-get_lb(var)) < 1e-7
         return nothing
     end
     if is_at_upper_bound(var)

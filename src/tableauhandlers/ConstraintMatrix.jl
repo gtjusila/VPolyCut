@@ -11,7 +11,6 @@ end
 
 get_entry(matrix::ConstraintMatrix, row::Int, col::Int) = matrix.data[row, col]
 get_constant(matrix::ConstraintMatrix, row::Int) = matrix.constants[row]
-
 function ConstraintMatrix(nrows::Int, ncols::Int)
     return ConstraintMatrix(spzeros(nrows, ncols), spzeros(nrows))
 end

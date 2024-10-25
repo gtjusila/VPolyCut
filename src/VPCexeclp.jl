@@ -94,8 +94,8 @@ function vpolyhedralcut_separation(sepa::VPCSeparator)
     end
 
     # Step 0: Get complemented tableau
-    construct_complemented_tableau(sepa)
     sepa.lp_obj = SCIP.SCIPgetLPObjval(scip)
+    construct_complemented_tableau(sepa)
 
     # Step 1: Get Disjunction
     @debug "Getting Disjunction by Branch and Bound"
@@ -132,7 +132,38 @@ end
 
 function construct_complemented_tableau(sepa::VPCSeparator)
     original_tableau = construct_tableau_with_constraint_matrix(sepa.scipd)
+    vars = map(1:get_nvars(original_tableau)) do i
+        return get_var_from_column(original_tableau, i)
+    end
+    for var in vars
+        if is_EQ(sepa.scipd, get_ub(var),get_lb(var))
+            continue
+        end
+        if get_basis_status(var) == SCIP.SCIP_BASESTAT_UPPER
+            @debug get_obj(var) get_basis_status(var) get_lb(var) get_ub(var) get_sol(var) get_obj(var)
+            @assert is_LE(sepa.scipd,get_obj(var),0.0)
+        end
+        if get_basis_status(var) == SCIP.SCIP_BASESTAT_LOWER
+            @debug get_obj(var) get_basis_status(var) get_lb(var) get_ub(var) get_sol(var) get_obj(var)
+            @assert is_GE(sepa.scipd, get_obj(var), 0.0)
+        end
+    end
+    @debug "LP Objective is $(dot(c_bar, lp_sol)) SepaLP OBJ is $(sepa.lp_obj)"
     sepa.complemented_tableau = ComplementedTableau(original_tableau)
+    @debug "Complemented $(length(get_complemented_columns(sepa.complemented_tableau))) columns"
+    vars = map(1:get_nvars(original_tableau)) do i
+        return get_var_from_column(sepa.complemented_tableau, i)
+    end
+    for var in vars
+        if is_EQ(sepa.scipd, get_ub(var),get_lb(var))
+            continue
+        end
+        @assert get_basis_status(var) != SCIP.SCIP_BASESTAT_UPPER 
+        if get_basis_status(var) == SCIP.SCIP_BASESTAT_LOWER
+            @debug get_obj(var) get_basis_status(var) get_lb(var) get_ub(var) get_sol(var) get_obj(var)
+            @assert is_GE(sepa.scipd, get_obj(var), 0.0)
+        end
+    end
     return sepa.complemented_tableau
 end
 

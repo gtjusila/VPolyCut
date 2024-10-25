@@ -136,9 +136,12 @@ function create_variable_from_row_pointer(
 
     # Again objective is set as a function of nonbasic variable
     set_obj!(lp_row, -SCIP.SCIProwGetDualsol(scip_ptr))
+    set_row_shift!(lp_row, SCIP.SCIProwGetConstant(scip_ptr))
+
     # Ax + b - s = 0, p <= s <= q is equivalent to Ax + b + r = 0, -q <= r <= -p
     set_lb!(lp_row, -SCIP.SCIProwGetRhs(scip_ptr))
     set_ub!(lp_row, -SCIP.SCIProwGetLhs(scip_ptr))
+
     # [TODO] No reasoning here just trial and error but I assume it should have been minus or SCIP
     # interpret the constant shift of a row such that Ax + s = b
     set_sol!(
