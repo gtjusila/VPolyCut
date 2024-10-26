@@ -47,7 +47,12 @@ function include_separator(experiment::Experiment)
         return nothing
     end
     if separator == "vpc"
-        VPolyhedralCut.include_vpolyhedral_sepa(experiment.scip; n_leaves=64)
+        experiment.vpcsepa = VPolyhedralCut.include_vpolyhedral_sepa(
+            experiment.scip;
+            n_leaves=64,
+            write_log=true,
+            log_directory=get_parameter(experiment, "output_path")
+        )
         return nothing
     end
     error("Separator $separator not found")
@@ -62,41 +67,3 @@ function include_gomory_separator(experiment::Experiment)
     setter("separating/gmi/maxsupprel", 1.0)
     setter("separating/gmi/forcecuts", true)
 end
-
-#=
-function setup_experiment_directory(execution_parameters::ExecutionParameters)::String
-    result_path = joinpath(pwd(), "results")
-    check_dir_exist_or_make(result_path)
-    experiment_label = get_experiment_label(execution_parameters)
-    experiment_result_path = joinpath(result_path, experiment_label)
-    if (check_dir_exist_or_make(experiment_result_path))
-        @error "You are already running a similar experiment"
-        exit(1)
-    end
-    return experiment_result_path
-end
-
-function check_dir_exist_or_make(path::String)::Bool
-    if !isdir(path)
-        mkpath(path)
-        return false
-    end
-    return true
-end
-
-function get_experiment_label(execution_parameters::ExecutionParameters)::String
-    timestamp = get_timestamp()
-    experiment_result_foldername = Printf.@sprintf(
-        "%s_%s_%s",
-        timestamp,
-        execution_parameters.instance,
-        execution_parameters.separator_label
-    )
-    return experiment_result_foldername
-end
-
-function get_timestamp()
-    now = Dates.now()
-    return Dates.format(now, "yyyymmddTHHMMSS")
-end
-=#

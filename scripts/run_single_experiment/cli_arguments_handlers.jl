@@ -13,6 +13,7 @@ function fill_experiment_parameters_from_cli_arguments(experiment::Experiment)
     set_parameter(experiment, "presolving", !cli_arguments["easy"])
     set_parameter(experiment, "propagation", !cli_arguments["easy"])
     set_parameter(experiment, "time_limit", parse(Int64, cli_arguments["time_limit"]))
+    set_parameter(experiment, "zeroing_heuristic", cli_arguments["zeroing_heuristic"])
 end
 
 function setup_cli_arguments()
@@ -32,6 +33,9 @@ function setup_cli_arguments()
         "--time_limit", "-t"
         help = "Time limit for the experiment"
         default = 3600
+        "--zeroing_heuristic", "-z"
+        help = "Enable Zeroing Heuristic"
+        action = :store_true 
     end
     return parse_args(settings)
 end

@@ -1,20 +1,23 @@
 using SCIP
 using JuMP
 using VPolyhedralCut.SCIPJLUtils
+using VPolyhedralCut
 
-mutable struct ExperimentParameters
+@kwdef mutable struct ExperimentParameters
     "Where to store the results of the experiment"
-    output_path::String
+    output_path::String = ""
     "The type of separator to use"
-    separator::String
+    separator::String = ""
     "Path to the instance file"
-    instance_path::String
+    instance_path::String = ""
     "Is presolving on?"
-    presolving::Bool
+    presolving::Bool = true
     "Is domain propagation on?"
-    propagation::Bool
+    propagation::Bool = true
     "Time Limit"
-    time_limit::Int
+    time_limit::Int = 3600
+    "Zeroing Heuristic"
+    zeroing_heuristic::Bool = false
 end
 
 mutable struct Experiment{T<:JuMP.AbstractModel}
@@ -24,15 +27,15 @@ mutable struct Experiment{T<:JuMP.AbstractModel}
     =#
     model::T
     scip::SCIP.SCIPData
-
     parameters::ExperimentParameters
+    vpcsepa::Union{Nothing,VPolyhedralCut.VPCSeparator}
 end
 
 function Experiment()
     model = setup_scip_safe_jump_model()
     scip = get_scip_data_from_model(model)
-    parameters = ExperimentParameters("", "", "", false, false, 0)
-    return Experiment(model, scip, parameters)
+    parameters = ExperimentParameters()
+    return Experiment(model, scip, parameters, nothing)
 end
 
 function set_parameter(
@@ -62,6 +65,10 @@ function set_parameter(
         experiment.parameters.time_limit = value
         return nothing
     end
+    if parameter_name == "zeroing_heuristic" && value isa Bool
+        experiment.parameters.zeroing_heuristic = value
+        return nothing
+    end
     error("Parameter $parameter_name not found or have the wrong type")
 end
 
@@ -83,6 +90,9 @@ function get_parameter(experiment::Experiment, parameter_name::String)
     end
     if parameter_name == "time_limit"
         return experiment.parameters.time_limit
+    end
+    if parameter_name == "zeroing_heuristic"
+        return experiment.parameters.zeroing_heuristic
     end
     error("Parameter $parameter_name not found")
 end

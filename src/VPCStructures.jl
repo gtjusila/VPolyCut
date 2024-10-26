@@ -23,6 +23,8 @@ is passed during the creation of the VPCSeparator.
     cut_limit::Int = -2
     "Maximum number of separation rounds"
     call_limit::Int = 1
+    "Should zeroing heuristic be used?"
+    zeroing_heuristic::Bool = false
     "Should log be written?"
     write_log::Bool = false
     "Directory to write cut log"
@@ -46,6 +48,8 @@ Constructors:
     separated::Bool = false
     "SEPA Parameters"
     parameters::VPCParameters
+    "Termination Message"
+    termination_message::String = ""
 
     "Complemented Tableau"
     complemented_tableau::Union{Nothing,ComplementedTableau} = nothing
@@ -76,18 +80,20 @@ function include_vpolyhedral_sepa(
     n_leaves=2,
     cut_limit=-2,
     write_log=false,
-    log_directory=""
+    log_directory="",
+    zeroing_heuristic=false
 )
     parameters = VPCParameters(;
         n_leaves=n_leaves,
         cut_limit=cut_limit,
         write_log=write_log,
-        log_directory=log_directory
+        log_directory=log_directory,
+        zeroing_heuristic=zeroing_heuristic
     )
 
     if write_log
-        if !dir_exists(log_path)
-            mkpath(log_path)
+        if !isdir(log_directory)
+            mkpath(log_directory)
         end
     end
 
@@ -95,4 +101,5 @@ function include_vpolyhedral_sepa(
     SCIP.include_sepa(
         scipd.scip[], scipd.sepas, sepa; priority=9999, freq=0, usessubscip=true
     )
+    return sepa
 end

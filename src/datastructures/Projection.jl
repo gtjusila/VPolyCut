@@ -1,4 +1,5 @@
 using SCIP
+
 @kwdef mutable struct Projection
     original_dimension::Int = 0
     projected_dimension::Int = 0

@@ -57,26 +57,43 @@ function _exec_lp(sepa::VPCSeparator)
 
     # Do everything in a try block to ensure time limit requirement
     @debug "Starting separation subroutine"
+    error_occurred = false
     try
         # Call Separation Subroutine
         vpolyhedralcut_separation(sepa)
     catch e
         print(e)
+        error_occurred = false
         if SCIP.SCIPinProbing(scip) == 1
             SCIP.SCIPendProbing(scip)
         end
         if e isa TimeLimitExceeded
+            @debug "Time Limit Exceeded"
+            error_occurred = true
+            sepa.termination_message = "TIME_LIMIT_EXCEEDED"
             # Do nothing
         elseif e isa FailedToProvePRLPFeasibility
             @debug "Failed to prove PRLP Feasibility"
+            error_occurred = true
+            sepa.termination_message = "FAILED_TO_PROVE_PRLP_FEASIBILITY"
+        elseif e isa FailedDisjunctiveLowerBoundTest
+            @debug "Failed Disjunctive Lower Bound Test"
+            error_occurred = true
+            sepa.termination_message = "FAILED_DISJUNCTIVE_LOWER_BOUND_TEST"
         else
             rethrow(e)
         end
     end
 
     if sepa.separated
+        if !error_occurred
+            sepa.termination_message = "CUT_FOUND"
+        end
         return SCIP.SCIP_SEPARATED
     else
+        if !error_occurred
+            sepa.termination_message = "NO_CUT_FOUND"
+        end
         return SCIP.SCIP_DIDNOTRUN
     end
 end
@@ -132,39 +149,7 @@ end
 
 function construct_complemented_tableau(sepa::VPCSeparator)
     original_tableau = construct_tableau_with_constraint_matrix(sepa.scipd)
-    vars = map(1:get_nvars(original_tableau)) do i
-        return get_var_from_column(original_tableau, i)
-    end
-    for var in vars
-        if is_EQ(sepa.scipd, get_ub(var),get_lb(var))
-            continue
-        end
-        if get_basis_status(var) == SCIP.SCIP_BASESTAT_UPPER
-            @debug get_obj(var) get_basis_status(var) get_lb(var) get_ub(var) get_sol(var) get_obj(var)
-            @assert is_LE(sepa.scipd,get_obj(var),0.0)
-        end
-        if get_basis_status(var) == SCIP.SCIP_BASESTAT_LOWER
-            @debug get_obj(var) get_basis_status(var) get_lb(var) get_ub(var) get_sol(var) get_obj(var)
-            @assert is_GE(sepa.scipd, get_obj(var), 0.0)
-        end
-    end
-    @debug "LP Objective is $(dot(c_bar, lp_sol)) SepaLP OBJ is $(sepa.lp_obj)"
     sepa.complemented_tableau = ComplementedTableau(original_tableau)
-    @debug "Complemented $(length(get_complemented_columns(sepa.complemented_tableau))) columns"
-    vars = map(1:get_nvars(original_tableau)) do i
-        return get_var_from_column(sepa.complemented_tableau, i)
-    end
-    for var in vars
-        if is_EQ(sepa.scipd, get_ub(var),get_lb(var))
-            continue
-        end
-        @assert get_basis_status(var) != SCIP.SCIP_BASESTAT_UPPER 
-        if get_basis_status(var) == SCIP.SCIP_BASESTAT_LOWER
-            @debug get_obj(var) get_basis_status(var) get_lb(var) get_ub(var) get_sol(var) get_obj(var)
-            @assert is_GE(sepa.scipd, get_obj(var), 0.0)
-        end
-    end
-    return sepa.complemented_tableau
 end
 
 function get_disjunction_by_branchandbound(sepa::VPCSeparator)

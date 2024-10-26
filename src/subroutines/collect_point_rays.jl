@@ -17,7 +17,9 @@ function get_point_ray_collection(
     end
 
     # Clean Up Duplicate Ray
+    @debug "Removing duplicate rays"
     remove_duplicate_rays(sepa.point_ray_collection)
+    @debug "Points and Rays Collected"
 end
 
 """
@@ -29,10 +31,11 @@ function get_disjunctive_term_information(
     sepa::VPCSeparator,
     path::Vector{Node}
 )
-    # Enter Probing mode
+    # Some alias 
     root_tableau = sepa.complemented_tableau
     scip = sepa.scipd
 
+    # Enter Probing mode
     SCIP.SCIPstartProbing(scip)
 
     # Get To Node
@@ -69,17 +72,18 @@ function get_disjunctive_term_information(
         complement_column(tableau, var)
     end
 
-    corner = construct_corner_polyhedron(tableau)
-    solution = SCIP.SCIPgetSolOrigObj(scip, C_NULL)
-    point = get_lp_sol(corner)
-    @assert get_nvars(tableau) == get_nvars(root_tableau)
+    corner_polyhedron = construct_corner_polyhedron(tableau)
+    objective_value = SCIP.SCIPgetSolOrigObj(scip, C_NULL)
+    basic_solution = get_lp_sol(corner_polyhedron)
+    
     # Leave Probing mode
     SCIP.SCIPendProbing(scip)
 
     # Add rays to point ray collection
-    add_point(sepa.point_ray_collection, point, solution)
-    for ray in get_lp_rays(corner)
+    add_point(sepa.point_ray_collection, basic_solution, objective_value)
+    for ray in get_lp_rays(corner_polyhedron)
         add_ray(sepa.point_ray_collection, ray)
     end
+
     @debug "Disjunctive term is feasible. Points and rays added."
 end

@@ -1,0 +1,1404 @@
+[Debug] VPC Separator Called
+[Debug] Finished checking necessary Preconditions
+[Debug] Starting separation subroutine
+[Debug] Getting Disjunction by Branch and Bound
+[Debug] Collecting Points and Rays from disjunction
+[Debug] Collecting Point and Ray from term 1
+[Debug] Disjunctive term is feasible. Points and rays added.
+[Debug] Collecting Point and Ray from term 2
+[Debug] Disjunctive term is feasible. Points and rays added.
+[Debug] Collecting Point and Ray from term 3
+[Debug] Disjunctive term is feasible. Points and rays added.
+[Debug] Collecting Point and Ray from term 4
+[Debug] Disjunctive term is feasible. Points and rays added.
+[Debug] Collecting Point and Ray from term 5
+[Debug] Disjunctive term is feasible. Points and rays added.
+[Debug] Collecting Point and Ray from term 6
+[Debug] Disjunctive term is feasible. Points and rays added.
+[Debug] Collecting Point and Ray from term 7
+[Debug] Disjunctive term is feasible. Points and rays added.
+[Debug] Collecting Point and Ray from term 8
+[Debug] Disjunctive term is feasible. Points and rays added.
+[Debug] Collecting Point and Ray from term 9
+[Debug] Disjunctive term is feasible. Points and rays added.
+[Debug] Collecting Point and Ray from term 10
+[Debug] Disjunctive term is feasible. Points and rays added.
+[Debug] Collecting Point and Ray from term 11
+[Debug] Disjunctive term is feasible. Points and rays added.
+[Debug] Collecting Point and Ray from term 12
+[Debug] Disjunctive term is feasible. Points and rays added.
+[Debug] Collecting Point and Ray from term 13
+[Debug] Disjunctive term is feasible. Points and rays added.
+[Debug] Collecting Point and Ray from term 14
+[Debug] Disjunctive term is feasible. Points and rays added.
+[Debug] Collecting Point and Ray from term 15
+[Debug] Disjunctive term is feasible. Points and rays added.
+[Debug] Collecting Point and Ray from term 16
+[Debug] Disjunctive term is feasible. Points and rays added.
+[Debug] Collecting Point and Ray from term 17
+[Debug] Disjunctive term is feasible. Points and rays added.
+[Debug] Collecting Point and Ray from term 18
+[Debug] Disjunctive term is feasible. Points and rays added.
+[Debug] Collecting Point and Ray from term 19
+[Debug] Disjunctive term is feasible. Points and rays added.
+[Debug] Collecting Point and Ray from term 20
+[Debug] Disjunctive term is feasible. Points and rays added.
+[Debug] Collecting Point and Ray from term 21
+[Debug] Disjunctive term is feasible. Points and rays added.
+[Debug] Collecting Point and Ray from term 22
+[Debug] Disjunctive term is feasible. Points and rays added.
+[Debug] Collecting Point and Ray from term 23
+[Debug] Disjunctive term is feasible. Points and rays added.
+[Debug] Collecting Point and Ray from term 24
+[Debug] Disjunctive term is feasible. Points and rays added.
+[Debug] Collecting Point and Ray from term 25
+[Debug] Disjunctive term is feasible. Points and rays added.
+[Debug] Collecting Point and Ray from term 26
+[Debug] Disjunctive term is feasible. Points and rays added.
+[Debug] Collecting Point and Ray from term 27
+[Debug] Disjunctive term is feasible. Points and rays added.
+[Debug] Collecting Point and Ray from term 28
+[Debug] Disjunctive term is feasible. Points and rays added.
+[Debug] Collecting Point and Ray from term 29
+[Debug] Disjunctive term is feasible. Points and rays added.
+[Debug] Collecting Point and Ray from term 30
+[Debug] Disjunctive term is feasible. Points and rays added.
+[Debug] Collecting Point and Ray from term 31
+[Debug] Disjunctive term is feasible. Points and rays added.
+[Debug] Collecting Point and Ray from term 32
+[Debug] Disjunctive term is feasible. Points and rays added.
+[Debug] Collecting Point and Ray from term 33
+[Debug] Disjunctive term is feasible. Points and rays added.
+[Debug] Collecting Point and Ray from term 34
+[Debug] Disjunctive term is feasible. Points and rays added.
+[Debug] Collecting Point and Ray from term 35
+[Debug] Disjunctive term is feasible. Points and rays added.
+[Debug] Collecting Point and Ray from term 36
+[Debug] Disjunctive term is feasible. Points and rays added.
+[Debug] Collecting Point and Ray from term 37
+[Debug] Disjunctive term is feasible. Points and rays added.
+[Debug] Collecting Point and Ray from term 38
+[Debug] Disjunctive term is feasible. Points and rays added.
+[Debug] Collecting Point and Ray from term 39
+[Debug] Disjunctive term is feasible. Points and rays added.
+[Debug] Collecting Point and Ray from term 40
+[Debug] Disjunctive term is feasible. Points and rays added.
+[Debug] Collecting Point and Ray from term 41
+[Debug] Disjunctive term is feasible. Points and rays added.
+[Debug] Collecting Point and Ray from term 42
+[Debug] Disjunctive term is feasible. Points and rays added.
+[Debug] Collecting Point and Ray from term 43
+[Debug] Disjunctive term is feasible. Points and rays added.
+[Debug] Collecting Point and Ray from term 44
+[Debug] Disjunctive term is feasible. Points and rays added.
+[Debug] Collecting Point and Ray from term 45
+[Debug] Disjunctive term is feasible. Points and rays added.
+[Debug] Collecting Point and Ray from term 46
+[Debug] Disjunctive term is feasible. Points and rays added.
+[Debug] Collecting Point and Ray from term 47
+[Debug] Disjunctive term is feasible. Points and rays added.
+[Debug] Collecting Point and Ray from term 48
+[Debug] Disjunctive term is feasible. Points and rays added.
+[Debug] Collecting Point and Ray from term 49
+[Debug] Disjunctive term is feasible. Points and rays added.
+[Debug] Collecting Point and Ray from term 50
+[Debug] Disjunctive term is feasible. Points and rays added.
+[Debug] Collecting Point and Ray from term 51
+[Debug] Disjunctive term is feasible. Points and rays added.
+[Debug] Collecting Point and Ray from term 52
+[Debug] Disjunctive term is feasible. Points and rays added.
+[Debug] Collecting Point and Ray from term 53
+[Debug] Disjunctive term is feasible. Points and rays added.
+[Debug] Collecting Point and Ray from term 54
+[Debug] Disjunctive term is feasible. Points and rays added.
+[Debug] Collecting Point and Ray from term 55
+[Debug] Disjunctive term is feasible. Points and rays added.
+[Debug] Collecting Point and Ray from term 56
+[Debug] Disjunctive term is feasible. Points and rays added.
+[Debug] Collecting Point and Ray from term 57
+[Debug] Disjunctive term is feasible. Points and rays added.
+[Debug] Collecting Point and Ray from term 58
+[Debug] Disjunctive term is feasible. Points and rays added.
+[Debug] Collecting Point and Ray from term 59
+[Debug] Disjunctive term is feasible. Points and rays added.
+[Debug] Collecting Point and Ray from term 60
+[Debug] Disjunctive term is feasible. Points and rays added.
+[Debug] Collecting Point and Ray from term 61
+[Debug] Disjunctive term is feasible. Points and rays added.
+[Debug] Collecting Point and Ray from term 62
+[Debug] Disjunctive term is feasible. Points and rays added.
+[Debug] Collecting Point and Ray from term 63
+[Debug] Disjunctive term is feasible. Points and rays added.
+[Debug] Collecting Point and Ray from term 64
+[Debug] Disjunctive term is feasible. Points and rays added.
+[Debug] Removing duplicate rays
+[Debug] Points and Rays Collected
+[Debug] Number of points: 64
+[Debug] Number of rays: 29079
+[Debug] Zeroing heuristic is false
+[Debug] Check solution is feasible
+[Debug] Zeroed 0 entries
+[Debug] Disjunctive Lower Bound is: 194422.11056207534 and LP Objective is: -281225.24629337783
+[Debug] Starting Check Feasibility
+[Debug] Feasibility Check Passed
+[Warn] All ones objective is unbounded
+[Debug] Starting P* Optimization
+[Debug] Finished P* Optimization
+[Debug] Generated 2 cuts. Cutlimit is 1259
+[Debug] Generated 3 cuts. Cutlimit is 1259
+[Debug] Generated 4 cuts. Cutlimit is 1259
+[Debug] Generated 5 cuts. Cutlimit is 1259
+[Debug] Generated 6 cuts. Cutlimit is 1259
+[Debug] Generated 7 cuts. Cutlimit is 1259
+[Debug] Generated 8 cuts. Cutlimit is 1259
+[Debug] Generated 9 cuts. Cutlimit is 1259
+[Debug] Generated 10 cuts. Cutlimit is 1259
+[Debug] Generated 11 cuts. Cutlimit is 1259
+[Debug] Generated 12 cuts. Cutlimit is 1259
+[Debug] Generated 13 cuts. Cutlimit is 1259
+[Debug] Generated 14 cuts. Cutlimit is 1259
+[Debug] Generated 15 cuts. Cutlimit is 1259
+[Debug] Generated 16 cuts. Cutlimit is 1259
+[Debug] Generated 17 cuts. Cutlimit is 1259
+[Debug] Generated 18 cuts. Cutlimit is 1259
+[Debug] Generated 19 cuts. Cutlimit is 1259
+[Debug] Generated 20 cuts. Cutlimit is 1259
+[Debug] Generated 21 cuts. Cutlimit is 1259
+[Debug] Generated 22 cuts. Cutlimit is 1259
+[Debug] Generated 23 cuts. Cutlimit is 1259
+[Debug] Generated 24 cuts. Cutlimit is 1259
+[Debug] Generated 25 cuts. Cutlimit is 1259
+[Debug] Generated 26 cuts. Cutlimit is 1259
+[Debug] Generated 27 cuts. Cutlimit is 1259
+[Debug] Generated 28 cuts. Cutlimit is 1259
+[Debug] Generated 29 cuts. Cutlimit is 1259
+[Debug] Generated 30 cuts. Cutlimit is 1259
+[Debug] Generated 31 cuts. Cutlimit is 1259
+[Debug] Generated 32 cuts. Cutlimit is 1259
+[Debug] Generated 33 cuts. Cutlimit is 1259
+[Debug] Generated 34 cuts. Cutlimit is 1259
+[Debug] Generated 35 cuts. Cutlimit is 1259
+[Debug] Generated 36 cuts. Cutlimit is 1259
+[Debug] Generated 37 cuts. Cutlimit is 1259
+[Debug] Generated 38 cuts. Cutlimit is 1259
+[Debug] Generated 39 cuts. Cutlimit is 1259
+[Debug] Generated 40 cuts. Cutlimit is 1259
+[Debug] Generated 41 cuts. Cutlimit is 1259
+[Debug] Generated 42 cuts. Cutlimit is 1259
+[Debug] Generated 43 cuts. Cutlimit is 1259
+[Debug] Generated 44 cuts. Cutlimit is 1259
+[Debug] Generated 45 cuts. Cutlimit is 1259
+[Debug] Generated 46 cuts. Cutlimit is 1259
+[Debug] Generated 47 cuts. Cutlimit is 1259
+[Debug] Generated 48 cuts. Cutlimit is 1259
+[Debug] Generated 49 cuts. Cutlimit is 1259
+[Debug] Generated 50 cuts. Cutlimit is 1259
+[Debug] Generated 51 cuts. Cutlimit is 1259
+[Debug] Generated 52 cuts. Cutlimit is 1259
+[Debug] Generated 53 cuts. Cutlimit is 1259
+[Debug] Generated 54 cuts. Cutlimit is 1259
+[Debug] Generated 55 cuts. Cutlimit is 1259
+[Debug] Generated 56 cuts. Cutlimit is 1259
+[Debug] Generated 57 cuts. Cutlimit is 1259
+[Debug] Generated 58 cuts. Cutlimit is 1259
+[Debug] Generated 59 cuts. Cutlimit is 1259
+[Debug] Generated 60 cuts. Cutlimit is 1259
+[Debug] Generated 61 cuts. Cutlimit is 1259
+[Debug] Generated 62 cuts. Cutlimit is 1259
+[Debug] Generated 63 cuts. Cutlimit is 1259
+[Debug] Generated 64 cuts. Cutlimit is 1259
+[Debug] Generated 65 cuts. Cutlimit is 1259
+[Debug] Generated 66 cuts. Cutlimit is 1259
+[Debug] Generated 67 cuts. Cutlimit is 1259
+[Debug] Generated 68 cuts. Cutlimit is 1259
+[Debug] Generated 69 cuts. Cutlimit is 1259
+[Debug] Generated 70 cuts. Cutlimit is 1259
+[Debug] Generated 71 cuts. Cutlimit is 1259
+[Debug] Generated 72 cuts. Cutlimit is 1259
+[Debug] Generated 73 cuts. Cutlimit is 1259
+[Debug] Generated 74 cuts. Cutlimit is 1259
+[Debug] Generated 75 cuts. Cutlimit is 1259
+[Debug] Generated 76 cuts. Cutlimit is 1259
+[Debug] Generated 77 cuts. Cutlimit is 1259
+[Debug] Generated 78 cuts. Cutlimit is 1259
+[Debug] Generated 79 cuts. Cutlimit is 1259
+[Debug] Generated 80 cuts. Cutlimit is 1259
+[Debug] Generated 81 cuts. Cutlimit is 1259
+[Debug] Generated 82 cuts. Cutlimit is 1259
+[Debug] Generated 83 cuts. Cutlimit is 1259
+[Debug] Generated 84 cuts. Cutlimit is 1259
+[Debug] Generated 85 cuts. Cutlimit is 1259
+[Debug] Generated 86 cuts. Cutlimit is 1259
+[Debug] Generated 87 cuts. Cutlimit is 1259
+[Debug] Generated 88 cuts. Cutlimit is 1259
+[Debug] Generated 89 cuts. Cutlimit is 1259
+[Debug] Generated 90 cuts. Cutlimit is 1259
+[Debug] Generated 91 cuts. Cutlimit is 1259
+[Debug] Generated 92 cuts. Cutlimit is 1259
+[Debug] Generated 93 cuts. Cutlimit is 1259
+[Debug] Generated 94 cuts. Cutlimit is 1259
+[Debug] Generated 95 cuts. Cutlimit is 1259
+[Debug] Generated 96 cuts. Cutlimit is 1259
+[Debug] Generated 97 cuts. Cutlimit is 1259
+[Debug] Generated 98 cuts. Cutlimit is 1259
+[Debug] Generated 99 cuts. Cutlimit is 1259
+[Debug] Generated 100 cuts. Cutlimit is 1259
+[Debug] Generated 101 cuts. Cutlimit is 1259
+[Debug] Generated 102 cuts. Cutlimit is 1259
+[Debug] Generated 103 cuts. Cutlimit is 1259
+[Debug] Generated 104 cuts. Cutlimit is 1259
+[Debug] Generated 105 cuts. Cutlimit is 1259
+[Debug] Generated 106 cuts. Cutlimit is 1259
+[Debug] Generated 107 cuts. Cutlimit is 1259
+[Debug] Generated 108 cuts. Cutlimit is 1259
+[Debug] Generated 109 cuts. Cutlimit is 1259
+[Debug] Generated 110 cuts. Cutlimit is 1259
+[Debug] Generated 111 cuts. Cutlimit is 1259
+[Debug] Generated 112 cuts. Cutlimit is 1259
+[Debug] Generated 113 cuts. Cutlimit is 1259
+[Debug] Generated 114 cuts. Cutlimit is 1259
+[Debug] Generated 115 cuts. Cutlimit is 1259
+[Debug] Generated 116 cuts. Cutlimit is 1259
+[Debug] Generated 117 cuts. Cutlimit is 1259
+[Debug] Generated 118 cuts. Cutlimit is 1259
+[Debug] Generated 119 cuts. Cutlimit is 1259
+[Debug] Generated 120 cuts. Cutlimit is 1259
+[Debug] Generated 121 cuts. Cutlimit is 1259
+[Debug] Generated 122 cuts. Cutlimit is 1259
+[Debug] Generated 123 cuts. Cutlimit is 1259
+[Debug] Generated 124 cuts. Cutlimit is 1259
+[Debug] Generated 125 cuts. Cutlimit is 1259
+[Debug] Generated 126 cuts. Cutlimit is 1259
+[Debug] Generated 127 cuts. Cutlimit is 1259
+[Debug] Generated 128 cuts. Cutlimit is 1259
+[Debug] Generated 129 cuts. Cutlimit is 1259
+[Debug] Generated 130 cuts. Cutlimit is 1259
+[Debug] Generated 131 cuts. Cutlimit is 1259
+[Debug] Generated 132 cuts. Cutlimit is 1259
+[Debug] Generated 133 cuts. Cutlimit is 1259
+[Debug] Generated 134 cuts. Cutlimit is 1259
+[Debug] Generated 135 cuts. Cutlimit is 1259
+[Debug] Generated 136 cuts. Cutlimit is 1259
+[Debug] Generated 137 cuts. Cutlimit is 1259
+[Debug] Generated 138 cuts. Cutlimit is 1259
+[Debug] Generated 139 cuts. Cutlimit is 1259
+[Debug] Generated 140 cuts. Cutlimit is 1259
+[Debug] Generated 141 cuts. Cutlimit is 1259
+[Debug] Generated 142 cuts. Cutlimit is 1259
+[Debug] Generated 143 cuts. Cutlimit is 1259
+[Debug] Generated 144 cuts. Cutlimit is 1259
+[Debug] Generated 145 cuts. Cutlimit is 1259
+[Debug] Generated 146 cuts. Cutlimit is 1259
+[Debug] Generated 147 cuts. Cutlimit is 1259
+[Debug] Generated 148 cuts. Cutlimit is 1259
+[Debug] Generated 149 cuts. Cutlimit is 1259
+[Debug] Generated 150 cuts. Cutlimit is 1259
+[Debug] Generated 151 cuts. Cutlimit is 1259
+[Debug] Generated 152 cuts. Cutlimit is 1259
+[Debug] Generated 153 cuts. Cutlimit is 1259
+[Debug] Generated 154 cuts. Cutlimit is 1259
+[Debug] Generated 155 cuts. Cutlimit is 1259
+[Debug] Generated 156 cuts. Cutlimit is 1259
+[Debug] Generated 157 cuts. Cutlimit is 1259
+[Debug] Generated 158 cuts. Cutlimit is 1259
+[Debug] Generated 159 cuts. Cutlimit is 1259
+[Debug] Generated 160 cuts. Cutlimit is 1259
+[Debug] Generated 161 cuts. Cutlimit is 1259
+[Debug] Generated 162 cuts. Cutlimit is 1259
+[Debug] Generated 163 cuts. Cutlimit is 1259
+[Debug] Generated 164 cuts. Cutlimit is 1259
+[Debug] Generated 165 cuts. Cutlimit is 1259
+[Debug] Generated 166 cuts. Cutlimit is 1259
+[Debug] Generated 167 cuts. Cutlimit is 1259
+[Debug] Generated 168 cuts. Cutlimit is 1259
+[Debug] Generated 169 cuts. Cutlimit is 1259
+[Debug] Generated 170 cuts. Cutlimit is 1259
+[Debug] Generated 171 cuts. Cutlimit is 1259
+[Debug] Generated 172 cuts. Cutlimit is 1259
+[Debug] Generated 173 cuts. Cutlimit is 1259
+[Debug] Generated 174 cuts. Cutlimit is 1259
+[Debug] Generated 175 cuts. Cutlimit is 1259
+[Debug] Generated 176 cuts. Cutlimit is 1259
+[Debug] Generated 177 cuts. Cutlimit is 1259
+[Debug] Generated 178 cuts. Cutlimit is 1259
+[Debug] Generated 179 cuts. Cutlimit is 1259
+[Debug] Generated 180 cuts. Cutlimit is 1259
+[Debug] Generated 181 cuts. Cutlimit is 1259
+[Debug] Generated 182 cuts. Cutlimit is 1259
+[Debug] Generated 183 cuts. Cutlimit is 1259
+[Debug] Generated 184 cuts. Cutlimit is 1259
+[Debug] Generated 185 cuts. Cutlimit is 1259
+[Debug] Generated 186 cuts. Cutlimit is 1259
+[Debug] Generated 187 cuts. Cutlimit is 1259
+[Debug] Generated 188 cuts. Cutlimit is 1259
+[Debug] Generated 189 cuts. Cutlimit is 1259
+[Debug] Generated 190 cuts. Cutlimit is 1259
+[Debug] Generated 191 cuts. Cutlimit is 1259
+[Debug] Generated 192 cuts. Cutlimit is 1259
+[Debug] Generated 193 cuts. Cutlimit is 1259
+[Debug] Generated 194 cuts. Cutlimit is 1259
+[Debug] Generated 195 cuts. Cutlimit is 1259
+[Debug] Generated 196 cuts. Cutlimit is 1259
+[Debug] Generated 197 cuts. Cutlimit is 1259
+[Debug] Generated 198 cuts. Cutlimit is 1259
+[Debug] Generated 199 cuts. Cutlimit is 1259
+[Debug] Generated 200 cuts. Cutlimit is 1259
+[Debug] Generated 201 cuts. Cutlimit is 1259
+[Debug] Generated 202 cuts. Cutlimit is 1259
+[Debug] Generated 203 cuts. Cutlimit is 1259
+[Debug] Generated 204 cuts. Cutlimit is 1259
+[Debug] Generated 205 cuts. Cutlimit is 1259
+[Debug] Generated 206 cuts. Cutlimit is 1259
+[Debug] Generated 207 cuts. Cutlimit is 1259
+[Debug] Generated 208 cuts. Cutlimit is 1259
+[Debug] Generated 209 cuts. Cutlimit is 1259
+[Debug] Generated 210 cuts. Cutlimit is 1259
+[Debug] Generated 211 cuts. Cutlimit is 1259
+[Debug] Generated 212 cuts. Cutlimit is 1259
+[Debug] Generated 213 cuts. Cutlimit is 1259
+[Debug] Generated 214 cuts. Cutlimit is 1259
+[Debug] Generated 215 cuts. Cutlimit is 1259
+[Debug] Generated 216 cuts. Cutlimit is 1259
+[Debug] Generated 217 cuts. Cutlimit is 1259
+[Debug] Generated 218 cuts. Cutlimit is 1259
+[Debug] Generated 219 cuts. Cutlimit is 1259
+[Debug] Generated 220 cuts. Cutlimit is 1259
+[Debug] Generated 221 cuts. Cutlimit is 1259
+[Debug] Generated 222 cuts. Cutlimit is 1259
+[Debug] Generated 223 cuts. Cutlimit is 1259
+[Debug] Generated 224 cuts. Cutlimit is 1259
+[Debug] Generated 225 cuts. Cutlimit is 1259
+[Debug] Generated 226 cuts. Cutlimit is 1259
+[Debug] Generated 227 cuts. Cutlimit is 1259
+[Debug] Generated 228 cuts. Cutlimit is 1259
+[Debug] Generated 229 cuts. Cutlimit is 1259
+[Debug] Generated 230 cuts. Cutlimit is 1259
+[Debug] Generated 231 cuts. Cutlimit is 1259
+[Debug] Generated 232 cuts. Cutlimit is 1259
+[Debug] Generated 233 cuts. Cutlimit is 1259
+[Debug] Generated 234 cuts. Cutlimit is 1259
+[Debug] Generated 235 cuts. Cutlimit is 1259
+[Debug] Generated 236 cuts. Cutlimit is 1259
+[Debug] Generated 237 cuts. Cutlimit is 1259
+[Debug] Generated 238 cuts. Cutlimit is 1259
+[Debug] Generated 239 cuts. Cutlimit is 1259
+[Debug] Generated 240 cuts. Cutlimit is 1259
+[Debug] Generated 241 cuts. Cutlimit is 1259
+[Debug] Generated 242 cuts. Cutlimit is 1259
+[Debug] Generated 243 cuts. Cutlimit is 1259
+[Debug] Generated 244 cuts. Cutlimit is 1259
+[Debug] Generated 245 cuts. Cutlimit is 1259
+[Debug] Generated 246 cuts. Cutlimit is 1259
+[Debug] Generated 247 cuts. Cutlimit is 1259
+[Debug] Generated 248 cuts. Cutlimit is 1259
+[Debug] Generated 249 cuts. Cutlimit is 1259
+[Debug] Generated 250 cuts. Cutlimit is 1259
+[Debug] Generated 251 cuts. Cutlimit is 1259
+[Debug] Generated 252 cuts. Cutlimit is 1259
+[Debug] Generated 253 cuts. Cutlimit is 1259
+[Debug] Generated 254 cuts. Cutlimit is 1259
+[Debug] Generated 255 cuts. Cutlimit is 1259
+[Debug] Generated 256 cuts. Cutlimit is 1259
+[Debug] Generated 257 cuts. Cutlimit is 1259
+[Debug] Generated 258 cuts. Cutlimit is 1259
+[Debug] Generated 259 cuts. Cutlimit is 1259
+[Debug] Generated 260 cuts. Cutlimit is 1259
+[Debug] Generated 261 cuts. Cutlimit is 1259
+[Debug] Generated 262 cuts. Cutlimit is 1259
+[Debug] Generated 263 cuts. Cutlimit is 1259
+[Debug] Generated 264 cuts. Cutlimit is 1259
+[Debug] Generated 265 cuts. Cutlimit is 1259
+[Debug] Generated 266 cuts. Cutlimit is 1259
+[Debug] Generated 267 cuts. Cutlimit is 1259
+[Debug] Generated 268 cuts. Cutlimit is 1259
+[Debug] Generated 269 cuts. Cutlimit is 1259
+[Debug] Generated 270 cuts. Cutlimit is 1259
+[Debug] Generated 271 cuts. Cutlimit is 1259
+[Debug] Generated 272 cuts. Cutlimit is 1259
+[Debug] Generated 273 cuts. Cutlimit is 1259
+[Debug] Generated 274 cuts. Cutlimit is 1259
+[Debug] Generated 275 cuts. Cutlimit is 1259
+[Debug] Generated 276 cuts. Cutlimit is 1259
+[Debug] Generated 277 cuts. Cutlimit is 1259
+[Debug] Generated 278 cuts. Cutlimit is 1259
+[Debug] Generated 279 cuts. Cutlimit is 1259
+[Debug] Generated 280 cuts. Cutlimit is 1259
+[Debug] Generated 281 cuts. Cutlimit is 1259
+[Debug] Generated 282 cuts. Cutlimit is 1259
+[Debug] Generated 283 cuts. Cutlimit is 1259
+[Debug] Generated 284 cuts. Cutlimit is 1259
+[Debug] Generated 285 cuts. Cutlimit is 1259
+[Debug] Generated 286 cuts. Cutlimit is 1259
+[Debug] Generated 287 cuts. Cutlimit is 1259
+[Debug] Generated 288 cuts. Cutlimit is 1259
+[Debug] Generated 289 cuts. Cutlimit is 1259
+[Debug] Generated 290 cuts. Cutlimit is 1259
+[Debug] Generated 291 cuts. Cutlimit is 1259
+[Debug] Generated 292 cuts. Cutlimit is 1259
+[Debug] Generated 293 cuts. Cutlimit is 1259
+[Debug] Generated 294 cuts. Cutlimit is 1259
+[Debug] Generated 295 cuts. Cutlimit is 1259
+[Debug] Generated 296 cuts. Cutlimit is 1259
+[Debug] Generated 297 cuts. Cutlimit is 1259
+[Debug] Generated 298 cuts. Cutlimit is 1259
+[Debug] Generated 299 cuts. Cutlimit is 1259
+[Debug] Generated 300 cuts. Cutlimit is 1259
+[Debug] Generated 301 cuts. Cutlimit is 1259
+[Debug] Generated 302 cuts. Cutlimit is 1259
+[Debug] Generated 303 cuts. Cutlimit is 1259
+[Debug] Generated 304 cuts. Cutlimit is 1259
+[Debug] Generated 305 cuts. Cutlimit is 1259
+[Debug] Generated 306 cuts. Cutlimit is 1259
+[Debug] Generated 307 cuts. Cutlimit is 1259
+[Debug] Generated 308 cuts. Cutlimit is 1259
+[Debug] Generated 309 cuts. Cutlimit is 1259
+[Debug] Generated 310 cuts. Cutlimit is 1259
+[Debug] Generated 311 cuts. Cutlimit is 1259
+[Debug] Generated 312 cuts. Cutlimit is 1259
+[Debug] Generated 313 cuts. Cutlimit is 1259
+[Debug] Generated 314 cuts. Cutlimit is 1259
+[Debug] Generated 315 cuts. Cutlimit is 1259
+[Debug] Generated 316 cuts. Cutlimit is 1259
+[Debug] Generated 317 cuts. Cutlimit is 1259
+[Debug] Generated 318 cuts. Cutlimit is 1259
+[Debug] Generated 319 cuts. Cutlimit is 1259
+[Debug] Generated 320 cuts. Cutlimit is 1259
+[Debug] Generated 321 cuts. Cutlimit is 1259
+[Debug] Generated 322 cuts. Cutlimit is 1259
+[Debug] Generated 323 cuts. Cutlimit is 1259
+[Debug] Generated 324 cuts. Cutlimit is 1259
+[Debug] Generated 325 cuts. Cutlimit is 1259
+[Debug] Generated 326 cuts. Cutlimit is 1259
+[Debug] Generated 327 cuts. Cutlimit is 1259
+[Debug] Generated 328 cuts. Cutlimit is 1259
+[Debug] Generated 329 cuts. Cutlimit is 1259
+[Debug] Generated 330 cuts. Cutlimit is 1259
+[Debug] Generated 331 cuts. Cutlimit is 1259
+[Debug] Generated 332 cuts. Cutlimit is 1259
+[Debug] Generated 333 cuts. Cutlimit is 1259
+[Debug] Generated 334 cuts. Cutlimit is 1259
+[Debug] Generated 335 cuts. Cutlimit is 1259
+[Debug] Generated 336 cuts. Cutlimit is 1259
+[Debug] Generated 337 cuts. Cutlimit is 1259
+[Debug] Generated 338 cuts. Cutlimit is 1259
+[Debug] Generated 339 cuts. Cutlimit is 1259
+[Debug] Generated 340 cuts. Cutlimit is 1259
+[Debug] Generated 341 cuts. Cutlimit is 1259
+[Debug] Generated 342 cuts. Cutlimit is 1259
+[Debug] Generated 343 cuts. Cutlimit is 1259
+[Debug] Generated 344 cuts. Cutlimit is 1259
+[Debug] Generated 345 cuts. Cutlimit is 1259
+[Debug] Generated 346 cuts. Cutlimit is 1259
+[Debug] Generated 347 cuts. Cutlimit is 1259
+[Debug] Generated 348 cuts. Cutlimit is 1259
+[Debug] Generated 349 cuts. Cutlimit is 1259
+[Debug] Generated 350 cuts. Cutlimit is 1259
+[Debug] Generated 351 cuts. Cutlimit is 1259
+[Debug] Generated 352 cuts. Cutlimit is 1259
+[Debug] Generated 353 cuts. Cutlimit is 1259
+[Debug] Generated 354 cuts. Cutlimit is 1259
+[Debug] Generated 355 cuts. Cutlimit is 1259
+[Debug] Generated 356 cuts. Cutlimit is 1259
+[Debug] Generated 357 cuts. Cutlimit is 1259
+[Debug] Generated 358 cuts. Cutlimit is 1259
+[Debug] Generated 359 cuts. Cutlimit is 1259
+[Debug] Generated 360 cuts. Cutlimit is 1259
+[Debug] Generated 361 cuts. Cutlimit is 1259
+[Debug] Generated 362 cuts. Cutlimit is 1259
+[Debug] Generated 363 cuts. Cutlimit is 1259
+[Debug] Generated 364 cuts. Cutlimit is 1259
+[Debug] Generated 365 cuts. Cutlimit is 1259
+[Debug] Generated 366 cuts. Cutlimit is 1259
+[Debug] Generated 367 cuts. Cutlimit is 1259
+[Debug] Generated 368 cuts. Cutlimit is 1259
+[Debug] Generated 369 cuts. Cutlimit is 1259
+[Debug] Generated 370 cuts. Cutlimit is 1259
+[Debug] Generated 371 cuts. Cutlimit is 1259
+[Debug] Generated 372 cuts. Cutlimit is 1259
+[Debug] Generated 373 cuts. Cutlimit is 1259
+[Debug] Generated 374 cuts. Cutlimit is 1259
+[Debug] Generated 375 cuts. Cutlimit is 1259
+[Debug] Generated 376 cuts. Cutlimit is 1259
+[Debug] Generated 377 cuts. Cutlimit is 1259
+[Debug] Generated 378 cuts. Cutlimit is 1259
+[Debug] Generated 379 cuts. Cutlimit is 1259
+[Debug] Generated 380 cuts. Cutlimit is 1259
+[Debug] Generated 381 cuts. Cutlimit is 1259
+[Debug] Generated 382 cuts. Cutlimit is 1259
+[Debug] Generated 383 cuts. Cutlimit is 1259
+[Debug] Generated 384 cuts. Cutlimit is 1259
+[Debug] Generated 385 cuts. Cutlimit is 1259
+[Debug] Generated 386 cuts. Cutlimit is 1259
+[Debug] Generated 387 cuts. Cutlimit is 1259
+[Debug] Generated 388 cuts. Cutlimit is 1259
+[Debug] Generated 389 cuts. Cutlimit is 1259
+[Debug] Generated 390 cuts. Cutlimit is 1259
+[Debug] Generated 391 cuts. Cutlimit is 1259
+[Debug] Generated 392 cuts. Cutlimit is 1259
+[Debug] Generated 393 cuts. Cutlimit is 1259
+[Debug] Generated 394 cuts. Cutlimit is 1259
+[Debug] Generated 395 cuts. Cutlimit is 1259
+[Debug] Generated 396 cuts. Cutlimit is 1259
+[Debug] Generated 397 cuts. Cutlimit is 1259
+[Debug] Generated 398 cuts. Cutlimit is 1259
+[Debug] Generated 399 cuts. Cutlimit is 1259
+[Debug] Generated 400 cuts. Cutlimit is 1259
+[Debug] Generated 401 cuts. Cutlimit is 1259
+[Debug] Generated 402 cuts. Cutlimit is 1259
+[Debug] Generated 403 cuts. Cutlimit is 1259
+[Debug] Generated 404 cuts. Cutlimit is 1259
+[Debug] Generated 405 cuts. Cutlimit is 1259
+[Debug] Generated 406 cuts. Cutlimit is 1259
+[Debug] Generated 407 cuts. Cutlimit is 1259
+[Debug] Generated 408 cuts. Cutlimit is 1259
+[Debug] Generated 409 cuts. Cutlimit is 1259
+[Debug] Generated 410 cuts. Cutlimit is 1259
+[Debug] Generated 411 cuts. Cutlimit is 1259
+[Debug] Generated 412 cuts. Cutlimit is 1259
+[Debug] Generated 413 cuts. Cutlimit is 1259
+[Debug] Generated 414 cuts. Cutlimit is 1259
+[Debug] Generated 415 cuts. Cutlimit is 1259
+[Debug] Generated 416 cuts. Cutlimit is 1259
+[Debug] Generated 417 cuts. Cutlimit is 1259
+[Debug] Generated 418 cuts. Cutlimit is 1259
+[Debug] Generated 419 cuts. Cutlimit is 1259
+[Debug] Generated 420 cuts. Cutlimit is 1259
+[Debug] Generated 421 cuts. Cutlimit is 1259
+[Debug] Generated 422 cuts. Cutlimit is 1259
+[Debug] Generated 423 cuts. Cutlimit is 1259
+[Debug] Generated 424 cuts. Cutlimit is 1259
+[Debug] Generated 425 cuts. Cutlimit is 1259
+[Debug] Generated 426 cuts. Cutlimit is 1259
+[Debug] Generated 427 cuts. Cutlimit is 1259
+[Debug] Generated 428 cuts. Cutlimit is 1259
+[Debug] Generated 429 cuts. Cutlimit is 1259
+[Debug] Generated 430 cuts. Cutlimit is 1259
+[Debug] Generated 431 cuts. Cutlimit is 1259
+[Debug] Generated 432 cuts. Cutlimit is 1259
+[Debug] Generated 433 cuts. Cutlimit is 1259
+[Debug] Generated 434 cuts. Cutlimit is 1259
+[Debug] Generated 435 cuts. Cutlimit is 1259
+[Debug] Generated 436 cuts. Cutlimit is 1259
+[Debug] Generated 437 cuts. Cutlimit is 1259
+[Debug] Generated 438 cuts. Cutlimit is 1259
+[Debug] Generated 439 cuts. Cutlimit is 1259
+[Debug] Generated 440 cuts. Cutlimit is 1259
+[Debug] Generated 441 cuts. Cutlimit is 1259
+[Debug] Generated 442 cuts. Cutlimit is 1259
+[Debug] Generated 443 cuts. Cutlimit is 1259
+[Debug] Generated 444 cuts. Cutlimit is 1259
+[Debug] Generated 445 cuts. Cutlimit is 1259
+[Debug] Generated 446 cuts. Cutlimit is 1259
+[Debug] Generated 447 cuts. Cutlimit is 1259
+[Debug] Generated 448 cuts. Cutlimit is 1259
+[Debug] Generated 449 cuts. Cutlimit is 1259
+[Debug] Generated 450 cuts. Cutlimit is 1259
+[Debug] Generated 451 cuts. Cutlimit is 1259
+[Debug] Generated 452 cuts. Cutlimit is 1259
+[Debug] Generated 453 cuts. Cutlimit is 1259
+[Debug] Generated 454 cuts. Cutlimit is 1259
+[Debug] Generated 455 cuts. Cutlimit is 1259
+[Debug] Generated 456 cuts. Cutlimit is 1259
+[Debug] Generated 457 cuts. Cutlimit is 1259
+[Debug] Generated 458 cuts. Cutlimit is 1259
+[Debug] Generated 459 cuts. Cutlimit is 1259
+[Debug] Generated 460 cuts. Cutlimit is 1259
+[Debug] Generated 461 cuts. Cutlimit is 1259
+[Debug] Generated 462 cuts. Cutlimit is 1259
+[Debug] Generated 463 cuts. Cutlimit is 1259
+[Debug] Generated 464 cuts. Cutlimit is 1259
+[Debug] Generated 465 cuts. Cutlimit is 1259
+[Debug] Generated 466 cuts. Cutlimit is 1259
+[Debug] Generated 467 cuts. Cutlimit is 1259
+[Debug] Generated 468 cuts. Cutlimit is 1259
+[Debug] Generated 469 cuts. Cutlimit is 1259
+[Debug] Generated 470 cuts. Cutlimit is 1259
+[Debug] Generated 471 cuts. Cutlimit is 1259
+[Debug] Generated 472 cuts. Cutlimit is 1259
+[Debug] Generated 473 cuts. Cutlimit is 1259
+[Debug] Generated 474 cuts. Cutlimit is 1259
+[Debug] Generated 475 cuts. Cutlimit is 1259
+[Debug] Generated 476 cuts. Cutlimit is 1259
+[Debug] Generated 477 cuts. Cutlimit is 1259
+[Debug] Generated 478 cuts. Cutlimit is 1259
+[Debug] Generated 479 cuts. Cutlimit is 1259
+[Debug] Generated 480 cuts. Cutlimit is 1259
+[Debug] Generated 481 cuts. Cutlimit is 1259
+[Debug] Generated 482 cuts. Cutlimit is 1259
+[Debug] Generated 483 cuts. Cutlimit is 1259
+[Debug] Generated 484 cuts. Cutlimit is 1259
+[Debug] Generated 485 cuts. Cutlimit is 1259
+[Debug] Generated 486 cuts. Cutlimit is 1259
+[Debug] Generated 487 cuts. Cutlimit is 1259
+[Debug] Generated 488 cuts. Cutlimit is 1259
+[Debug] Generated 489 cuts. Cutlimit is 1259
+[Debug] Generated 490 cuts. Cutlimit is 1259
+[Debug] Generated 491 cuts. Cutlimit is 1259
+[Debug] Generated 492 cuts. Cutlimit is 1259
+[Debug] Generated 493 cuts. Cutlimit is 1259
+[Debug] Generated 494 cuts. Cutlimit is 1259
+[Debug] Generated 495 cuts. Cutlimit is 1259
+[Debug] Generated 496 cuts. Cutlimit is 1259
+[Debug] Generated 497 cuts. Cutlimit is 1259
+[Debug] Generated 498 cuts. Cutlimit is 1259
+[Debug] Generated 499 cuts. Cutlimit is 1259
+[Debug] Generated 500 cuts. Cutlimit is 1259
+[Debug] Generated 501 cuts. Cutlimit is 1259
+[Debug] Generated 502 cuts. Cutlimit is 1259
+[Debug] Generated 503 cuts. Cutlimit is 1259
+[Debug] Generated 504 cuts. Cutlimit is 1259
+[Debug] Generated 505 cuts. Cutlimit is 1259
+[Debug] Generated 506 cuts. Cutlimit is 1259
+[Debug] Generated 507 cuts. Cutlimit is 1259
+[Debug] Generated 508 cuts. Cutlimit is 1259
+[Debug] Generated 509 cuts. Cutlimit is 1259
+[Debug] Generated 510 cuts. Cutlimit is 1259
+[Debug] Generated 511 cuts. Cutlimit is 1259
+[Debug] Generated 512 cuts. Cutlimit is 1259
+[Debug] Generated 513 cuts. Cutlimit is 1259
+[Debug] Generated 514 cuts. Cutlimit is 1259
+[Debug] Generated 515 cuts. Cutlimit is 1259
+[Debug] Generated 516 cuts. Cutlimit is 1259
+[Debug] Generated 517 cuts. Cutlimit is 1259
+[Debug] Generated 518 cuts. Cutlimit is 1259
+[Debug] Generated 519 cuts. Cutlimit is 1259
+[Debug] Generated 520 cuts. Cutlimit is 1259
+[Debug] Generated 521 cuts. Cutlimit is 1259
+[Debug] Generated 522 cuts. Cutlimit is 1259
+[Debug] Generated 523 cuts. Cutlimit is 1259
+[Debug] Generated 524 cuts. Cutlimit is 1259
+[Debug] Generated 525 cuts. Cutlimit is 1259
+[Debug] Generated 526 cuts. Cutlimit is 1259
+[Debug] Generated 527 cuts. Cutlimit is 1259
+[Debug] Generated 528 cuts. Cutlimit is 1259
+[Debug] Generated 529 cuts. Cutlimit is 1259
+[Debug] Generated 530 cuts. Cutlimit is 1259
+[Debug] Generated 531 cuts. Cutlimit is 1259
+[Debug] Generated 532 cuts. Cutlimit is 1259
+[Debug] Generated 533 cuts. Cutlimit is 1259
+[Debug] Generated 534 cuts. Cutlimit is 1259
+[Debug] Generated 535 cuts. Cutlimit is 1259
+[Debug] Generated 536 cuts. Cutlimit is 1259
+[Debug] Generated 537 cuts. Cutlimit is 1259
+[Debug] Generated 538 cuts. Cutlimit is 1259
+[Debug] Generated 539 cuts. Cutlimit is 1259
+[Debug] Generated 540 cuts. Cutlimit is 1259
+[Debug] Generated 541 cuts. Cutlimit is 1259
+[Debug] Generated 542 cuts. Cutlimit is 1259
+[Debug] Generated 543 cuts. Cutlimit is 1259
+[Debug] Generated 544 cuts. Cutlimit is 1259
+[Debug] Generated 545 cuts. Cutlimit is 1259
+[Debug] Generated 546 cuts. Cutlimit is 1259
+[Debug] Generated 547 cuts. Cutlimit is 1259
+[Debug] Generated 548 cuts. Cutlimit is 1259
+[Debug] Generated 549 cuts. Cutlimit is 1259
+[Debug] Generated 550 cuts. Cutlimit is 1259
+[Debug] Generated 551 cuts. Cutlimit is 1259
+[Debug] Generated 552 cuts. Cutlimit is 1259
+[Debug] Generated 553 cuts. Cutlimit is 1259
+[Debug] Generated 554 cuts. Cutlimit is 1259
+[Debug] Generated 555 cuts. Cutlimit is 1259
+[Debug] Generated 556 cuts. Cutlimit is 1259
+[Debug] Generated 557 cuts. Cutlimit is 1259
+[Debug] Generated 558 cuts. Cutlimit is 1259
+[Debug] Generated 559 cuts. Cutlimit is 1259
+[Debug] Generated 560 cuts. Cutlimit is 1259
+[Debug] Generated 561 cuts. Cutlimit is 1259
+[Debug] Generated 562 cuts. Cutlimit is 1259
+[Debug] Generated 563 cuts. Cutlimit is 1259
+[Debug] Generated 564 cuts. Cutlimit is 1259
+[Debug] Generated 565 cuts. Cutlimit is 1259
+[Debug] Generated 566 cuts. Cutlimit is 1259
+[Debug] Generated 567 cuts. Cutlimit is 1259
+[Debug] Generated 568 cuts. Cutlimit is 1259
+[Debug] Generated 569 cuts. Cutlimit is 1259
+[Debug] Generated 570 cuts. Cutlimit is 1259
+[Debug] Generated 571 cuts. Cutlimit is 1259
+[Debug] Generated 572 cuts. Cutlimit is 1259
+[Debug] Generated 573 cuts. Cutlimit is 1259
+[Debug] Generated 574 cuts. Cutlimit is 1259
+[Debug] Generated 575 cuts. Cutlimit is 1259
+[Debug] Generated 576 cuts. Cutlimit is 1259
+[Debug] Generated 577 cuts. Cutlimit is 1259
+[Debug] Generated 578 cuts. Cutlimit is 1259
+[Debug] Generated 579 cuts. Cutlimit is 1259
+[Debug] Generated 580 cuts. Cutlimit is 1259
+[Debug] Generated 581 cuts. Cutlimit is 1259
+[Debug] Generated 582 cuts. Cutlimit is 1259
+[Debug] Generated 583 cuts. Cutlimit is 1259
+[Debug] Generated 584 cuts. Cutlimit is 1259
+[Debug] Generated 585 cuts. Cutlimit is 1259
+[Debug] Generated 586 cuts. Cutlimit is 1259
+[Debug] Generated 587 cuts. Cutlimit is 1259
+[Debug] Generated 588 cuts. Cutlimit is 1259
+[Debug] Generated 589 cuts. Cutlimit is 1259
+[Debug] Generated 590 cuts. Cutlimit is 1259
+[Debug] Generated 591 cuts. Cutlimit is 1259
+[Debug] Generated 592 cuts. Cutlimit is 1259
+[Debug] Generated 593 cuts. Cutlimit is 1259
+[Debug] Generated 594 cuts. Cutlimit is 1259
+[Debug] Generated 595 cuts. Cutlimit is 1259
+[Debug] Generated 596 cuts. Cutlimit is 1259
+[Debug] Generated 597 cuts. Cutlimit is 1259
+[Debug] Generated 598 cuts. Cutlimit is 1259
+[Debug] Generated 599 cuts. Cutlimit is 1259
+[Debug] Generated 600 cuts. Cutlimit is 1259
+[Debug] Generated 601 cuts. Cutlimit is 1259
+[Debug] Generated 602 cuts. Cutlimit is 1259
+[Debug] Generated 603 cuts. Cutlimit is 1259
+[Debug] Generated 604 cuts. Cutlimit is 1259
+[Debug] Generated 605 cuts. Cutlimit is 1259
+[Debug] Generated 606 cuts. Cutlimit is 1259
+[Debug] Generated 607 cuts. Cutlimit is 1259
+[Debug] Generated 608 cuts. Cutlimit is 1259
+[Debug] Generated 609 cuts. Cutlimit is 1259
+[Debug] Generated 610 cuts. Cutlimit is 1259
+[Debug] Generated 611 cuts. Cutlimit is 1259
+[Debug] Generated 612 cuts. Cutlimit is 1259
+[Debug] Generated 613 cuts. Cutlimit is 1259
+[Debug] Generated 614 cuts. Cutlimit is 1259
+[Debug] Generated 615 cuts. Cutlimit is 1259
+[Debug] Generated 616 cuts. Cutlimit is 1259
+[Debug] Generated 617 cuts. Cutlimit is 1259
+[Debug] Generated 618 cuts. Cutlimit is 1259
+[Debug] Generated 619 cuts. Cutlimit is 1259
+[Debug] Generated 620 cuts. Cutlimit is 1259
+[Debug] Generated 621 cuts. Cutlimit is 1259
+[Debug] Generated 622 cuts. Cutlimit is 1259
+[Debug] Generated 623 cuts. Cutlimit is 1259
+[Debug] Generated 624 cuts. Cutlimit is 1259
+[Debug] Generated 625 cuts. Cutlimit is 1259
+[Debug] Generated 626 cuts. Cutlimit is 1259
+[Debug] Generated 627 cuts. Cutlimit is 1259
+[Debug] Generated 628 cuts. Cutlimit is 1259
+[Debug] Generated 629 cuts. Cutlimit is 1259
+[Debug] Generated 630 cuts. Cutlimit is 1259
+[Debug] Generated 631 cuts. Cutlimit is 1259
+[Debug] Generated 632 cuts. Cutlimit is 1259
+[Debug] Generated 633 cuts. Cutlimit is 1259
+[Debug] Generated 634 cuts. Cutlimit is 1259
+[Debug] Generated 635 cuts. Cutlimit is 1259
+[Debug] Generated 636 cuts. Cutlimit is 1259
+[Debug] Generated 637 cuts. Cutlimit is 1259
+[Debug] Generated 638 cuts. Cutlimit is 1259
+[Debug] Generated 639 cuts. Cutlimit is 1259
+[Debug] Generated 640 cuts. Cutlimit is 1259
+[Debug] Generated 641 cuts. Cutlimit is 1259
+[Debug] Generated 642 cuts. Cutlimit is 1259
+[Debug] Generated 643 cuts. Cutlimit is 1259
+[Debug] Generated 644 cuts. Cutlimit is 1259
+[Debug] Generated 645 cuts. Cutlimit is 1259
+[Debug] Generated 646 cuts. Cutlimit is 1259
+[Debug] Generated 647 cuts. Cutlimit is 1259
+[Debug] Generated 648 cuts. Cutlimit is 1259
+[Debug] Generated 649 cuts. Cutlimit is 1259
+[Debug] Generated 650 cuts. Cutlimit is 1259
+[Debug] Generated 651 cuts. Cutlimit is 1259
+[Debug] Generated 652 cuts. Cutlimit is 1259
+[Debug] Generated 653 cuts. Cutlimit is 1259
+[Debug] Generated 654 cuts. Cutlimit is 1259
+[Debug] Generated 655 cuts. Cutlimit is 1259
+[Debug] Generated 656 cuts. Cutlimit is 1259
+[Debug] Generated 657 cuts. Cutlimit is 1259
+[Debug] Generated 658 cuts. Cutlimit is 1259
+[Debug] Generated 659 cuts. Cutlimit is 1259
+[Debug] Generated 660 cuts. Cutlimit is 1259
+[Debug] Generated 661 cuts. Cutlimit is 1259
+[Debug] Generated 662 cuts. Cutlimit is 1259
+[Debug] Generated 663 cuts. Cutlimit is 1259
+[Debug] Generated 664 cuts. Cutlimit is 1259
+[Debug] Generated 665 cuts. Cutlimit is 1259
+[Debug] Generated 666 cuts. Cutlimit is 1259
+[Debug] Generated 667 cuts. Cutlimit is 1259
+[Debug] Generated 668 cuts. Cutlimit is 1259
+[Debug] Generated 669 cuts. Cutlimit is 1259
+[Debug] Generated 670 cuts. Cutlimit is 1259
+[Debug] Generated 671 cuts. Cutlimit is 1259
+[Debug] Generated 672 cuts. Cutlimit is 1259
+[Debug] Generated 673 cuts. Cutlimit is 1259
+[Debug] Generated 674 cuts. Cutlimit is 1259
+[Debug] Generated 675 cuts. Cutlimit is 1259
+[Debug] Generated 676 cuts. Cutlimit is 1259
+[Debug] Generated 677 cuts. Cutlimit is 1259
+[Debug] Generated 678 cuts. Cutlimit is 1259
+[Debug] Generated 679 cuts. Cutlimit is 1259
+[Debug] Generated 680 cuts. Cutlimit is 1259
+[Debug] Generated 681 cuts. Cutlimit is 1259
+[Debug] Generated 682 cuts. Cutlimit is 1259
+[Debug] Generated 683 cuts. Cutlimit is 1259
+[Debug] Generated 684 cuts. Cutlimit is 1259
+[Debug] Generated 685 cuts. Cutlimit is 1259
+[Debug] Generated 686 cuts. Cutlimit is 1259
+[Debug] Generated 687 cuts. Cutlimit is 1259
+[Debug] Generated 688 cuts. Cutlimit is 1259
+[Debug] Generated 689 cuts. Cutlimit is 1259
+[Debug] Generated 690 cuts. Cutlimit is 1259
+[Debug] Generated 691 cuts. Cutlimit is 1259
+[Debug] Generated 692 cuts. Cutlimit is 1259
+[Debug] Generated 693 cuts. Cutlimit is 1259
+[Debug] Generated 694 cuts. Cutlimit is 1259
+[Debug] Generated 695 cuts. Cutlimit is 1259
+[Debug] Generated 696 cuts. Cutlimit is 1259
+[Debug] Generated 697 cuts. Cutlimit is 1259
+[Debug] Generated 698 cuts. Cutlimit is 1259
+[Debug] Generated 699 cuts. Cutlimit is 1259
+[Debug] Generated 700 cuts. Cutlimit is 1259
+[Debug] Generated 701 cuts. Cutlimit is 1259
+[Debug] Generated 702 cuts. Cutlimit is 1259
+[Debug] Generated 703 cuts. Cutlimit is 1259
+[Debug] Generated 704 cuts. Cutlimit is 1259
+[Debug] Generated 705 cuts. Cutlimit is 1259
+[Debug] Generated 706 cuts. Cutlimit is 1259
+[Debug] Generated 707 cuts. Cutlimit is 1259
+[Debug] Generated 708 cuts. Cutlimit is 1259
+[Debug] Generated 709 cuts. Cutlimit is 1259
+[Debug] Generated 710 cuts. Cutlimit is 1259
+[Debug] Generated 711 cuts. Cutlimit is 1259
+[Debug] Generated 712 cuts. Cutlimit is 1259
+[Debug] Generated 713 cuts. Cutlimit is 1259
+[Debug] Generated 714 cuts. Cutlimit is 1259
+[Debug] Generated 715 cuts. Cutlimit is 1259
+[Debug] Generated 716 cuts. Cutlimit is 1259
+[Debug] Generated 717 cuts. Cutlimit is 1259
+[Debug] Generated 718 cuts. Cutlimit is 1259
+[Debug] Generated 719 cuts. Cutlimit is 1259
+[Debug] Generated 720 cuts. Cutlimit is 1259
+[Debug] Generated 721 cuts. Cutlimit is 1259
+[Debug] Generated 722 cuts. Cutlimit is 1259
+[Debug] Generated 723 cuts. Cutlimit is 1259
+[Debug] Generated 724 cuts. Cutlimit is 1259
+[Debug] Generated 725 cuts. Cutlimit is 1259
+[Debug] Generated 726 cuts. Cutlimit is 1259
+[Debug] Generated 727 cuts. Cutlimit is 1259
+[Debug] Generated 728 cuts. Cutlimit is 1259
+[Debug] Generated 729 cuts. Cutlimit is 1259
+[Debug] Generated 730 cuts. Cutlimit is 1259
+[Debug] Generated 731 cuts. Cutlimit is 1259
+[Debug] Generated 732 cuts. Cutlimit is 1259
+[Debug] Generated 733 cuts. Cutlimit is 1259
+[Debug] Generated 734 cuts. Cutlimit is 1259
+[Debug] Generated 735 cuts. Cutlimit is 1259
+[Debug] Generated 736 cuts. Cutlimit is 1259
+[Debug] Generated 737 cuts. Cutlimit is 1259
+[Debug] Generated 738 cuts. Cutlimit is 1259
+[Debug] Generated 739 cuts. Cutlimit is 1259
+[Debug] Generated 740 cuts. Cutlimit is 1259
+[Debug] Generated 741 cuts. Cutlimit is 1259
+[Debug] Generated 742 cuts. Cutlimit is 1259
+[Debug] Generated 743 cuts. Cutlimit is 1259
+[Debug] Generated 744 cuts. Cutlimit is 1259
+[Debug] Generated 745 cuts. Cutlimit is 1259
+[Debug] Generated 746 cuts. Cutlimit is 1259
+[Debug] Generated 747 cuts. Cutlimit is 1259
+[Debug] Generated 748 cuts. Cutlimit is 1259
+[Debug] Generated 749 cuts. Cutlimit is 1259
+[Debug] Generated 750 cuts. Cutlimit is 1259
+[Debug] Generated 751 cuts. Cutlimit is 1259
+[Debug] Generated 752 cuts. Cutlimit is 1259
+[Debug] Generated 753 cuts. Cutlimit is 1259
+[Debug] Generated 754 cuts. Cutlimit is 1259
+[Debug] Generated 755 cuts. Cutlimit is 1259
+[Debug] Generated 756 cuts. Cutlimit is 1259
+[Debug] Generated 757 cuts. Cutlimit is 1259
+[Debug] Generated 758 cuts. Cutlimit is 1259
+[Debug] Generated 759 cuts. Cutlimit is 1259
+[Debug] Generated 760 cuts. Cutlimit is 1259
+[Debug] Generated 761 cuts. Cutlimit is 1259
+[Debug] Generated 762 cuts. Cutlimit is 1259
+[Debug] Generated 763 cuts. Cutlimit is 1259
+[Debug] Generated 764 cuts. Cutlimit is 1259
+[Debug] Generated 765 cuts. Cutlimit is 1259
+[Debug] Generated 766 cuts. Cutlimit is 1259
+[Debug] Generated 767 cuts. Cutlimit is 1259
+[Debug] Generated 768 cuts. Cutlimit is 1259
+[Debug] Generated 769 cuts. Cutlimit is 1259
+[Debug] Generated 770 cuts. Cutlimit is 1259
+[Debug] Generated 771 cuts. Cutlimit is 1259
+[Debug] Generated 772 cuts. Cutlimit is 1259
+[Debug] Generated 773 cuts. Cutlimit is 1259
+[Debug] Generated 774 cuts. Cutlimit is 1259
+[Debug] Generated 775 cuts. Cutlimit is 1259
+[Debug] Generated 776 cuts. Cutlimit is 1259
+[Debug] Generated 777 cuts. Cutlimit is 1259
+[Debug] Generated 778 cuts. Cutlimit is 1259
+[Debug] Generated 779 cuts. Cutlimit is 1259
+[Debug] Generated 780 cuts. Cutlimit is 1259
+[Debug] Generated 781 cuts. Cutlimit is 1259
+[Debug] Generated 782 cuts. Cutlimit is 1259
+[Debug] Generated 783 cuts. Cutlimit is 1259
+[Debug] Generated 784 cuts. Cutlimit is 1259
+[Debug] Generated 785 cuts. Cutlimit is 1259
+[Debug] Generated 786 cuts. Cutlimit is 1259
+[Debug] Generated 787 cuts. Cutlimit is 1259
+[Debug] Generated 788 cuts. Cutlimit is 1259
+[Debug] Generated 789 cuts. Cutlimit is 1259
+[Debug] Generated 790 cuts. Cutlimit is 1259
+[Debug] Generated 791 cuts. Cutlimit is 1259
+[Debug] Generated 792 cuts. Cutlimit is 1259
+[Debug] Generated 793 cuts. Cutlimit is 1259
+[Debug] Generated 794 cuts. Cutlimit is 1259
+[Debug] Generated 795 cuts. Cutlimit is 1259
+[Debug] Generated 796 cuts. Cutlimit is 1259
+[Debug] Generated 797 cuts. Cutlimit is 1259
+[Debug] Generated 798 cuts. Cutlimit is 1259
+[Debug] Generated 799 cuts. Cutlimit is 1259
+[Debug] Generated 800 cuts. Cutlimit is 1259
+[Debug] Generated 801 cuts. Cutlimit is 1259
+[Debug] Generated 802 cuts. Cutlimit is 1259
+[Debug] Generated 803 cuts. Cutlimit is 1259
+[Debug] Generated 804 cuts. Cutlimit is 1259
+[Debug] Generated 805 cuts. Cutlimit is 1259
+[Debug] Generated 806 cuts. Cutlimit is 1259
+[Debug] Generated 807 cuts. Cutlimit is 1259
+[Debug] Generated 808 cuts. Cutlimit is 1259
+[Debug] Generated 809 cuts. Cutlimit is 1259
+[Debug] Generated 810 cuts. Cutlimit is 1259
+[Debug] Generated 811 cuts. Cutlimit is 1259
+[Debug] Generated 812 cuts. Cutlimit is 1259
+[Debug] Generated 813 cuts. Cutlimit is 1259
+[Debug] Generated 814 cuts. Cutlimit is 1259
+[Debug] Generated 815 cuts. Cutlimit is 1259
+[Debug] Generated 816 cuts. Cutlimit is 1259
+[Debug] Generated 817 cuts. Cutlimit is 1259
+[Debug] Generated 818 cuts. Cutlimit is 1259
+[Debug] Generated 819 cuts. Cutlimit is 1259
+[Debug] Generated 820 cuts. Cutlimit is 1259
+[Debug] Generated 821 cuts. Cutlimit is 1259
+[Debug] Generated 822 cuts. Cutlimit is 1259
+[Debug] Generated 823 cuts. Cutlimit is 1259
+[Debug] Generated 824 cuts. Cutlimit is 1259
+[Debug] Generated 825 cuts. Cutlimit is 1259
+[Debug] Generated 826 cuts. Cutlimit is 1259
+[Debug] Generated 827 cuts. Cutlimit is 1259
+[Debug] Generated 828 cuts. Cutlimit is 1259
+[Debug] Generated 829 cuts. Cutlimit is 1259
+[Debug] Generated 830 cuts. Cutlimit is 1259
+[Debug] Generated 831 cuts. Cutlimit is 1259
+[Debug] Generated 832 cuts. Cutlimit is 1259
+[Debug] Generated 833 cuts. Cutlimit is 1259
+[Debug] Generated 834 cuts. Cutlimit is 1259
+[Debug] Generated 835 cuts. Cutlimit is 1259
+[Debug] Generated 836 cuts. Cutlimit is 1259
+[Debug] Generated 837 cuts. Cutlimit is 1259
+[Debug] Generated 838 cuts. Cutlimit is 1259
+[Debug] Generated 839 cuts. Cutlimit is 1259
+[Debug] Generated 840 cuts. Cutlimit is 1259
+[Debug] Generated 841 cuts. Cutlimit is 1259
+[Debug] Generated 842 cuts. Cutlimit is 1259
+[Debug] Generated 843 cuts. Cutlimit is 1259
+[Debug] Generated 844 cuts. Cutlimit is 1259
+[Debug] Generated 845 cuts. Cutlimit is 1259
+[Debug] Generated 846 cuts. Cutlimit is 1259
+[Debug] Generated 847 cuts. Cutlimit is 1259
+[Debug] Generated 848 cuts. Cutlimit is 1259
+[Debug] Generated 849 cuts. Cutlimit is 1259
+[Debug] Generated 850 cuts. Cutlimit is 1259
+[Debug] Generated 851 cuts. Cutlimit is 1259
+[Debug] Generated 852 cuts. Cutlimit is 1259
+[Debug] Generated 853 cuts. Cutlimit is 1259
+[Debug] Generated 854 cuts. Cutlimit is 1259
+[Debug] Generated 855 cuts. Cutlimit is 1259
+[Debug] Generated 856 cuts. Cutlimit is 1259
+[Debug] Generated 857 cuts. Cutlimit is 1259
+[Debug] Generated 858 cuts. Cutlimit is 1259
+[Debug] Generated 859 cuts. Cutlimit is 1259
+[Debug] Generated 860 cuts. Cutlimit is 1259
+[Debug] Generated 861 cuts. Cutlimit is 1259
+[Debug] Generated 862 cuts. Cutlimit is 1259
+[Debug] Generated 863 cuts. Cutlimit is 1259
+[Debug] Generated 864 cuts. Cutlimit is 1259
+[Debug] Generated 865 cuts. Cutlimit is 1259
+[Debug] Generated 866 cuts. Cutlimit is 1259
+[Debug] Generated 867 cuts. Cutlimit is 1259
+[Debug] Generated 868 cuts. Cutlimit is 1259
+[Debug] Generated 869 cuts. Cutlimit is 1259
+[Debug] Generated 870 cuts. Cutlimit is 1259
+[Debug] Generated 871 cuts. Cutlimit is 1259
+[Debug] Generated 872 cuts. Cutlimit is 1259
+[Debug] Generated 873 cuts. Cutlimit is 1259
+[Debug] Generated 874 cuts. Cutlimit is 1259
+[Debug] Generated 875 cuts. Cutlimit is 1259
+[Debug] Generated 876 cuts. Cutlimit is 1259
+[Debug] Generated 877 cuts. Cutlimit is 1259
+[Debug] Generated 878 cuts. Cutlimit is 1259
+[Debug] Generated 879 cuts. Cutlimit is 1259
+[Debug] Generated 880 cuts. Cutlimit is 1259
+[Debug] Generated 881 cuts. Cutlimit is 1259
+[Debug] Generated 882 cuts. Cutlimit is 1259
+[Debug] Generated 883 cuts. Cutlimit is 1259
+[Debug] Generated 884 cuts. Cutlimit is 1259
+[Debug] Generated 885 cuts. Cutlimit is 1259
+[Debug] Generated 886 cuts. Cutlimit is 1259
+[Debug] Generated 887 cuts. Cutlimit is 1259
+[Debug] Generated 888 cuts. Cutlimit is 1259
+[Debug] Generated 889 cuts. Cutlimit is 1259
+[Debug] Generated 890 cuts. Cutlimit is 1259
+[Debug] Generated 891 cuts. Cutlimit is 1259
+[Debug] Generated 892 cuts. Cutlimit is 1259
+[Debug] Generated 893 cuts. Cutlimit is 1259
+[Debug] Generated 894 cuts. Cutlimit is 1259
+[Debug] Generated 895 cuts. Cutlimit is 1259
+[Debug] Generated 896 cuts. Cutlimit is 1259
+[Debug] Generated 897 cuts. Cutlimit is 1259
+[Debug] Generated 898 cuts. Cutlimit is 1259
+[Debug] Generated 899 cuts. Cutlimit is 1259
+[Debug] Generated 900 cuts. Cutlimit is 1259
+[Debug] Generated 901 cuts. Cutlimit is 1259
+[Debug] Generated 902 cuts. Cutlimit is 1259
+[Debug] Generated 903 cuts. Cutlimit is 1259
+[Debug] Generated 904 cuts. Cutlimit is 1259
+[Debug] Generated 905 cuts. Cutlimit is 1259
+[Debug] Generated 906 cuts. Cutlimit is 1259
+[Debug] Generated 907 cuts. Cutlimit is 1259
+[Debug] Generated 908 cuts. Cutlimit is 1259
+[Debug] Generated 909 cuts. Cutlimit is 1259
+[Debug] Generated 910 cuts. Cutlimit is 1259
+[Debug] Generated 911 cuts. Cutlimit is 1259
+[Debug] Generated 912 cuts. Cutlimit is 1259
+[Debug] Generated 913 cuts. Cutlimit is 1259
+[Debug] Generated 914 cuts. Cutlimit is 1259
+[Debug] Generated 915 cuts. Cutlimit is 1259
+[Debug] Generated 916 cuts. Cutlimit is 1259
+[Debug] Generated 917 cuts. Cutlimit is 1259
+[Debug] Generated 918 cuts. Cutlimit is 1259
+[Debug] Generated 919 cuts. Cutlimit is 1259
+[Debug] Generated 920 cuts. Cutlimit is 1259
+[Debug] Generated 921 cuts. Cutlimit is 1259
+[Debug] Generated 922 cuts. Cutlimit is 1259
+[Debug] Generated 923 cuts. Cutlimit is 1259
+[Debug] Generated 924 cuts. Cutlimit is 1259
+[Debug] Generated 925 cuts. Cutlimit is 1259
+[Debug] Generated 926 cuts. Cutlimit is 1259
+[Debug] Generated 927 cuts. Cutlimit is 1259
+[Debug] Generated 928 cuts. Cutlimit is 1259
+[Debug] Generated 929 cuts. Cutlimit is 1259
+[Debug] Generated 930 cuts. Cutlimit is 1259
+[Debug] Generated 931 cuts. Cutlimit is 1259
+[Debug] Generated 932 cuts. Cutlimit is 1259
+[Debug] Generated 933 cuts. Cutlimit is 1259
+[Debug] Generated 934 cuts. Cutlimit is 1259
+[Debug] Generated 935 cuts. Cutlimit is 1259
+[Debug] Generated 936 cuts. Cutlimit is 1259
+[Debug] Generated 937 cuts. Cutlimit is 1259
+[Debug] Generated 938 cuts. Cutlimit is 1259
+[Debug] Generated 939 cuts. Cutlimit is 1259
+[Debug] Generated 940 cuts. Cutlimit is 1259
+[Debug] Generated 941 cuts. Cutlimit is 1259
+[Debug] Generated 942 cuts. Cutlimit is 1259
+[Debug] Generated 943 cuts. Cutlimit is 1259
+[Debug] Generated 944 cuts. Cutlimit is 1259
+[Debug] Generated 945 cuts. Cutlimit is 1259
+[Debug] Generated 946 cuts. Cutlimit is 1259
+[Debug] Generated 947 cuts. Cutlimit is 1259
+[Debug] Generated 948 cuts. Cutlimit is 1259
+[Debug] Generated 949 cuts. Cutlimit is 1259
+[Debug] Generated 950 cuts. Cutlimit is 1259
+[Debug] Generated 951 cuts. Cutlimit is 1259
+[Debug] Generated 952 cuts. Cutlimit is 1259
+[Debug] Generated 953 cuts. Cutlimit is 1259
+[Debug] Generated 954 cuts. Cutlimit is 1259
+[Debug] Generated 955 cuts. Cutlimit is 1259
+[Debug] Generated 956 cuts. Cutlimit is 1259
+[Debug] Generated 957 cuts. Cutlimit is 1259
+[Debug] Generated 958 cuts. Cutlimit is 1259
+[Debug] Generated 959 cuts. Cutlimit is 1259
+[Debug] Generated 960 cuts. Cutlimit is 1259
+[Debug] Generated 961 cuts. Cutlimit is 1259
+[Debug] Generated 962 cuts. Cutlimit is 1259
+[Debug] Generated 963 cuts. Cutlimit is 1259
+[Debug] Generated 964 cuts. Cutlimit is 1259
+[Debug] Generated 965 cuts. Cutlimit is 1259
+[Debug] Generated 966 cuts. Cutlimit is 1259
+[Debug] Generated 967 cuts. Cutlimit is 1259
+[Debug] Generated 968 cuts. Cutlimit is 1259
+[Debug] Generated 969 cuts. Cutlimit is 1259
+[Debug] Generated 970 cuts. Cutlimit is 1259
+[Debug] Generated 971 cuts. Cutlimit is 1259
+[Debug] Generated 972 cuts. Cutlimit is 1259
+[Debug] Generated 973 cuts. Cutlimit is 1259
+[Debug] Generated 974 cuts. Cutlimit is 1259
+[Debug] Generated 975 cuts. Cutlimit is 1259
+[Debug] Generated 976 cuts. Cutlimit is 1259
+[Debug] Generated 977 cuts. Cutlimit is 1259
+[Debug] Generated 978 cuts. Cutlimit is 1259
+[Debug] Generated 979 cuts. Cutlimit is 1259
+[Debug] Generated 980 cuts. Cutlimit is 1259
+[Debug] Generated 981 cuts. Cutlimit is 1259
+[Debug] Generated 982 cuts. Cutlimit is 1259
+[Debug] Generated 983 cuts. Cutlimit is 1259
+[Debug] Generated 984 cuts. Cutlimit is 1259
+[Debug] Generated 985 cuts. Cutlimit is 1259
+[Debug] Generated 986 cuts. Cutlimit is 1259
+[Debug] Generated 987 cuts. Cutlimit is 1259
+[Debug] Generated 988 cuts. Cutlimit is 1259
+[Debug] Generated 989 cuts. Cutlimit is 1259
+[Debug] Generated 990 cuts. Cutlimit is 1259
+[Debug] Generated 991 cuts. Cutlimit is 1259
+[Debug] Generated 992 cuts. Cutlimit is 1259
+[Debug] Generated 993 cuts. Cutlimit is 1259
+[Debug] Generated 994 cuts. Cutlimit is 1259
+[Debug] Generated 995 cuts. Cutlimit is 1259
+[Debug] Generated 996 cuts. Cutlimit is 1259
+[Debug] Generated 997 cuts. Cutlimit is 1259
+[Debug] Generated 998 cuts. Cutlimit is 1259
+[Debug] Generated 999 cuts. Cutlimit is 1259
+[Debug] Generated 1000 cuts. Cutlimit is 1259
+[Debug] Generated 1001 cuts. Cutlimit is 1259
+[Debug] Generated 1002 cuts. Cutlimit is 1259
+[Debug] Generated 1003 cuts. Cutlimit is 1259
+[Debug] Generated 1004 cuts. Cutlimit is 1259
+[Debug] Generated 1005 cuts. Cutlimit is 1259
+[Debug] Generated 1006 cuts. Cutlimit is 1259
+[Debug] Generated 1007 cuts. Cutlimit is 1259
+[Debug] Generated 1008 cuts. Cutlimit is 1259
+[Debug] Generated 1009 cuts. Cutlimit is 1259
+[Debug] Generated 1010 cuts. Cutlimit is 1259
+[Debug] Generated 1011 cuts. Cutlimit is 1259
+[Debug] Generated 1012 cuts. Cutlimit is 1259
+[Debug] Generated 1013 cuts. Cutlimit is 1259
+[Debug] Generated 1014 cuts. Cutlimit is 1259
+[Debug] Generated 1015 cuts. Cutlimit is 1259
+[Debug] Generated 1016 cuts. Cutlimit is 1259
+[Debug] Generated 1017 cuts. Cutlimit is 1259
+[Debug] Generated 1018 cuts. Cutlimit is 1259
+[Debug] Generated 1019 cuts. Cutlimit is 1259
+[Debug] Generated 1020 cuts. Cutlimit is 1259
+[Debug] Generated 1021 cuts. Cutlimit is 1259
+[Debug] Generated 1022 cuts. Cutlimit is 1259
+[Debug] Generated 1023 cuts. Cutlimit is 1259
+[Debug] Generated 1024 cuts. Cutlimit is 1259
+[Debug] Generated 1025 cuts. Cutlimit is 1259
+[Debug] Generated 1026 cuts. Cutlimit is 1259
+[Debug] Generated 1027 cuts. Cutlimit is 1259
+[Debug] Generated 1028 cuts. Cutlimit is 1259
+[Debug] Generated 1029 cuts. Cutlimit is 1259
+[Debug] Generated 1030 cuts. Cutlimit is 1259
+[Debug] Generated 1031 cuts. Cutlimit is 1259
+[Debug] Generated 1032 cuts. Cutlimit is 1259
+[Debug] Generated 1033 cuts. Cutlimit is 1259
+[Debug] Generated 1034 cuts. Cutlimit is 1259
+[Debug] Generated 1035 cuts. Cutlimit is 1259
+[Debug] Generated 1036 cuts. Cutlimit is 1259
+[Debug] Generated 1037 cuts. Cutlimit is 1259
+[Debug] Generated 1038 cuts. Cutlimit is 1259
+[Debug] Generated 1039 cuts. Cutlimit is 1259
+[Debug] Generated 1040 cuts. Cutlimit is 1259
+[Debug] Generated 1041 cuts. Cutlimit is 1259
+[Debug] Generated 1042 cuts. Cutlimit is 1259
+[Debug] Generated 1043 cuts. Cutlimit is 1259
+[Debug] Generated 1044 cuts. Cutlimit is 1259
+[Debug] Generated 1045 cuts. Cutlimit is 1259
+[Debug] Generated 1046 cuts. Cutlimit is 1259
+[Debug] Generated 1047 cuts. Cutlimit is 1259
+[Debug] Generated 1048 cuts. Cutlimit is 1259
+[Debug] Generated 1049 cuts. Cutlimit is 1259
+[Debug] Generated 1050 cuts. Cutlimit is 1259
+[Debug] Generated 1051 cuts. Cutlimit is 1259
+[Debug] Generated 1052 cuts. Cutlimit is 1259
+[Debug] Generated 1053 cuts. Cutlimit is 1259
+[Debug] Generated 1054 cuts. Cutlimit is 1259
+[Debug] Generated 1055 cuts. Cutlimit is 1259
+[Debug] Generated 1056 cuts. Cutlimit is 1259
+[Debug] Generated 1057 cuts. Cutlimit is 1259
+[Debug] Generated 1058 cuts. Cutlimit is 1259
+[Debug] Generated 1059 cuts. Cutlimit is 1259
+[Debug] Generated 1060 cuts. Cutlimit is 1259
+[Debug] Generated 1061 cuts. Cutlimit is 1259
+[Debug] Generated 1062 cuts. Cutlimit is 1259
+[Debug] Generated 1063 cuts. Cutlimit is 1259
+[Debug] Generated 1064 cuts. Cutlimit is 1259
+[Debug] Generated 1065 cuts. Cutlimit is 1259
+[Debug] Generated 1066 cuts. Cutlimit is 1259
+[Debug] Generated 1067 cuts. Cutlimit is 1259
+[Debug] Generated 1068 cuts. Cutlimit is 1259
+[Debug] Generated 1069 cuts. Cutlimit is 1259
+[Debug] Generated 1070 cuts. Cutlimit is 1259
+[Debug] Generated 1071 cuts. Cutlimit is 1259
+[Debug] Generated 1072 cuts. Cutlimit is 1259
+[Debug] Generated 1073 cuts. Cutlimit is 1259
+[Debug] Generated 1074 cuts. Cutlimit is 1259
+[Debug] Generated 1075 cuts. Cutlimit is 1259
+[Debug] Generated 1076 cuts. Cutlimit is 1259
+[Debug] Generated 1077 cuts. Cutlimit is 1259
+[Debug] Generated 1078 cuts. Cutlimit is 1259
+[Debug] Generated 1079 cuts. Cutlimit is 1259
+[Debug] Generated 1080 cuts. Cutlimit is 1259
+[Debug] Generated 1081 cuts. Cutlimit is 1259
+[Debug] Generated 1082 cuts. Cutlimit is 1259
+[Debug] Generated 1083 cuts. Cutlimit is 1259
+[Debug] Generated 1084 cuts. Cutlimit is 1259
+[Debug] Generated 1085 cuts. Cutlimit is 1259
+[Debug] Generated 1086 cuts. Cutlimit is 1259
+[Debug] Generated 1087 cuts. Cutlimit is 1259
+[Debug] Generated 1088 cuts. Cutlimit is 1259
+[Debug] Generated 1089 cuts. Cutlimit is 1259
+[Debug] Generated 1090 cuts. Cutlimit is 1259
+[Debug] Generated 1091 cuts. Cutlimit is 1259
+[Debug] Generated 1092 cuts. Cutlimit is 1259
+[Debug] Generated 1093 cuts. Cutlimit is 1259
+[Debug] Generated 1094 cuts. Cutlimit is 1259
+[Debug] Generated 1095 cuts. Cutlimit is 1259
+[Debug] Generated 1096 cuts. Cutlimit is 1259
+[Debug] Generated 1097 cuts. Cutlimit is 1259
+[Debug] Generated 1098 cuts. Cutlimit is 1259
+[Debug] Generated 1099 cuts. Cutlimit is 1259
+[Debug] Generated 1100 cuts. Cutlimit is 1259
+[Debug] Generated 1101 cuts. Cutlimit is 1259
+[Debug] Generated 1102 cuts. Cutlimit is 1259
+[Debug] Generated 1103 cuts. Cutlimit is 1259
+[Debug] Generated 1104 cuts. Cutlimit is 1259
+[Debug] Generated 1105 cuts. Cutlimit is 1259
+[Debug] Generated 1106 cuts. Cutlimit is 1259
+[Debug] Generated 1107 cuts. Cutlimit is 1259
+[Debug] Generated 1108 cuts. Cutlimit is 1259
+[Debug] Generated 1109 cuts. Cutlimit is 1259
+[Debug] Generated 1110 cuts. Cutlimit is 1259
+[Debug] Generated 1111 cuts. Cutlimit is 1259
+[Debug] Generated 1112 cuts. Cutlimit is 1259
+[Debug] Generated 1113 cuts. Cutlimit is 1259
+[Debug] Generated 1114 cuts. Cutlimit is 1259
+[Debug] Generated 1115 cuts. Cutlimit is 1259
+[Debug] Generated 1116 cuts. Cutlimit is 1259
+[Debug] Generated 1117 cuts. Cutlimit is 1259
+[Debug] Generated 1118 cuts. Cutlimit is 1259
+[Debug] Generated 1119 cuts. Cutlimit is 1259
+[Debug] Generated 1120 cuts. Cutlimit is 1259
+[Debug] Generated 1121 cuts. Cutlimit is 1259
+[Debug] Generated 1122 cuts. Cutlimit is 1259
+[Debug] Generated 1123 cuts. Cutlimit is 1259
+[Debug] Generated 1124 cuts. Cutlimit is 1259
+[Debug] Generated 1125 cuts. Cutlimit is 1259
+[Debug] Generated 1126 cuts. Cutlimit is 1259
+[Debug] Generated 1127 cuts. Cutlimit is 1259
+[Debug] Generated 1128 cuts. Cutlimit is 1259
+[Debug] Generated 1129 cuts. Cutlimit is 1259
+[Debug] Generated 1130 cuts. Cutlimit is 1259
+[Debug] Generated 1131 cuts. Cutlimit is 1259
+[Debug] Generated 1132 cuts. Cutlimit is 1259
+[Debug] Generated 1133 cuts. Cutlimit is 1259
+[Debug] Generated 1134 cuts. Cutlimit is 1259
+[Debug] Generated 1135 cuts. Cutlimit is 1259
+[Debug] Generated 1136 cuts. Cutlimit is 1259
+[Debug] Generated 1137 cuts. Cutlimit is 1259
+[Debug] Generated 1138 cuts. Cutlimit is 1259
+[Debug] Generated 1139 cuts. Cutlimit is 1259
+[Debug] Generated 1140 cuts. Cutlimit is 1259
+[Debug] Generated 1141 cuts. Cutlimit is 1259
+[Debug] Generated 1142 cuts. Cutlimit is 1259
+[Debug] Generated 1143 cuts. Cutlimit is 1259
+[Debug] Generated 1144 cuts. Cutlimit is 1259
+[Debug] Generated 1145 cuts. Cutlimit is 1259
+[Debug] Generated 1146 cuts. Cutlimit is 1259
+[Debug] Generated 1147 cuts. Cutlimit is 1259
+[Debug] Generated 1148 cuts. Cutlimit is 1259
+[Debug] Generated 1149 cuts. Cutlimit is 1259
+[Debug] Generated 1150 cuts. Cutlimit is 1259
+[Debug] Generated 1151 cuts. Cutlimit is 1259
+[Debug] Generated 1152 cuts. Cutlimit is 1259
+[Debug] Generated 1153 cuts. Cutlimit is 1259
+[Debug] Generated 1154 cuts. Cutlimit is 1259
+[Debug] Generated 1155 cuts. Cutlimit is 1259
+[Debug] Generated 1156 cuts. Cutlimit is 1259
+[Debug] Generated 1157 cuts. Cutlimit is 1259
+[Debug] Generated 1158 cuts. Cutlimit is 1259
+[Debug] Generated 1159 cuts. Cutlimit is 1259
+[Debug] Generated 1160 cuts. Cutlimit is 1259
+[Debug] Generated 1161 cuts. Cutlimit is 1259
+[Debug] Generated 1162 cuts. Cutlimit is 1259
+[Debug] Generated 1163 cuts. Cutlimit is 1259
+[Debug] Generated 1164 cuts. Cutlimit is 1259
+[Debug] Generated 1165 cuts. Cutlimit is 1259
+[Debug] Generated 1166 cuts. Cutlimit is 1259
+[Debug] Generated 1167 cuts. Cutlimit is 1259
+[Debug] Generated 1168 cuts. Cutlimit is 1259
+[Debug] Generated 1169 cuts. Cutlimit is 1259
+[Debug] Generated 1170 cuts. Cutlimit is 1259
+[Debug] Generated 1171 cuts. Cutlimit is 1259
+[Debug] Generated 1172 cuts. Cutlimit is 1259
+[Debug] Generated 1173 cuts. Cutlimit is 1259
+[Debug] Generated 1174 cuts. Cutlimit is 1259
+[Debug] Generated 1175 cuts. Cutlimit is 1259
+[Debug] Generated 1176 cuts. Cutlimit is 1259
+[Debug] Generated 1177 cuts. Cutlimit is 1259
+[Debug] Generated 1178 cuts. Cutlimit is 1259
+[Debug] Generated 1179 cuts. Cutlimit is 1259
+[Debug] Generated 1180 cuts. Cutlimit is 1259
+[Debug] Generated 1181 cuts. Cutlimit is 1259
+[Debug] Generated 1182 cuts. Cutlimit is 1259
+[Debug] Generated 1183 cuts. Cutlimit is 1259
+[Debug] Generated 1184 cuts. Cutlimit is 1259
+[Debug] Generated 1185 cuts. Cutlimit is 1259
+[Debug] Generated 1186 cuts. Cutlimit is 1259
+[Debug] Generated 1187 cuts. Cutlimit is 1259
+[Debug] Generated 1188 cuts. Cutlimit is 1259
+[Debug] Generated 1189 cuts. Cutlimit is 1259
+[Debug] Generated 1190 cuts. Cutlimit is 1259
+[Debug] Generated 1191 cuts. Cutlimit is 1259
+[Debug] Generated 1192 cuts. Cutlimit is 1259
+[Debug] Generated 1193 cuts. Cutlimit is 1259
+[Debug] Generated 1194 cuts. Cutlimit is 1259
+[Debug] Generated 1195 cuts. Cutlimit is 1259
+[Debug] Generated 1196 cuts. Cutlimit is 1259
+[Debug] Generated 1197 cuts. Cutlimit is 1259
+[Debug] Generated 1198 cuts. Cutlimit is 1259
+[Debug] Generated 1199 cuts. Cutlimit is 1259
+[Debug] Generated 1200 cuts. Cutlimit is 1259
+[Debug] Generated 1201 cuts. Cutlimit is 1259
+[Debug] Generated 1202 cuts. Cutlimit is 1259
+[Debug] Generated 1203 cuts. Cutlimit is 1259
+[Debug] Generated 1204 cuts. Cutlimit is 1259
+[Debug] Generated 1205 cuts. Cutlimit is 1259
+[Debug] Generated 1206 cuts. Cutlimit is 1259
+[Debug] Generated 1207 cuts. Cutlimit is 1259
+[Debug] Generated 1208 cuts. Cutlimit is 1259
+[Debug] Generated 1209 cuts. Cutlimit is 1259
+[Debug] Generated 1210 cuts. Cutlimit is 1259
+[Debug] Generated 1211 cuts. Cutlimit is 1259
+[Debug] Generated 1212 cuts. Cutlimit is 1259
+[Debug] Generated 1213 cuts. Cutlimit is 1259
+[Debug] Generated 1214 cuts. Cutlimit is 1259
+[Debug] Generated 1215 cuts. Cutlimit is 1259
+[Debug] Generated 1216 cuts. Cutlimit is 1259
+[Debug] Generated 1217 cuts. Cutlimit is 1259
+[Debug] Generated 1218 cuts. Cutlimit is 1259
+[Debug] Generated 1219 cuts. Cutlimit is 1259
+[Debug] Generated 1220 cuts. Cutlimit is 1259
+[Debug] Generated 1221 cuts. Cutlimit is 1259
+[Debug] Generated 1222 cuts. Cutlimit is 1259
+[Debug] Generated 1223 cuts. Cutlimit is 1259
+[Debug] Generated 1224 cuts. Cutlimit is 1259
+[Debug] Generated 1225 cuts. Cutlimit is 1259
+[Debug] Generated 1226 cuts. Cutlimit is 1259
+[Debug] Generated 1227 cuts. Cutlimit is 1259
+[Debug] Generated 1228 cuts. Cutlimit is 1259
+[Debug] Generated 1229 cuts. Cutlimit is 1259
+[Debug] Generated 1230 cuts. Cutlimit is 1259
+[Debug] Generated 1231 cuts. Cutlimit is 1259
+[Debug] Generated 1232 cuts. Cutlimit is 1259
+[Debug] Generated 1233 cuts. Cutlimit is 1259
+[Debug] Generated 1234 cuts. Cutlimit is 1259
+[Debug] Generated 1235 cuts. Cutlimit is 1259
+[Debug] Generated 1236 cuts. Cutlimit is 1259
+[Debug] Generated 1237 cuts. Cutlimit is 1259
+[Debug] Generated 1238 cuts. Cutlimit is 1259
+[Debug] Generated 1239 cuts. Cutlimit is 1259
+[Debug] Generated 1240 cuts. Cutlimit is 1259
+[Debug] Generated 1241 cuts. Cutlimit is 1259
+[Debug] Generated 1242 cuts. Cutlimit is 1259
+[Debug] Generated 1243 cuts. Cutlimit is 1259
+[Debug] Generated 1244 cuts. Cutlimit is 1259
+[Debug] Generated 1245 cuts. Cutlimit is 1259
+[Debug] Generated 1246 cuts. Cutlimit is 1259
+[Debug] Generated 1247 cuts. Cutlimit is 1259
+[Debug] Generated 1248 cuts. Cutlimit is 1259
+[Debug] Generated 1249 cuts. Cutlimit is 1259
+[Debug] Generated 1250 cuts. Cutlimit is 1259
+[Debug] Generated 1251 cuts. Cutlimit is 1259
+[Debug] Generated 1252 cuts. Cutlimit is 1259
+[Debug] Generated 1253 cuts. Cutlimit is 1259
+[Debug] Generated 1254 cuts. Cutlimit is 1259
+[Debug] Generated 1255 cuts. Cutlimit is 1259
+[Debug] Generated 1256 cuts. Cutlimit is 1259
+[Debug] Generated 1257 cuts. Cutlimit is 1259
+[Debug] Generated 1258 cuts. Cutlimit is 1259
+[Debug] Generated 1259 cuts. Cutlimit is 1259

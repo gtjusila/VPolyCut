@@ -13,7 +13,13 @@ function write_output(experiment::Experiment)
     result["scip_status"] = SCIP.SCIPgetStatus(experiment.scip)
     result["initial_lp_obj"] = SCIP.SCIPgetFirstLPDualboundRoot(experiment.scip)
     result["final_lp_obj"] = SCIP.SCIPgetDualboundRoot(experiment.scip)
-
+    if result["separator"] == "vpc"
+        result["sepa_termination_message"] = experiment.vpcsepa.termination_message
+        result["number_of_cuts"] = length(experiment.vpcsepa.cutpool)
+    else
+        result["sepa_termination_message"] = ""
+        result["number_of_cuts"] = -1
+    end
     result_path = joinpath(output_path, "results.json")
     open(result_path, "w") do io
         JSON.print(io, result, 4)
