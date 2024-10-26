@@ -32,10 +32,10 @@ function setup_cli_arguments()
         help = "Output directory for the results"
         "--time_limit", "-t"
         help = "Time limit for the experiment"
-        default = 3600
+        default = "7200"
         "--zeroing_heuristic", "-z"
         help = "Enable Zeroing Heuristic"
-        action = :store_true 
+        action = :store_true
     end
     return parse_args(settings)
 end
