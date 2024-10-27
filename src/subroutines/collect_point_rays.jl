@@ -73,9 +73,9 @@ function get_disjunctive_term_information(
     end
 
     corner_polyhedron = construct_corner_polyhedron(tableau)
-    objective_value = SCIP.SCIPgetSolOrigObj(scip, C_NULL)
+    objective_value = SCIP.SCIPgetLPObjval(scip)
     basic_solution = get_lp_sol(corner_polyhedron)
-    
+
     # Leave Probing mode
     SCIP.SCIPendProbing(scip)
 
@@ -85,5 +85,5 @@ function get_disjunctive_term_information(
         add_ray(sepa.point_ray_collection, ray)
     end
 
-    @debug "Disjunctive term is feasible. Points and rays added."
+    @debug "Disjunctive term is feasible. Points and rays added. Objective value is $objective_value"
 end
