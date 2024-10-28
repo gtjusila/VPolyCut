@@ -48,8 +48,14 @@ Constructors:
     separated::Bool = false
     "SEPA Parameters"
     parameters::VPCParameters
+
+    # Statistics
     "Termination Message"
     termination_message::String = ""
+    "Disjunctive Lower Bound"
+    disjunctive_lower_bound::SCIP.SCIP_Real = 0.0
+    "Number of Fractional Variables"
+    n_fractional_variables::Int = 0
 
     "Complemented Tableau"
     complemented_tableau::Union{Nothing,ComplementedTableau} = nothing

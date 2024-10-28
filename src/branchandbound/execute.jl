@@ -3,9 +3,7 @@ using DataStructures
 using Dates
 
 function execute_branchandbound(branchandbound::BranchAndBound)::Bool
-    with_logger(NullLogger()) do
-        _execute_branchandbound(branchandbound)
-    end
+    _execute_branchandbound(branchandbound)
 end
 
 function _execute_branchandbound(branchandbound::BranchAndBound)::Bool

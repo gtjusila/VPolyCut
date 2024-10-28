@@ -109,6 +109,8 @@ function vpolyhedralcut_separation(sepa::VPCSeparator)
     if sepa.parameters.cut_limit == -1 || sepa.parameters.cut_limit == -2
         sepa.parameters.cut_limit = get_cut_limit(sepa, sepa.parameters)
     end
+    # Capture fractional variables statistic
+    sepa.n_fractional_variables = SCIP.SCIPgetNLPBranchCands(scip)
 
     # Step 0: Get complemented tableau
     sepa.lp_obj = SCIP.SCIPgetLPObjval(scip)
