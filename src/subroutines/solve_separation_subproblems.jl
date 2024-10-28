@@ -16,7 +16,11 @@ function solve_separation_subproblems(sepa::VPCSeparator)
     # First, translate the points so that the lp_solution is at the origin 
     points = get_points(sepa.point_ray_collection)
     translated_points = map(points) do point
-        return CornerPoint(get_point(point) - lp_solution, get_objective_value(point))
+        return CornerPoint(
+            get_point(point) - lp_solution,
+            get_objective_value(point),
+            get_orig_objective_value(point)
+        )
     end
     rays = get_rays(sepa.point_ray_collection)
     zeroed = 0
@@ -65,6 +69,7 @@ function solve_separation_subproblems(sepa::VPCSeparator)
     checkvar = Dict{typeof(x[1]),Float64}(x[i] => check[i] for i in 1:dimension)
 
     # Open the file in write mode
+    #=
     open("primal_feasibility_report_filtered.txt", "w") do file
         # Iterate over the dictionary
         p = primal_feasibility_report(separating_lp, checkvar; atol=1e-7)
@@ -102,12 +107,15 @@ function solve_separation_subproblems(sepa::VPCSeparator)
             @debug "Check solution is feasible"
         end
     end
+    =#
     @debug "Zeroed $(zeroed) entries"
 
     # Check if disjunctive lower bound is worse than optimal LP objective
-    disjunctive_lower_bount = minimum(x -> get_objective_value(x), translated_points)
-    @debug "Disjunctive Lower Bound is: $(disjunctive_lower_bount) and LP Objective is: $(sepa.lp_obj)"
-    if !is_GT(scip, disjunctive_lower_bount, sepa.lp_obj)
+    p_star = argmin(point -> get_objective_value(point), translated_points)
+    disjunctive_lower_bound = get_objective_value(p_star)
+    sepa.disjunctive_lower_bound = get_orig_objective_value(p_star)
+    @debug "Disjunctive Lower Bound is: $(disjunctive_lower_bound) and LP Objective is: $(sepa.lp_obj)"
+    if !is_GT(scip, disjunctive_lower_bound, sepa.lp_obj)
         throw(FailedDisjunctiveLowerBoundTest())
     end
 
@@ -153,7 +161,7 @@ function solve_separation_subproblems(sepa::VPCSeparator)
     # Now transition to PRLP= 
     a_bar = value.(x)
     @constraint(separating_lp, sum(x[i] * p_star[i] for i in 1:dimension) == 1)
-    set_time_limit_sec(separating_lp, 10.0)
+    set_time_limit_sec(separating_lp, 60.0)
     r_bar = filter(ray -> !is_zero(scip, dot(a_bar, ray)), rays)
     sort!(r_bar; by=ray -> abs(get_obj(get_generating_variable(ray))))
     objective_tried = 0
@@ -168,7 +176,7 @@ function solve_separation_subproblems(sepa::VPCSeparator)
             cut = get_cut_from_separating_solution(sepa, value.(x))
             push!(sepa.cutpool, cut)
         else
-            if objective_tried > sepa.parameters.cut_limit * 2
+            if objective_tried > sepa.parameters.cut_limit
                 break
             end
             println("Objective tried $(objective_tried)")

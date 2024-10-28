@@ -7,6 +7,7 @@ A corner point is a container a point and its objective value
 @kwdef struct CornerPoint
     point::Point
     objective_value::SCIP.SCIP_Real
+    orig_objective_value::SCIP.SCIP_Real
 end
 
 function get_point(corner::CornerPoint)::Point
@@ -15,6 +16,10 @@ end
 
 function get_objective_value(corner::CornerPoint)::SCIP.SCIP_Real
     return corner.objective_value
+end
+
+function get_orig_objective_value(corner::CornerPoint)::SCIP.SCIP_Real
+    return corner.orig_objective_value
 end
 
 @forward CornerPoint.point Base.size, Base.getindex, Base.setindex!
@@ -41,7 +46,8 @@ num_rays(collection::PointRayCollection) = length(collection.rays)
 function add_point(
     collection::PointRayCollection,
     new_point::Point,
-    objective_value::SCIP.SCIP_Real
+    objective_value::SCIP.SCIP_Real,
+    orig_objective_value::SCIP.SCIP_Real
 )
     if !isnothing(collection.projection)
         new_point = project(collection.projection, new_point)
@@ -53,7 +59,7 @@ function add_point(
         end
     end
 
-    push!(collection.points, CornerPoint(new_point, objective_value))
+    push!(collection.points, CornerPoint(new_point, objective_value, orig_objective_value))
 end
 
 function add_ray(collection::PointRayCollection, new_ray::Ray)

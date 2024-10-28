@@ -74,13 +74,16 @@ function get_disjunctive_term_information(
 
     corner_polyhedron = construct_corner_polyhedron(tableau)
     objective_value = SCIP.SCIPgetLPObjval(scip)
+    orig_objective_value = SCIP.SCIPgetSolOrigObj(scip, C_NULL)
     basic_solution = get_lp_sol(corner_polyhedron)
 
     # Leave Probing mode
     SCIP.SCIPendProbing(scip)
 
     # Add rays to point ray collection
-    add_point(sepa.point_ray_collection, basic_solution, objective_value)
+    add_point(
+        sepa.point_ray_collection, basic_solution, objective_value, orig_objective_value
+    )
     for ray in get_lp_rays(corner_polyhedron)
         add_ray(sepa.point_ray_collection, ray)
     end
