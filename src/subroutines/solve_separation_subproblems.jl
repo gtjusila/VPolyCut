@@ -67,7 +67,10 @@ function solve_separation_subproblems(sepa::VPCSeparator)
     frac = dot(c_bar, p_star)
     check = c_bar / frac
     checkvar = Dict{typeof(x[1]),Float64}(x[i] => check[i] for i in 1:dimension)
-
+    p = primal_feasibility_report(separating_lp, checkvar; atol=1e-7)
+    if (length(p) > 0)
+        sepa.cbar_test = false
+    end
     # Open the file in write mode
     #=
     open("primal_feasibility_report_filtered.txt", "w") do file
@@ -125,6 +128,7 @@ function solve_separation_subproblems(sepa::VPCSeparator)
     @debug "Starting Check Feasibility"
     set_time_limit_sec(separating_lp, 1000.0)
     optimize!(separating_lp)
+    push!(sepa.prlp_solves, get_solve_stat(separating_lp, "feasibility"))
     if primal_status(separating_lp) != MOI.FEASIBLE_POINT
         throw(FailedToProvePRLPFeasibility())
     end
@@ -133,6 +137,7 @@ function solve_separation_subproblems(sepa::VPCSeparator)
     # Now optimize with all 1s objective
     @objective(separating_lp, Min, sum(x))
     optimize!(separating_lp)
+    push!(sepa.prlp_solves, get_solve_stat(separating_lp, "all_ones"))
     if is_solved_and_feasible(separating_lp)
         cut = get_cut_from_separating_solution(sepa, value.(x))
         push!(sepa.cutpool, cut)
@@ -145,6 +150,7 @@ function solve_separation_subproblems(sepa::VPCSeparator)
     p_star = argmin(point -> get_objective_value(point), translated_points)
     @objective(separating_lp, Min, sum(x[i] * p_star[i] for i in 1:dimension))
     optimize!(separating_lp)
+    push!(sepa.prlp_solves, get_solve_stat(separating_lp, "p_star"))
     @debug "Finished P* Optimization"
 
     if is_solved_and_feasible(separating_lp)
@@ -171,6 +177,7 @@ function solve_separation_subproblems(sepa::VPCSeparator)
             separating_lp, Min, sum(x[i] * ray[i] for i in 1:dimension)
         )
         optimize!(separating_lp)
+        push!(sepa.prlp_solves, get_solve_stat(separating_lp, "prlp=$(objective_tried)"))
         objective_tried += 1
         if primal_status(separating_lp) == MOI.FEASIBLE_POINT
             cut = get_cut_from_separating_solution(sepa, value.(x))
@@ -228,4 +235,15 @@ function get_cut_from_separating_solution(
 
     # We normalize the cut to the form ax <= b
     return Cut(-cut_vector, -b)
+end
+
+function get_solve_stat(model::JuMP.AbstractModel, obj_name::String)
+    return Dict(
+        "solve_time" => solve_time(model),
+        "simplex_iterations" => simplex_iterations(model),
+        "primal_status" => primal_status(model),
+        "dual_status" => dual_status(model),
+        "termination_status" => termination_status(model),
+        "objective_name" => obj_name
+    )
 end
