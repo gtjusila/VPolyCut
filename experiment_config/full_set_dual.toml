@@ -3,6 +3,7 @@ modes = [
     "intersection",
     "vpc"
 ]
+lp_solving_method = 4
 instances = [
   "30n20b8",
   "beasleyC3",

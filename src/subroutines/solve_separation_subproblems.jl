@@ -8,9 +8,12 @@ function solve_separation_subproblems(sepa::VPCSeparator)
     dimension = length(lp_solution)
 
     #Start building the model
+    @warn "LP Solving Method is $(sepa.parameters.lp_solving_method)"
     separating_lp = Model(HiGHS.Optimizer)
     JuMP.set_optimizer_attribute(separating_lp, "output_flag", false)
-    JuMP.set_optimizer_attribute(separating_lp, "simplex_strategy", 4)
+    JuMP.set_optimizer_attribute(
+        separating_lp, "simplex_strategy", sepa.parameters.lp_solving_method
+    )
     @debug "Zeroing heuristic is $(sepa.parameters.zeroing_heuristic)"
 
     # First, translate the points so that the lp_solution is at the origin 
@@ -126,7 +129,7 @@ function solve_separation_subproblems(sepa::VPCSeparator)
     @objective(separating_lp, Min, 0)
     write_to_file(separating_lp, "separating_lp.lp")
     @debug "Starting Check Feasibility"
-    set_time_limit_sec(separating_lp, 1000.0)
+    set_time_limit_sec(separating_lp, 300.0)
     optimize!(separating_lp)
     push!(sepa.prlp_solves, get_solve_stat(separating_lp, "feasibility"))
     if primal_status(separating_lp) != MOI.FEASIBLE_POINT
@@ -135,6 +138,7 @@ function solve_separation_subproblems(sepa::VPCSeparator)
     @debug "Feasibility Check Passed"
 
     # Now optimize with all 1s objective
+    set_time_limit_sec(separating_lp, 30.0)
     @objective(separating_lp, Min, sum(x))
     optimize!(separating_lp)
     push!(sepa.prlp_solves, get_solve_stat(separating_lp, "all_ones"))
@@ -167,11 +171,11 @@ function solve_separation_subproblems(sepa::VPCSeparator)
     # Now transition to PRLP= 
     a_bar = value.(x)
     @constraint(separating_lp, sum(x[i] * p_star[i] for i in 1:dimension) == 1)
-    set_time_limit_sec(separating_lp, 60.0)
     r_bar = filter(ray -> !is_zero(scip, dot(a_bar, ray)), rays)
     sort!(r_bar; by=ray -> abs(get_obj(get_generating_variable(ray))))
     objective_tried = 0
     marked = fill(false, length(r_bar))
+    start_time = time()
     for ray in r_bar
         @objective(
             separating_lp, Min, sum(x[i] * ray[i] for i in 1:dimension)
@@ -190,6 +194,10 @@ function solve_separation_subproblems(sepa::VPCSeparator)
         end
         @debug "Generated $(length(sepa.cutpool)) cuts. Cutlimit is $(sepa.parameters.cut_limit)"
         if length(sepa.cutpool) >= sepa.parameters.cut_limit
+            break
+        end
+        elapsed_time = time() - start_time
+        if elapsed_time > 1800
             break
         end
     end

@@ -29,6 +29,8 @@ is passed during the creation of the VPCSeparator.
     write_log::Bool = false
     "Directory to write cut log"
     log_directory::String = ""
+    "HiGHS LP Method"
+    lp_solving_method::Int = 4
 end
 
 """
@@ -91,15 +93,16 @@ function include_vpolyhedral_sepa(
     cut_limit=-2,
     write_log=false,
     log_directory="",
-    zeroing_heuristic=false
+    zeroing_heuristic=false,
+    lp_solving_method=4
 )
     parameters = VPCParameters(;
         n_leaves=n_leaves,
         cut_limit=cut_limit,
         write_log=write_log,
         log_directory=log_directory,
-        zeroing_heuristic=zeroing_heuristic
-    )
+        zeroing_heuristic=zeroing_heuristic,
+        lp_solving_method=lp_solving_method)
 
     if write_log
         if !isdir(log_directory)
