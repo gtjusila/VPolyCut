@@ -18,6 +18,12 @@ using VPolyhedralCut
     time_limit::Int = 3600
     "Zeroing Heuristic"
     zeroing_heuristic::Bool = false
+    "Number of leaves for VPolyhedralCut"
+    number_of_leaves::Int = 64
+    "Use stdout"
+    use_stdout::Bool = false
+    "LP Solving Method"
+    lp_solving_method::Int = 4
 end
 
 mutable struct Experiment{T<:JuMP.AbstractModel}
@@ -69,6 +75,18 @@ function set_parameter(
         experiment.parameters.zeroing_heuristic = value
         return nothing
     end
+    if parameter_name == "use_stdout" && value isa Bool
+        experiment.parameters.use_stdout = value
+        return nothing
+    end
+    if parameter_name == "number_of_leaves" && value isa Integer
+        experiment.parameters.number_of_leaves = value
+        return nothing
+    end
+    if parameter_name == "lp_solving_method" && value isa Integer
+        experiment.parameters.lp_solving_method = value
+        return nothing
+    end
     error("Parameter $parameter_name not found or have the wrong type")
 end
 
@@ -93,6 +111,15 @@ function get_parameter(experiment::Experiment, parameter_name::String)
     end
     if parameter_name == "zeroing_heuristic"
         return experiment.parameters.zeroing_heuristic
+    end
+    if parameter_name == "use_stdout"
+        return experiment.parameters.use_stdout
+    end
+    if parameter_name == "number_of_leaves"
+        return experiment.parameters.number_of_leaves
+    end
+    if parameter_name == "lp_solving_method"
+        return experiment.parameters.lp_solving_method
     end
     error("Parameter $parameter_name not found")
 end

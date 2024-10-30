@@ -49,9 +49,10 @@ function include_separator(experiment::Experiment)
     if separator == "vpc"
         experiment.vpcsepa = VPolyhedralCut.include_vpolyhedral_sepa(
             experiment.scip;
-            n_leaves=64,
-            write_log=true,
-            log_directory=get_parameter(experiment, "output_path")
+            n_leaves=get_parameter(experiment, "number_of_leaves"),
+            write_log=!get_parameter(experiment, "use_stdout"),
+            log_directory=get_parameter(experiment, "output_path"),
+            lp_solving_method=get_parameter(experiment, "lp_solving_method")
         )
         return nothing
     end

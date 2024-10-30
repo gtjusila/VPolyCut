@@ -49,6 +49,7 @@ mkdir(experiment_path)
 # Prepare the instances  
 modes = experiment_config["modes"]
 instances = experiment_config["instances"]
+lp_solving_method = experiment_config["lp_solving_method"]
 
 # Generate all combinations of modes and instances
 mode_instance_combinations = vec(collect(Iterators.product(modes, instances)))
@@ -85,7 +86,8 @@ data = Dict(
     "N" => length(mode_instance_combinations),
     "JULIA_DEPOT_PATH" => global_config["julia_depot_path"],
     "PATH_TO_SCRIPT" => global_config["path_to_script"],
-    "EXPERIMENT_PATH" => experiment_path
+    "EXPERIMENT_PATH" => experiment_path,
+    "LP_SOLVING_METHOD" => lp_solving_method
 )
 bash_template = read(template_file, String)
 bash_script = Mustache.render(bash_template, data)

@@ -18,15 +18,19 @@ function write_output(experiment::Experiment)
         result["number_of_cuts"] = length(experiment.vpcsepa.cutpool)
         result["disjunctive_lower_bound"] = experiment.vpcsepa.disjunctive_lower_bound
         result["n_fractional_variables"] = experiment.vpcsepa.n_fractional_variables
+        result["n_leaves"] = get_parameter(experiment, "number_of_leaves")
         result["prlp_solves"] = experiment.vpcsepa.prlp_solves
         result["cbar_test"] = experiment.vpcsepa.cbar_test
+        result["lp_solving_method"] = get_parameter(experiment, "lp_solving_method")
     else
         result["sepa_termination_message"] = ""
         result["number_of_cuts"] = -1
         result["disjunctive_lower_bound"] = -1.0
         result["n_fractional_variables"] = -1
+        result["n_leaves"] = -1
         result["prlp_solves"] = []
         result["cbar_test"] = false
+        result["lp_solving_method"] = -1
     end
     result_path = joinpath(output_path, "results.json")
     open(result_path, "w") do io

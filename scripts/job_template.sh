@@ -29,4 +29,4 @@ fi
 IFS=$'\t' read -r id label mode instance_path output_path <<< "$line"
 
 # Run the Julia script with the extracted parameters
-julia --project "{{{PATH_TO_SCRIPT}}}" -m="$mode" -i="$instance_path" -o="$output_path" --lp_method="{{{LP_METHOD}}}"
+julia --project "{{{PATH_TO_SCRIPT}}}" -m="$mode" -i="$instance_path" -o="$output_path" --lp_method="{{{LP_SOLVING_METHOD}}}"
