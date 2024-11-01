@@ -1,8 +1,0 @@
-{
-    "scip_status": "SCIP_STATUS_NODELIMIT",
-    "instance": "./instances_data/neos5.mps",
-    "initial_lp_obj": 13.0,
-    "separator": "vpc",
-    "final_lp_obj": 13.464285714304198,
-    "sepa_termination_message": "NO_CUT_FOUND"
-}

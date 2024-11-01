@@ -1,7 +1,0 @@
-{
-    "scip_status": "SCIP_STATUS_NODELIMIT",
-    "instance": "./instances_data/mcsched.mps",
-    "initial_lp_obj": 193774.75370662217,
-    "separator": "vpc",
-    "final_lp_obj": 194062.9374304674
-}

@@ -1,56 +1,59 @@
 function solve_separation_subproblems(sepa::VPCSeparator)
+    # Setup aliases
     scip = sepa.scipd
 
     # Get current LP Solution projected onto the non-basic variables.
     # This will be the origin point 
-    lp_solution = get_solution_vector(sepa.complemented_tableau)
-    lp_solution = project(sepa.projection, lp_solution)
-    dimension = length(lp_solution)
+    current_lp_solution = get_solution_vector(sepa.complemented_tableau)
+    projected_current_lp_solution = project(sepa.projection, current_lp_solution)
+    problem_dimension = length(projected_current_lp_solution)
 
     #Start building the model
-    @warn "LP Solving Method is $(sepa.parameters.lp_solving_method)"
+    @debug "Using simplex strategy $(sepa.parameters.lp_solving_method) for HiGHS"
+    @debug "Zeroing heuristic is $(sepa.parameters.zeroing_heuristic)"
     separating_lp = Model(HiGHS.Optimizer)
     JuMP.set_optimizer_attribute(separating_lp, "output_flag", false)
     JuMP.set_optimizer_attribute(
         separating_lp, "simplex_strategy", sepa.parameters.lp_solving_method
     )
-    @debug "Zeroing heuristic is $(sepa.parameters.zeroing_heuristic)"
 
     # First, translate the points so that the lp_solution is at the origin 
-    points = get_points(sepa.point_ray_collection)
-    translated_points = map(points) do point
+    projected_point_collection = get_points(sepa.point_ray_collection)
+    point_collection_in_nonbasic_space = map(projected_point_collection) do corner_point
         return CornerPoint(
-            get_point(point) - lp_solution,
-            get_objective_value(point),
-            get_orig_objective_value(point)
+            get_point(corner_point) - projected_current_lp_solution,
+            get_objective_value(corner_point),
+            get_orig_objective_value(corner_point)
         )
     end
-    rays = get_rays(sepa.point_ray_collection)
+    ray_collection = get_rays(sepa.point_ray_collection)
     zeroed = 0
 
     # Construct PRLP0
 
     # Variables
-    @variable(separating_lp, x[1:dimension])
+    @variable(separating_lp, x[1:problem_dimension])
 
     # Constraints for Points
-    for point in translated_points
+    for point in point_collection_in_nonbasic_space
         vertex = get_point(point)
         if sepa.parameters.zeroing_heuristic
             vertex, zero_added = zeroing_heuristic(vertex)
             zeroed += zero_added
         end
-        @constraint(separating_lp, sum(x[i] * vertex[i] for i in 1:dimension) >= 1)
+        @constraint(separating_lp, sum(x[i] * vertex[i] for i in 1:problem_dimension) >= 1)
     end
 
     # Constraints for Rays
-    for ray in rays
+    for ray in ray_collection
         coefficient = get_coefficients(ray)
         if sepa.parameters.zeroing_heuristic
             coefficient, zero_added = zeroing_heuristic(coefficient)
             zeroed += zero_added
         end
-        @constraint(separating_lp, sum(x[i] * coefficient[i] for i in 1:dimension) >= 0)
+        @constraint(
+            separating_lp, sum(x[i] * coefficient[i] for i in 1:problem_dimension) >= 0
+        )
     end
 
     zeroed = 0
@@ -65,11 +68,11 @@ function solve_separation_subproblems(sepa::VPCSeparator)
     end
 
     c_bar = project(sepa.projection, c_bar)
-    p_star = argmin(point -> get_objective_value(point), translated_points)
+    p_star = argmin(point -> get_objective_value(point), point_collection_in_nonbasic_space)
     p_star = get_point(p_star)
     frac = dot(c_bar, p_star)
     check = c_bar / frac
-    checkvar = Dict{typeof(x[1]),Float64}(x[i] => check[i] for i in 1:dimension)
+    checkvar = Dict{typeof(x[1]),Float64}(x[i] => check[i] for i in 1:problem_dimension)
     p = primal_feasibility_report(separating_lp, checkvar; atol=1e-7)
     if (length(p) > 0)
         sepa.cbar_test = false
@@ -114,14 +117,17 @@ function solve_separation_subproblems(sepa::VPCSeparator)
         end
     end
     =#
+
     @debug "Zeroed $(zeroed) entries"
 
     # Check if disjunctive lower bound is worse than optimal LP objective
-    p_star = argmin(point -> get_objective_value(point), translated_points)
+    p_star = argmin(point -> get_objective_value(point), point_collection_in_nonbasic_space)
     disjunctive_lower_bound = get_objective_value(p_star)
     sepa.disjunctive_lower_bound = get_orig_objective_value(p_star)
     @debug "Disjunctive Lower Bound is: $(disjunctive_lower_bound) and LP Objective is: $(sepa.lp_obj)"
     if !is_GT(scip, disjunctive_lower_bound, sepa.lp_obj)
+        # In this case cbar criterium does not apply and should be ignored
+        sepa.cbar_test = true
         throw(FailedDisjunctiveLowerBoundTest())
     end
 
@@ -151,8 +157,8 @@ function solve_separation_subproblems(sepa::VPCSeparator)
 
     # Now Optimize with p as objective
     @debug "Starting P* Optimization"
-    p_star = argmin(point -> get_objective_value(point), translated_points)
-    @objective(separating_lp, Min, sum(x[i] * p_star[i] for i in 1:dimension))
+    p_star = argmin(point -> get_objective_value(point), point_collection_in_nonbasic_space)
+    @objective(separating_lp, Min, sum(x[i] * p_star[i] for i in 1:problem_dimension))
     optimize!(separating_lp)
     push!(sepa.prlp_solves, get_solve_stat(separating_lp, "p_star"))
     @debug "Finished P* Optimization"
@@ -170,15 +176,15 @@ function solve_separation_subproblems(sepa::VPCSeparator)
 
     # Now transition to PRLP= 
     a_bar = value.(x)
-    @constraint(separating_lp, sum(x[i] * p_star[i] for i in 1:dimension) == 1)
-    r_bar = filter(ray -> !is_zero(scip, dot(a_bar, ray)), rays)
+    @constraint(separating_lp, sum(x[i] * p_star[i] for i in 1:problem_dimension) == 1)
+    r_bar = filter(ray -> !is_zero(scip, dot(a_bar, ray)), ray_collection)
     sort!(r_bar; by=ray -> abs(get_obj(get_generating_variable(ray))))
     objective_tried = 0
     marked = fill(false, length(r_bar))
     start_time = time()
     for ray in r_bar
         @objective(
-            separating_lp, Min, sum(x[i] * ray[i] for i in 1:dimension)
+            separating_lp, Min, sum(x[i] * ray[i] for i in 1:problem_dimension)
         )
         optimize!(separating_lp)
         push!(sepa.prlp_solves, get_solve_stat(separating_lp, "prlp=$(objective_tried)"))
