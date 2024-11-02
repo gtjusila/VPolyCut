@@ -3,3 +3,6 @@ struct LPSolNotBasic <: Exception end
 struct LPSolNotOptimal <: Exception end
 struct FailedDisjunctiveLowerBoundTest <: Exception end
 struct FailedToProvePRLPFeasibility <: Exception end
+struct FailedCBarTest <: Exception end
+struct PStarNotTight <: Exception end
+struct PStarUnbounded <: Exception end

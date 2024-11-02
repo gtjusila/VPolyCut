@@ -60,8 +60,6 @@ Constructors:
     n_fractional_variables::Int = 0
     "PRLP Solves Statistics"
     prlp_solves::Vector{Dict{String,Any}} = []
-    "Cbar Test"
-    cbar_test::Bool = true
 
     "Complemented Tableau"
     complemented_tableau::Union{Nothing,ComplementedTableau} = nothing

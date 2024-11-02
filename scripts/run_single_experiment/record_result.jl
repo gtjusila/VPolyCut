@@ -20,7 +20,6 @@ function write_output(experiment::Experiment)
         result["n_fractional_variables"] = experiment.vpcsepa.n_fractional_variables
         result["n_leaves"] = get_parameter(experiment, "number_of_leaves")
         result["prlp_solves"] = experiment.vpcsepa.prlp_solves
-        result["cbar_test"] = experiment.vpcsepa.cbar_test
         result["lp_solving_method"] = get_parameter(experiment, "lp_solving_method")
     else
         result["sepa_termination_message"] = ""
@@ -29,7 +28,6 @@ function write_output(experiment::Experiment)
         result["n_fractional_variables"] = -1
         result["n_leaves"] = -1
         result["prlp_solves"] = []
-        result["cbar_test"] = false
         result["lp_solving_method"] = -1
     end
     result_path = joinpath(output_path, "results.json")
