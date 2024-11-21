@@ -27,10 +27,14 @@ is passed during the creation of the VPCSeparator.
     zeroing_heuristic::Bool = false
     "Should log be written?"
     write_log::Bool = false
+    "Should LP Solution be written?"
+    write_lp_solution::Bool = false
     "Directory to write cut log"
     log_directory::String = ""
     "HiGHS LP Method"
     lp_solving_method::Int = 4
+    "instance code"
+    instance_code::String = ""
 end
 
 """
@@ -92,15 +96,23 @@ function include_vpolyhedral_sepa(
     write_log=false,
     log_directory="",
     zeroing_heuristic=false,
-    lp_solving_method=4
+    lp_solving_method=4,
+    instance_code="",
+    write_lp_solution=true
 )
+    if instance_code == ""
+        instance_code = randstring(10)
+    end
+
     parameters = VPCParameters(;
         n_leaves=n_leaves,
         cut_limit=cut_limit,
         write_log=write_log,
         log_directory=log_directory,
         zeroing_heuristic=zeroing_heuristic,
-        lp_solving_method=lp_solving_method)
+        lp_solving_method=lp_solving_method,
+        instance_code=instance_code,
+        write_lp_solution=write_lp_solution)
 
     if write_log
         if !isdir(log_directory)

@@ -24,6 +24,8 @@ using VPolyhedralCut
     use_stdout::Bool = false
     "LP Solving Method"
     lp_solving_method::Int = 4
+    "Random Seed"
+    random_seed::Int = 0
 end
 
 mutable struct Experiment{T<:JuMP.AbstractModel}
@@ -75,6 +77,10 @@ function set_parameter(
         experiment.parameters.zeroing_heuristic = value
         return nothing
     end
+    if parameter_name == "random_seed" && value isa Integer
+        experiment.parameters.random_seed = value
+        return nothing
+    end
     if parameter_name == "use_stdout" && value isa Bool
         experiment.parameters.use_stdout = value
         return nothing
@@ -120,6 +126,9 @@ function get_parameter(experiment::Experiment, parameter_name::String)
     end
     if parameter_name == "lp_solving_method"
         return experiment.parameters.lp_solving_method
+    end
+    if parameter_name == "random_seed"
+        return experiment.parameters.random_seed
     end
     error("Parameter $parameter_name not found")
 end

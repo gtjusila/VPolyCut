@@ -19,6 +19,8 @@ function fill_experiment_parameters_from_cli_arguments(experiment::Experiment)
         experiment, "number_of_leaves", parse(Int64, cli_arguments["n_leaves"])
     )
     set_parameter(experiment, "lp_solving_method", parse(Int64, cli_arguments["lp_method"]))
+    @warn "Random Seed: $(cli_arguments["random_seed"])"
+    set_parameter(experiment, "random_seed", parse(Int64, cli_arguments["random_seed"]))
 end
 
 function setup_cli_arguments()
@@ -49,6 +51,9 @@ function setup_cli_arguments()
         action = :store_true
         "--lp_method"
         help = "LP Solving method to be used by HiGHS (0-4)"
+        default = "4"
+        "--random_seed", "-r"
+        help = "Random Seed for the experiment"
         default = "4"
     end
     return parse_args(settings)

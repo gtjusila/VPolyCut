@@ -23,6 +23,9 @@ function setup_scip_parameter(experiment::Experiment)
         experiment.model, "limits/time", get_parameter(experiment, "time_limit")
     )
     JuMP.set_attribute(experiment.model, "separating/maxroundsroot", 1)
+    JuMP.set_attribute(
+        experiment.model, "randomization/lpseed", get_parameter(experiment, "random_seed")
+    )
 
     # The following settings are applied optionaly 
     if get_parameter(experiment, "presolving") == false
@@ -52,8 +55,8 @@ function include_separator(experiment::Experiment)
             n_leaves=get_parameter(experiment, "number_of_leaves"),
             write_log=!get_parameter(experiment, "use_stdout"),
             log_directory=get_parameter(experiment, "output_path"),
-            lp_solving_method=get_parameter(experiment, "lp_solving_method")
-        )
+            lp_solving_method=get_parameter(experiment, "lp_solving_method"),
+            instance_code=basename(get_parameter(experiment, "instance_path")))
         return nothing
     end
     error("Separator $separator not found")

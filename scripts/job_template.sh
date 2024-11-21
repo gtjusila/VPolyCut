@@ -26,7 +26,7 @@ if [ -z "$line" ]; then
 fi
 
 # Extract fields from the line (assuming tab-delimited)
-IFS=$'\t' read -r id label mode instance_path output_path <<< "$line"
+IFS=$'\t' read -r id label mode instance_path output_path seed <<< "$line"
 
 # Run the Julia script with the extracted parameters
-julia --project "{{{PATH_TO_SCRIPT}}}" -m="$mode" -i="$instance_path" -o="$output_path" --lp_method="{{{LP_SOLVING_METHOD}}}"
+julia --project "{{{PATH_TO_SCRIPT}}}" -m="$mode" -i="$instance_path" -o="$output_path" --lp_method="{{{LP_SOLVING_METHOD}}}" -r="$seed"

@@ -15,20 +15,24 @@ function write_output(experiment::Experiment)
     result["final_lp_obj"] = SCIP.SCIPgetDualboundRoot(experiment.scip)
     if result["separator"] == "vpc"
         result["sepa_termination_message"] = experiment.vpcsepa.termination_message
+        result["random_seed"] = get_parameter(experiment, "random_seed")
         result["number_of_cuts"] = length(experiment.vpcsepa.cutpool)
         result["disjunctive_lower_bound"] = experiment.vpcsepa.disjunctive_lower_bound
         result["n_fractional_variables"] = experiment.vpcsepa.n_fractional_variables
         result["n_leaves"] = get_parameter(experiment, "number_of_leaves")
         result["prlp_solves"] = experiment.vpcsepa.prlp_solves
         result["lp_solving_method"] = get_parameter(experiment, "lp_solving_method")
+        result["total_solve_time"] = SCIP.SCIPgetSolvingTime(experiment.scip)
     else
         result["sepa_termination_message"] = ""
         result["number_of_cuts"] = -1
+        result["random_seed"] = -1
         result["disjunctive_lower_bound"] = -1.0
         result["n_fractional_variables"] = -1
         result["n_leaves"] = -1
         result["prlp_solves"] = []
         result["lp_solving_method"] = -1
+        result["total_solve_time"] = SCIP.SCIPgetSolvingTime(experiment.scip)
     end
     result_path = joinpath(output_path, "results.json")
     open(result_path, "w") do io

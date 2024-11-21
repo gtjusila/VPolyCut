@@ -49,15 +49,20 @@ mkdir(experiment_path)
 # Prepare the instances  
 modes = experiment_config["modes"]
 instances = experiment_config["instances"]
+random_seed = experiment_config["random_seeds"]
 lp_solving_method = experiment_config["lp_solving_method"]
 
 # Generate all combinations of modes and instances
-mode_instance_combinations = vec(collect(Iterators.product(modes, instances)))
-label = label = [item[2] * "_" * item[1] for item in mode_instance_combinations]
+# vec is important to convert the array to a single column vector
+mode_instance_combinations = vec(collect(Iterators.product(modes, instances, random_seed)))
+label = [
+    "$(item[2])_$(item[1])_$(item[3])" for item in mode_instance_combinations
+]
 mode = [item[1] for item in mode_instance_combinations]
 instance_path = [
     joinpath(instances_base_path, item[2] * ".mps") for item in mode_instance_combinations
 ]
+seed = [string(item[3]) for item in mode_instance_combinations]
 @info "There is a total of $(length(mode_instance_combinations)) runs to be executed"
 output_path = [joinpath(experiment_path, item) for item in label]
 for path in output_path
@@ -72,7 +77,8 @@ config_dataframe = DataFrame(;
     label=label,
     mode=mode,
     instance_path=instance_path,
-    output_path=output_path
+    output_path=output_path,
+    seed=seed
 )
 
 # Write the DataFrame to a tab-delimited text file

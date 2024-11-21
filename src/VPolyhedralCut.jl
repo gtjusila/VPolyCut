@@ -30,6 +30,7 @@ include("utilities/sepa_row_helpers.jl")
 include("utilities/log_helpers.jl")
 include("utilities/numerical_methods.jl")
 include("utilities/eliminate_duplicate_rows.jl")
+include("utilities/save_lp_solution.jl")
 
 # Branch and Bound
 include("branchandbound/Node.jl")

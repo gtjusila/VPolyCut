@@ -55,8 +55,8 @@ function solve_separation_subproblems(sepa::VPCSeparator)
     # Compute the disjunctive lower bound and the corresponding point p_star
     p_star = argmin(point -> get_objective_value(point), point_collection_in_nonbasic_space)
     sepa.disjunctive_lower_bound = get_orig_objective_value(p_star)
-    @debug "Disjunctive Lower Bound is: $(disjunctive_lower_bound) and current LP Objective is: $(sepa.lp_obj)"
-    if !is_GT(scip, disjunctive_lower_bound, sepa.lp_obj)
+    @debug "Disjunctive Lower Bound is: $(sepa.disjunctive_lower_bound) and current LP Objective is: $(sepa.lp_obj)"
+    if !is_GT(scip, sepa.disjunctive_lower_bound, sepa.lp_obj)
         @debug "Disjunctive Lower Bound is not greater than current LP Objective"
         throw(FailedDisjunctiveLowerBoundTest())
     end
@@ -69,7 +69,7 @@ function solve_separation_subproblems(sepa::VPCSeparator)
         return get_obj(var)
     end
     projected_cbar = project(sepa.projection, cbar)
-    control_solution_coordinates = projected_cbar / dot(projected_cbar, p_star)
+    control_solution_coordinates = projected_cbar / dot(projected_cbar, get_point(p_star))
     control_solution_dict = Dict{typeof(x[1]),Float64}(
         x[i] => control_solution_coordinates[i] for i in 1:problem_dimension
     )
@@ -158,7 +158,7 @@ function solve_separation_subproblems(sepa::VPCSeparator)
         if length(sepa.cutpool) >= sepa.parameters.cut_limit
             break
         end
-        if time - start_time() > 1800
+        if time() - start_time > 1800
             break
         end
     end

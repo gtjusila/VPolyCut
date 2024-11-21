@@ -48,3 +48,15 @@ instances = [
   "traininstance6",
   "uct-subprob"
 ]
+random_seeds = [
+  1597,
+6829,
+193,
+619,
+8179,
+4507,
+461,
+1481,
+7577,
+4259
+]

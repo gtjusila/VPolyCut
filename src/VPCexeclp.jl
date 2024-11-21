@@ -55,6 +55,11 @@ function _exec_lp(sepa::VPCSeparator)
     end
     @debug "Finished checking necessary Preconditions"
 
+    # If LP soluton should be written, write it
+    if sepa.parameters.write_lp_solution
+        save_lp_solution(scip, joinpath(sepa.parameters.log_directory, "lp_solution.lp"))
+    end
+
     # Do everything in a try block to ensure time limit requirement
     @debug "Starting separation subroutine"
     error_occurred = false
@@ -116,19 +121,20 @@ function vpolyhedralcut_separation(sepa::VPCSeparator)
     #
     scip = sepa.scipd
 
-    # If cut limit is -1 or -2 convert them to the actual limit 
+    # If cut limit is -1 or -2 convert them to the actual limit
     # We do the conversion here because for option -2 we need the number of fractional variables
+    # which is only available after the LP solution is obtained
     if sepa.parameters.cut_limit == -1 || sepa.parameters.cut_limit == -2
         sepa.parameters.cut_limit = get_cut_limit(sepa, sepa.parameters)
     end
     # Capture fractional variables statistic
     sepa.n_fractional_variables = SCIP.SCIPgetNLPBranchCands(scip)
 
-    # Step 0: Get complemented tableau
+    # Step 1: Get complemented tableau
     sepa.lp_obj = SCIP.SCIPgetLPObjval(scip)
     construct_complemented_tableau(sepa)
 
-    # Step 1: Get Disjunction
+    # Step 2: Get Disjunction
     @debug "Getting Disjunction by Branch and Bound"
     get_disjunction_by_branchandbound(sepa)
 
@@ -136,16 +142,16 @@ function vpolyhedralcut_separation(sepa::VPCSeparator)
     # Main Algorithm 
     #
 
-    # Step 2: Setup projection used and get the points and rays from the disjunctions
+    # Step 3: Setup projection used and get the points and rays from the disjunctions
     sepa.projection = create_projection_to_nonbasic_space(sepa.complemented_tableau)
     get_point_ray_collection(sepa)
     @debug "Number of points: $(num_points(sepa.point_ray_collection))"
     @debug "Number of rays: $(num_rays(sepa.point_ray_collection))"
 
-    # Step 3: Setup Cut Pool 
+    # Step 4: Setup Cut Pool 
     sepa.cutpool = CutPool(; tableau=sepa.complemented_tableau, scip=scip)
 
-    # Step 4: Solve Separation Problem
+    # Step 5: Solve Separation Problem
     solve_separation_subproblems(sepa)
 end
 
