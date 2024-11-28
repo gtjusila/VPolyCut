@@ -94,7 +94,7 @@ function solve_separation_subproblems(sepa::VPCSeparator)
 
     # Now optimize with all 1s objective
     # Time limit is 30 s
-    set_time_limit_sec(separating_lp, 30.0)
+    set_time_limit_sec(separating_lp, 60.0)
     @objective(separating_lp, Min, sum(x))
     optimize!(separating_lp)
     push!(sepa.prlp_solves, get_solve_stat(separating_lp, "all_ones"))
@@ -161,6 +161,9 @@ function solve_separation_subproblems(sepa::VPCSeparator)
         if time() - start_time > 1800
             break
         end
+
+        # From second iteration onwards, time limit should be 10s
+        set_time_limit_sec(separating_lp, 10.0)
     end
 
     if length(sepa.cutpool) > 0
