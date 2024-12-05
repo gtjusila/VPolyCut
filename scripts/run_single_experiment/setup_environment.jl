@@ -23,9 +23,6 @@ function setup_scip_parameter(experiment::Experiment)
         experiment.model, "limits/time", get_parameter(experiment, "time_limit")
     )
     JuMP.set_attribute(experiment.model, "separating/maxroundsroot", 1)
-    JuMP.set_attribute(
-        experiment.model, "randomization/lpseed", get_parameter(experiment, "random_seed")
-    )
 
     # The following settings are applied optionaly 
     if get_parameter(experiment, "presolving") == false
