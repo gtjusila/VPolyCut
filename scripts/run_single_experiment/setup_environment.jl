@@ -23,6 +23,7 @@ function setup_scip_parameter(experiment::Experiment)
         experiment.model, "limits/time", get_parameter(experiment, "time_limit")
     )
     JuMP.set_attribute(experiment.model, "separating/maxroundsroot", 1)
+    JuMP.set_attribute(experiment.model, "conflict/enable", false)
 
     # The following settings are applied optionaly 
     if get_parameter(experiment, "presolving") == false
