@@ -1,3 +1,4 @@
+using JSON
 function get_point_ray_collection(
     sepa::VPCSeparator
 )
@@ -8,12 +9,24 @@ function get_point_ray_collection(
 
     # We only need to store projected points and ray
     sepa.point_ray_collection = PointRayCollection(scip; projection=projection)
+
+    # A bin for storing disjunction information, will be pushed to the disjunction information function
+    disjunctive_terms = Vector{Dict{String,Tuple{SCIP.SCIP_Real,SCIP.SCIP_Real}}}()
+
+    # Iterate through every disjuncive terms
     for (i, term) in enumerate(disjunction)
         @debug "Collecting Point and Ray from term $i"
         path = get_path(term) # Get all actions from root to leaf
         get_disjunctive_term_information(
-            sepa, path
+            sepa, path, disjunctive_terms
         )
+    end
+
+    # Write the disjunction that will be used for cut generation 
+    disjunctive_terms_path = joinpath(sepa.parameters.log_directory, "disjunction.json")
+    # Write the JSON data to the file
+    open(disjunctive_terms_path, "w") do io
+        JSON.print(io, disjunctive_terms, 4)
     end
 
     # Clean Up Duplicate Ray
@@ -29,7 +42,8 @@ original root_tableau is required. Point and rays found are added to the sepa po
 """
 function get_disjunctive_term_information(
     sepa::VPCSeparator,
-    path::Vector{Node}
+    path::Vector{Node},
+    disjunctive_terms::Vector{Dict{String,Tuple{SCIP.SCIP_Real,SCIP.SCIP_Real}}}
 )
     # Some alias 
     root_tableau = sepa.complemented_tableau
@@ -37,13 +51,18 @@ function get_disjunctive_term_information(
 
     # Enter Probing mode
     SCIP.SCIPstartProbing(scip)
+    # We need to store the affected variable for storing disjunction information later
+    affected_vars = Vector{Ptr{SCIP.SCIP_Var}}()
 
-    # Get To Node
+    # Get To Node while keeping track of affected variables
     for node in path
         if isroot(node)
             continue
         end
-        do_action(scip, get_action(node))
+        action = get_action(node)
+        var = get_var(action)
+        push!(affected_vars, var)
+        do_action(scip, action)
     end
 
     # Propegate
@@ -61,6 +80,18 @@ function get_disjunctive_term_information(
         SCIP.SCIPendProbing(scip)
         return nothing, [], 0
     end
+
+    # Record disjunction Information
+    # We store disjunction as a dictionary where the key is variable name and the value is a tuple of lower bound and upper bound
+    disjunction_information = Dict{String,Tuple{SCIP.SCIP_Real,SCIP.SCIP_Real}}()
+    # Go trough Affected variable
+    for var in affected_vars
+        lb = SCIP.SCIPvarGetLbLocal(var)
+        ub = SCIP.SCIPvarGetUbLocal(var)
+        disjunction_information[unsafe_string(SCIP.SCIPvarGetName(var))] = (lb, ub)
+    end
+    # Push to the bin
+    push!(disjunctive_terms, disjunction_information)
 
     # Get Optimal Tableau
     tableau = construct_tableau(scip)
