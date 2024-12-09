@@ -65,6 +65,18 @@ function get_disjunctive_term_information(
         do_action(scip, action)
     end
 
+    # Record disjunction Information
+    # We store disjunction as a dictionary where the key is variable name and the value is a tuple of lower bound and upper bound
+    disjunction_information = Dict{String,Tuple{SCIP.SCIP_Real,SCIP.SCIP_Real}}()
+    # Go trough Affected variable
+    for var in affected_vars
+        lb = SCIP.SCIPvarGetLbLocal(var)
+        ub = SCIP.SCIPvarGetUbLocal(var)
+        disjunction_information[unsafe_string(SCIP.SCIPvarGetName(var))] = (lb, ub)
+    end
+    # Push to the bin
+    push!(disjunctive_terms, disjunction_information)
+
     # Propegate
     prunable = propagate!(scip)
     if prunable
@@ -80,18 +92,6 @@ function get_disjunctive_term_information(
         SCIP.SCIPendProbing(scip)
         return nothing, [], 0
     end
-
-    # Record disjunction Information
-    # We store disjunction as a dictionary where the key is variable name and the value is a tuple of lower bound and upper bound
-    disjunction_information = Dict{String,Tuple{SCIP.SCIP_Real,SCIP.SCIP_Real}}()
-    # Go trough Affected variable
-    for var in affected_vars
-        lb = SCIP.SCIPvarGetLbLocal(var)
-        ub = SCIP.SCIPvarGetUbLocal(var)
-        disjunction_information[unsafe_string(SCIP.SCIPvarGetName(var))] = (lb, ub)
-    end
-    # Push to the bin
-    push!(disjunctive_terms, disjunction_information)
 
     # Get Optimal Tableau
     tableau = construct_tableau(scip)
