@@ -24,7 +24,9 @@ function setup_scip_parameter(experiment::Experiment)
     )
     JuMP.set_attribute(experiment.model, "separating/maxroundsroot", 1)
     JuMP.set_attribute(experiment.model, "conflict/enable", false)
-
+    JuMP.set_attribute(
+        experiment.model, "randomization/lpseed", get_parameter(experiment, "random_seed")
+    )
     # The following settings are applied optionaly 
     if get_parameter(experiment, "presolving") == false
         set_presolving_emphasis_off(experiment.model)

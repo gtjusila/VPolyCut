@@ -13,8 +13,8 @@ stdout_path = joinpath(output_path, "stdout.txt")
 
 setup_scip_parameter(experiment)
 load_problem_to_scip(experiment)
-SCIP.@SCIP_CALL SCIP.SCIPpermuteProb(
-    experiment.scip, get_parameter(experiment, "random_seed"), 1, 1, 1, 1, 1
-)
+#SCIP.@SCIP_CALL SCIP.SCIPpermuteProb(
+#    experiment.scip, get_parameter(experiment, "random_seed"), 1, 1, 1, 1, 1
+#)
 SCIP.@SCIP_CALL SCIP.SCIPsolve(experiment.scip)
 write_output(experiment)
