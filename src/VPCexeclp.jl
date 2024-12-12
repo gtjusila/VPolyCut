@@ -60,6 +60,11 @@ function _exec_lp(sepa::VPCSeparator)
         save_lp_solution(scip, joinpath(sepa.parameters.log_directory, "lp_solution.lp"))
     end
 
+    # Print random seed in debug information
+    random_seed = Ref{Cint}(0)
+    SCIP.@SCIP_CALL SCIP.SCIPgetIntParam(scip, "randomization/lpseed", random_seed)
+
+    @debug "Random Seed: $(random_seed[])"
     # Do everything in a try block to ensure time limit requirement
     @debug "Starting separation subroutine"
     error_occurred = false
