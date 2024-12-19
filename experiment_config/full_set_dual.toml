@@ -1,6 +1,4 @@
 modes = [
-    "gomory",
-    "intersection",
     "vpc"
 ]
 lp_solving_method = 4
