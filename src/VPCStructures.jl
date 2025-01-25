@@ -102,7 +102,8 @@ function include_vpolyhedral_sepa(
         write_log=write_log,
         log_directory=log_directory,
         zeroing_heuristic=zeroing_heuristic,
-        lp_solving_method=lp_solving_method)
+        lp_solving_method=lp_solving_method
+    )
 
     if write_log
         if !isdir(log_directory)

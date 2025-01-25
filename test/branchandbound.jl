@@ -169,33 +169,3 @@ end
     optimize!(model)
     @test data["executed"][]
 end
-
-# @testset "neos5" begin
-#     model = setup_scip_safe_jump_model()
-#     set_everything_off(model)
-#     JuMP.set_attribute(model, "display/verblevel", 0)
-
-#     scip = get_scip_data_from_model(model)
-#     SCIP.@SCIP_CALL SCIP.SCIPreadProb(scip, "instances_data/neos5.mps", C_NULL)
-
-#     data = Dict()
-#     data["scip"] = get_scip_data_from_model(model)
-#     data["executed"] = Ref{Bool}(false)
-
-#     firstlp = initiate_callback(model, data) do data
-#         scip = data["scip"]
-
-#         branchandbound = VPolyhedralCut.BranchAndBound(scip)
-#         # ILP is feasible
-#         @test VPolyhedralCut.execute_branchandbound(branchandbound) == true
-#         # Check Solution
-#         data["executed"][] = true
-#         SCIP.@SCIP_CALL SCIP.SCIPinterruptSolve(scip)
-#     end
-
-#     SCIP.@SCIP_CALL SCIP.SCIPtransformProb(data["scip"])
-#     register_callback(model, SCIP.SCIP_EVENTTYPE_FIRSTLPSOLVED, firstlp)
-
-#     optimize!(model)
-#     @test data["executed"][]
-# end

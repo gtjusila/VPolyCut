@@ -7,6 +7,7 @@ using SCIP
 """
 Tableau
 
+The tableau class allows the user to temporarily "freeze" the solution of the SCIP LP interface.
 Suppose we have a linear program in SCIP general form
 
 min c'x
@@ -20,11 +21,12 @@ s.t Ax + b - s = 0
     l <= x <= u
     p <= s <= q
 
-In the SCIP standard form, all of the original constraints have been transformed into 
-variables. The motivation behind defining the SCIP standard form this way is because
+In the SCIP standard form, all of the original inequality constraints have been transformed into 
+equality constraint with slack variables. The motivation behind defining the SCIP standard form this way is because
 SCIP_BASESTAT_UPPER for a row means that s=q and SCIP_BASESTAT_LOWER for a row
-means that s=p. There is however a twist. SCIP LPI requires that the 
-coefficient of slack variables s has to be +1. Defining r = -s, we have
+means that s=p (that is the row is tight at the upper and lower bound respectively). 
+There is however a twist. SCIP LPI requires that the coefficient of slack variables s has to be +1. 
+Defining r = -s, we have
 
 min c'x
 s.t. Ax + b + r = 0
@@ -32,10 +34,10 @@ s.t. Ax + b + r = 0
      -q <= r <= -p
 
 This formulation satisfies the formulation requirement of the LPI. We call this form the SCIP 
-the SCIP Normal FormThe LP tableau assumes the problem is in SCIP Normal Form
+the SCIP Normal Form. The struct Tableau assumes the problem is in SCIP Normal Form
 
 The abstract type `Variable` represents every variable in the SCIP normal form. Subsclass
-LPRow represents the slack variables s and LPColumn represents the original variables x.
+LPRow represents the normalized slack variables r and LPColumn represents the original variables x.
 
 The LP tableau stores tableau information at the optimal solution of the LP in SCIP normal form.
 Additionally Tableau may store a constraint matrix that represents the LP in SCIP general form.
@@ -52,15 +54,53 @@ Additionally Tableau may store a constraint matrix that represents the LP in SCI
     constraint_matrix::Union{Nothing,ConstraintMatrix} = nothing
 end
 
+"""
+get_nvars
+
+Get the number of variables in the tableau (original and slack variables).
+This is equal to the sum of the number of inequality and the number of variables in the original problem.
+"""
 get_nvars(tableau::Tableau) = size(tableau)[2]
+
+"""
+get_nbasis
+
+Get the number of variables in the basis (i.e. number of basic variables). This is equal to the number of inequality constraints 
+"""
 get_nbasis(tableau::Tableau) = size(tableau)[1] # Get number of variables in the basis
+
+"""
+get_noriginalrows
+
+Get the number of rows in the original problem (i.e. number of inequality constraints)
+"""
 get_noriginalrows(tableau::Tableau) = tableau.noriginalrows # Get number of rows in the original problem
+
+"""
+get_noriginalcols
+
+Get the number of columns in the original problem (i.e. number of variables in the original problem)
+"""
 get_noriginalcols(tableau::Tableau) = tableau.noriginalcols # Get number of variables in the original problem
 
-# Allow LPTableau to behave as if it is a matrix
+"""
+Base.size
+
+The size of a tableau can also be prompted using the julia size function. The size of the tableau matrix is
+(number of inequalities) * (number of variables + number of inequalites)
+"""
 Base.size(tableau::Tableau) = size(tableau.tableau_matrix)
+
+"""
+Base.getindex
+
+get the value of the tableau matrix at position (i, j)
+"""
 Base.getindex(tableau::Tableau, i::Int, j::Int) = tableau.tableau_matrix[i, j]
 
+"""
+Base.setindex!
+"""
 function Base.setindex!(tableau::Tableau, v, i::Int, j::Int)
     tableau.tableau_matrix[i, j] = v
 end
