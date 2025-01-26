@@ -133,7 +133,6 @@ function solve_separation_subproblems(sepa::VPCSeparator)
 
     # check if the LP is feasible by optimizing using all 0s objective
     @objective(separating_lp, Min, 0)
-    write_to_file(separating_lp, "separating_lp.lp")
     @debug "Starting Check Feasibility"
     set_time_limit_sec(separating_lp, 300.0)
     optimize!(separating_lp)
