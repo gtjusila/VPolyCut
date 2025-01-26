@@ -2,12 +2,13 @@ using ArgParse
 using SCIP
 using JuMP
 using JSON
+using VPolyhedralCut
 using VPolyhedralCut.SCIPJLUtils
 
 function main()
     ### Command Line Argument ###
     args_setting = ArgParseSettings(;
-        description="Solve the LP relaxation of the instance, do 1 round of gomory cuts and get the gap closed information. Output will be a results.json file containing gap information and scip solving statistic"
+        description="Solve the LP relaxation of the instance, do 1 round of vpc cuts and get the gap closed information. Output will be a results.json file containing gap information and scip solving statistic"
     )
     @add_arg_table args_setting begin
         "--instance", "-i"
@@ -16,9 +17,16 @@ function main()
         "--output_dir", "-o"
         help = "A directory where to writ results.json and scip_solving_statistic.txt"
         required = true
+        #"--config", "-c"
+        #help = "Parameters for the VPolyhedralCut algorithm"
+        #required = true
     end
     parameter = ArgParse.parse_args(args_setting)
     println(parameter)
+
+    # Setup output directory
+    output_path = abspath(parameter["output_dir"])
+    log_path = joinpath(output_path, "vpc_logs.log")
 
     # Use VPolyhedralCut.SCIPJLUtils to create SCIP Optimizer object
     model = setup_scip_safe_jump_model()
@@ -32,17 +40,18 @@ function main()
 
     JuMP.set_attribute(model, "limits/restarts", 0)
     JuMP.set_attribute(model, "limits/nodes", 1)
-    JuMP.set_attribute(model, "limits/time", 3600) # Time Limit is usually not an issue for gomory runs
+    JuMP.set_attribute(model, "limits/time", 3600)
     JuMP.set_attribute(model, "separating/maxroundsroot", 1)
     JuMP.set_attribute(model, "display/verblevel", 0)
 
-    # Turn on gomory cut
-    JuMP.set_attribute(model, "separating/gmi/freq", 0)
-    JuMP.set_attribute(model, "separating/gmi/priority", 9999)
-    JuMP.set_attribute(model, "separating/gmi/maxsuppabs", 5000)
-    JuMP.set_attribute(model, "separating/gmi/dynamiccuts", false)
-    JuMP.set_attribute(model, "separating/gmi/maxsupprel", 1.0)
-    JuMP.set_attribute(model, "separating/gmi/forcecuts", true)
+    # Turn on vpc cut
+    vpcsepa = VPolyhedralCut.include_vpolyhedral_sepa(
+        scip;
+        n_leaves=64,
+        write_log=true,
+        log_directory=output_path,
+        lp_solving_method=4
+    )
 
     # Read Problem
     instance_path = abspath(parameter["instance"])
@@ -56,13 +65,20 @@ function main()
     # Write Output
     @info "Writing Result"
     result = Dict{String,Any}()
-    result["separator"] = "gomory"
+    result["separator"] = "vpc"
     result["instance"] = instance_path
     result["scip_status"] = SCIP.SCIPgetStatus(scip)
     result["initial_lp_obj"] = SCIP.SCIPgetFirstLPDualboundRoot(scip)
     result["final_lp_obj"] = SCIP.SCIPgetDualboundRoot(scip)
+    result["sepa_termination_message"] = vpcsepa.termination_message
+    result["number_of_cuts"] = length(vpcsepa.cutpool)
+    result["disjunctive_lower_bound"] = vpcsepa.disjunctive_lower_bound
+    result["n_fractional_variables"] = vpcsepa.n_fractional_variables
+    result["n_leaves"] = 64
+    result["prlp_solves"] = vpcsepa.prlp_solves
+    result["cbar_test"] = vpcsepa.cbar_test
+    result["lp_solving_method"] = 4
 
-    output_path = abspath(parameter["output_dir"])
     result_path = joinpath(output_path, "results.json")
     open(result_path, "w") do io
         JSON.print(io, result, 4)
