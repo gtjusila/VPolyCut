@@ -162,7 +162,11 @@ function solve_separation_subproblems(sepa::VPCSeparator)
     push!(sepa.prlp_solves, get_solve_stat(separating_lp, "p_star"))
     @debug "Finished P* Optimization"
 
-    if is_solved_and_feasible(separating_lp)
+    if termination_status(separating_lp) == TIME_LIMIT
+        @debug "P* optimization hit time limit"
+    end
+
+    if primal_status(separating_lp) == MOI.FEASIBLE_POINT
         cut = get_cut_from_separating_solution(sepa, value.(x))
         push!(sepa.cutpool, cut)
     else
@@ -171,6 +175,7 @@ function solve_separation_subproblems(sepa::VPCSeparator)
 
     if !is_EQ(scip, objective_value(separating_lp), 1.0)
         @error "Cannot find cut tight at p_star is not 1.0"
+        throw(PStarNotTight())
     end
 
     # Now transition to PRLP= 

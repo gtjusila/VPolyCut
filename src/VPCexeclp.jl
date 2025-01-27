@@ -80,6 +80,10 @@ function _exec_lp(sepa::VPCSeparator)
             @debug "Failed Disjunctive Lower Bound Test"
             error_occurred = true
             sepa.termination_message = "FAILED_DISJUNCTIVE_LOWER_BOUND_TEST"
+        elseif e isa PStarNotTight
+            @debug "PStarNotTight"
+            error_occurred = true
+            sepa.termination_message = "PSTAR_NOT_TIGHT"
         else
             rethrow(e)
         end
