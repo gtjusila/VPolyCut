@@ -12,7 +12,6 @@ function solve_separation_subproblems(sepa::VPCSeparator)
     @debug "Using simplex strategy $(sepa.parameters.lp_solving_method) for HiGHS"
     @debug "Zeroing heuristic is $(sepa.parameters.zeroing_heuristic)"
     separating_lp = Model(HiGHS.Optimizer)
-    JuMP.set_optimizer_attribute(separating_lp, "output_flag", false)
     JuMP.set_optimizer_attribute(
         separating_lp, "simplex_strategy", sepa.parameters.lp_solving_method
     )
@@ -170,7 +169,7 @@ function solve_separation_subproblems(sepa::VPCSeparator)
         cut = get_cut_from_separating_solution(sepa, value.(x))
         push!(sepa.cutpool, cut)
     else
-        error("p* as objective is unbounded")
+        throw(PStarInfeasible())
     end
 
     if !is_EQ(scip, objective_value(separating_lp), 1.0)
