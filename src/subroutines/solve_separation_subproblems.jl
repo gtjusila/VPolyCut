@@ -169,7 +169,23 @@ function solve_separation_subproblems(sepa::VPCSeparator)
         cut = get_cut_from_separating_solution(sepa, value.(x))
         push!(sepa.cutpool, cut)
     else
-        throw(PStarInfeasible())
+        # Special strategy try to first reestablish feasibility before optimizing
+        # We do this because this is if we cannot pass through this step we cannot generate any cut
+        @debug "Trying to reestablish feasiblity"
+        set_time_limit_sec(separating_lp, 300.0)
+        @objective(separating_lp, Min, 0)
+        optimize!(separating_lp)
+        set_time_limit_sec(separating_lp, 30.0)
+        @objective(separating_lp, Min, sum(x[i] * p_star[i] for i in 1:problem_dimension))
+        optimize!(separating_lp)
+        push!(sepa.prlp_solves, get_solve_stat(separating_lp, "p_star_reopt"))
+        @debug "Finished P* Optimization"
+        if primal_status(separating_lp) == MOI.FEASIBLE_POINT
+            cut = get_cut_from_separating_solution(sepa, value.(x))
+            push!(sepa.cutpool, cut)
+        else
+            throw(PStarInfeasible())
+        end
     end
 
     if !is_EQ(scip, objective_value(separating_lp), 1.0)
