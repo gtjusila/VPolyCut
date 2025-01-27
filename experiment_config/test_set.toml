@@ -1,9 +1,0 @@
-modes = [
-    "gomory",
-    "intersection",
-    "vpc"
-]
-instances = [
-  "neos5",
-  "gen-ip002"
-]
