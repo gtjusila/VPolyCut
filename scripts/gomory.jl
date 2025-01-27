@@ -34,7 +34,7 @@ function main()
     JuMP.set_attribute(model, "limits/nodes", 1)
     JuMP.set_attribute(model, "limits/time", 3600) # Time Limit is usually not an issue for gomory runs
     JuMP.set_attribute(model, "separating/maxroundsroot", 1)
-    JuMP.set_attribute(model, "display/verblevel", 0)
+    #JuMP.set_attribute(model, "display/verblevel", 0)
 
     # Turn on gomory cut
     JuMP.set_attribute(model, "separating/gmi/freq", 0)
