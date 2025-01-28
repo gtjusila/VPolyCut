@@ -2,6 +2,7 @@ using ArgParse
 using SCIP
 using JuMP
 using JSON
+using TOML
 using VPolyhedralCut
 using VPolyhedralCut.SCIPJLUtils
 
@@ -17,9 +18,9 @@ function main()
         "--output_dir", "-o"
         help = "A directory where to writ results.json and scip_solving_statistic.txt"
         required = true
-        #"--config", "-c"
-        #help = "Parameters for the VPolyhedralCut algorithm"
-        #required = true
+        "--config", "-c"
+        help = "Parameters for the VPolyhedralCut algorithm"
+        required = true
     end
     parameter = ArgParse.parse_args(args_setting)
     println(parameter)
@@ -27,6 +28,7 @@ function main()
     # Setup output directory
     output_path = abspath(parameter["output_dir"])
     log_path = joinpath(output_path, "vpc_logs.log")
+    config = TOML.parsefile(parameter["config"])
 
     # Use VPolyhedralCut.SCIPJLUtils to create SCIP Optimizer object
     model = setup_scip_safe_jump_model()
@@ -47,7 +49,7 @@ function main()
     # Turn on vpc cut
     vpcsepa = VPolyhedralCut.include_vpolyhedral_sepa(
         scip;
-        n_leaves=64,
+        n_leaves=config["n_leaves"],
         write_log=true,
         log_directory=output_path,
         lp_solving_method=4

@@ -1,6 +1,7 @@
 using DataFrames
 using CSV
 using Mustache
+using TOML
 include("utils.jl")
 
 println("Setup experiment")
@@ -37,7 +38,7 @@ experiment_path = prompt_user(;
     message="Experiment Name:",
     validation=(x) ->
         ((x != "") && !isdir(joinpath(runs_path, x))),
-    error_message="Invalid Mode.",
+    error_message="Name must not be empty.",
     default=""
 )
 experiment_path = joinpath(runs_path, experiment_path)
@@ -102,11 +103,26 @@ elseif mode == "vpc"
         end
     end
 
+    # Create config file
+    vpc_config = Dict()
+    vpc_config["n_leaves"] = prompt_user(;
+        message="Number of Leaves",
+        validation=(x) -> !isnothing(tryparse(Int, x)),
+        error_message="Not an integer.",
+        default="64"
+    )
+    vpc_config["n_leaves"] = parse(Int, vpc_config["n_leaves"])
+    config_file = joinpath(experiment_path, "vpc_config.toml")
+    open(config_file, "w") do io
+        TOML.print(io, vpc_config)
+    end
+
     # Read the bash template file and write to the experiment folder
     template_file = joinpath(@__DIR__, "job_templates", "vpc_template.sh")
     data = Dict(
         "N" => length(instances),
-        "EXPERIMENT_PATH" => experiment_path
+        "EXPERIMENT_PATH" => experiment_path,
+        "CONFIG_PATH" => config_file
     )
     bash_template = read(template_file, String)
     bash_script = Mustache.render(bash_template, data)

@@ -15,7 +15,9 @@ function solve_separation_subproblems(sepa::VPCSeparator)
     JuMP.set_optimizer_attribute(
         separating_lp, "simplex_strategy", sepa.parameters.lp_solving_method
     )
-
+    JuMP.set_optimizer_attribute(
+        separating_lp, "output_flag", false
+    )
     # First, translate the points so that the lp_solution is at the origin 
     projected_point_collection = get_points(sepa.point_ray_collection)
     point_collection_in_nonbasic_space = map(projected_point_collection) do corner_point
