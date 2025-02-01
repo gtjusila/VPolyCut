@@ -137,7 +137,7 @@ function solve_separation_subproblems(sepa::VPCSeparator)
     @objective(separating_lp, Min, 0)
     @debug "Starting Check Feasibility"
     JuMP.set_attribute(
-        separating_lp, "TIMELIMIT", 300
+        separating_lp, "MAXTIME", 300
     )
     optimize!(separating_lp)
     push!(sepa.prlp_solves, get_solve_stat(separating_lp, "feasibility"))
@@ -149,7 +149,7 @@ function solve_separation_subproblems(sepa::VPCSeparator)
     # Now optimize with all 1s objective
 
     JuMP.set_attribute(
-        separating_lp, "TIMELIMIT", 30
+        separating_lp, "MAXTIME", 30
     )
     #=
       @objective(separating_lp, Min, sum(x))
@@ -183,7 +183,7 @@ function solve_separation_subproblems(sepa::VPCSeparator)
         # We do this because this is if we cannot pass through this step we cannot generate any cut
         @debug "Trying to reestablish feasiblity"
         JuMP.set_attribute(
-            separating_lp, "TIMELIMIT", 300
+            separating_lp, "MAXTIME", 300
         )
         optimize!(separating_lp)
         push!(sepa.prlp_solves, get_solve_stat(separating_lp, "p_star_reopt"))
@@ -192,7 +192,7 @@ function solve_separation_subproblems(sepa::VPCSeparator)
         @debug "Regained feasibility"
         optimize!(separating_lp)
         JuMP.set_attribute(
-            separating_lp, "TIMELIMIT", 30
+            separating_lp, "MAXTIME", 30
         )
         @objective(separating_lp, Min, sum(x[i] * p_star[i] for i in 1:problem_dimension))
         optimize!(separating_lp)
