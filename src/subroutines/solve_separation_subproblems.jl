@@ -12,7 +12,7 @@ function solve_separation_subproblems(sepa::VPCSeparator)
     #Start building the model
     @debug "Using simplex strategy $(sepa.parameters.lp_solving_method) for HiGHS"
     @debug "Zeroing heuristic is $(sepa.parameters.zeroing_heuristic)"
-    separating_lp = direct_model(Xpress.Optimizer())
+    separating_lp = Model(Xpress.Optimizer)
     JuMP.set_optimizer_attribute(
         separating_lp, "DEFAULTALG", 3
     )
