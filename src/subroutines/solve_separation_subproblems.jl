@@ -1,3 +1,4 @@
+using Xpress
 function solve_separation_subproblems(sepa::VPCSeparator)
     # Setup aliases
     scip = sepa.scipd
@@ -11,12 +12,12 @@ function solve_separation_subproblems(sepa::VPCSeparator)
     #Start building the model
     @debug "Using simplex strategy $(sepa.parameters.lp_solving_method) for HiGHS"
     @debug "Zeroing heuristic is $(sepa.parameters.zeroing_heuristic)"
-    separating_lp = Model(HiGHS.Optimizer)
+    separating_lp = direct_model(Xpress.Optimizer())
     JuMP.set_optimizer_attribute(
-        separating_lp, "simplex_strategy", sepa.parameters.lp_solving_method
+        separating_lp, "DEFAULTALG", 3
     )
     JuMP.set_optimizer_attribute(
-        separating_lp, "output_flag", false
+        separating_lp, "OUTPUTLOG", 0
     )
     # First, translate the points so that the lp_solution is at the origin 
     projected_point_collection = get_points(sepa.point_ray_collection)
@@ -135,7 +136,9 @@ function solve_separation_subproblems(sepa::VPCSeparator)
     # check if the LP is feasible by optimizing using all 0s objective
     @objective(separating_lp, Min, 0)
     @debug "Starting Check Feasibility"
-    set_time_limit_sec(separating_lp, 300.0)
+    JuMP.set_optimizer_attribute(
+        separating_lp, "TIMELIMIT", 300
+    )
     optimize!(separating_lp)
     push!(sepa.prlp_solves, get_solve_stat(separating_lp, "feasibility"))
     if primal_status(separating_lp) != MOI.FEASIBLE_POINT
@@ -144,16 +147,21 @@ function solve_separation_subproblems(sepa::VPCSeparator)
     @debug "Feasibility Check Passed"
 
     # Now optimize with all 1s objective
-    set_time_limit_sec(separating_lp, 30.0)
-    @objective(separating_lp, Min, sum(x))
-    optimize!(separating_lp)
-    push!(sepa.prlp_solves, get_solve_stat(separating_lp, "all_ones"))
-    if is_solved_and_feasible(separating_lp)
-        cut = get_cut_from_separating_solution(sepa, value.(x))
-        push!(sepa.cutpool, cut)
-    else
-        @warn "All ones objective is unbounded"
-    end
+
+    JuMP.set_optimizer_attribute(
+        separating_lp, "TIMELIMIT", 30
+    )
+    #=
+      @objective(separating_lp, Min, sum(x))
+      optimize!(separating_lp)
+      push!(sepa.prlp_solves, get_solve_stat(separating_lp, "all_ones"))
+      if is_solved_and_feasible(separating_lp)
+          cut = get_cut_from_separating_solution(sepa, value.(x))
+          push!(sepa.cutpool, cut)
+      else
+          @warn "All ones objective is unbounded"
+      end
+      =#
 
     # Now Optimize with p as objective
     @debug "Starting P* Optimization"
@@ -174,10 +182,18 @@ function solve_separation_subproblems(sepa::VPCSeparator)
         # Special strategy try to first reestablish feasibility before optimizing
         # We do this because this is if we cannot pass through this step we cannot generate any cut
         @debug "Trying to reestablish feasiblity"
-        set_time_limit_sec(separating_lp, 300.0)
-        @objective(separating_lp, Min, 0)
+        JuMP.set_optimizer_attribute(
+            separating_lp, "TIMELIMIT", 300
+        )
         optimize!(separating_lp)
-        set_time_limit_sec(separating_lp, 30.0)
+        push!(sepa.prlp_solves, get_solve_stat(separating_lp, "p_star_reopt"))
+        @objective(separating_lp, Min, 0)
+
+        @debug "Regained feasibility"
+        optimize!(separating_lp)
+        JuMP.set_optimizer_attribute(
+            separating_lp, "TIMELIMIT", 30
+        )
         @objective(separating_lp, Min, sum(x[i] * p_star[i] for i in 1:problem_dimension))
         optimize!(separating_lp)
         push!(sepa.prlp_solves, get_solve_stat(separating_lp, "p_star_reopt"))
@@ -275,7 +291,7 @@ end
 function get_solve_stat(model::JuMP.AbstractModel, obj_name::String)
     return Dict(
         "solve_time" => solve_time(model),
-        "simplex_iterations" => simplex_iterations(model),
+        #"simplex_iterations" => simplex_iterations(model),
         "primal_status" => primal_status(model),
         "dual_status" => dual_status(model),
         "termination_status" => termination_status(model),
