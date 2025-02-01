@@ -13,10 +13,10 @@ function solve_separation_subproblems(sepa::VPCSeparator)
     @debug "Using simplex strategy $(sepa.parameters.lp_solving_method) for HiGHS"
     @debug "Zeroing heuristic is $(sepa.parameters.zeroing_heuristic)"
     separating_lp = Model(Xpress.Optimizer)
-    JuMP.set_optimizer_attribute(
+    JuMP.set_attribute(
         separating_lp, "DEFAULTALG", 3
     )
-    JuMP.set_optimizer_attribute(
+    JuMP.set_attribute(
         separating_lp, "OUTPUTLOG", 0
     )
     # First, translate the points so that the lp_solution is at the origin 
@@ -136,7 +136,7 @@ function solve_separation_subproblems(sepa::VPCSeparator)
     # check if the LP is feasible by optimizing using all 0s objective
     @objective(separating_lp, Min, 0)
     @debug "Starting Check Feasibility"
-    JuMP.set_optimizer_attribute(
+    JuMP.set_attribute(
         separating_lp, "TIMELIMIT", 300
     )
     optimize!(separating_lp)
@@ -148,7 +148,7 @@ function solve_separation_subproblems(sepa::VPCSeparator)
 
     # Now optimize with all 1s objective
 
-    JuMP.set_optimizer_attribute(
+    JuMP.set_attribute(
         separating_lp, "TIMELIMIT", 30
     )
     #=
@@ -182,7 +182,7 @@ function solve_separation_subproblems(sepa::VPCSeparator)
         # Special strategy try to first reestablish feasibility before optimizing
         # We do this because this is if we cannot pass through this step we cannot generate any cut
         @debug "Trying to reestablish feasiblity"
-        JuMP.set_optimizer_attribute(
+        JuMP.set_attribute(
             separating_lp, "TIMELIMIT", 300
         )
         optimize!(separating_lp)
@@ -191,7 +191,7 @@ function solve_separation_subproblems(sepa::VPCSeparator)
 
         @debug "Regained feasibility"
         optimize!(separating_lp)
-        JuMP.set_optimizer_attribute(
+        JuMP.set_attribute(
             separating_lp, "TIMELIMIT", 30
         )
         @objective(separating_lp, Min, sum(x[i] * p_star[i] for i in 1:problem_dimension))
