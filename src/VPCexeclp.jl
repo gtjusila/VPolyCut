@@ -141,7 +141,7 @@ function vpolyhedralcut_separation(sepa::VPCSeparator)
     sepa.cutpool = CutPool(; tableau=sepa.complemented_tableau, scip=scip)
 
     # Step 4: Solve Separation Problem
-    solve_separation_subproblems(sepa)
+    solve_separation_subproblems_with_scip(sepa)
 end
 
 function get_cut_limit(

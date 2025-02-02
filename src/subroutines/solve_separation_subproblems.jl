@@ -13,12 +13,21 @@ function solve_separation_subproblems(sepa::VPCSeparator)
     @debug "Using simplex strategy $(sepa.parameters.lp_solving_method) for HiGHS"
     @debug "Zeroing heuristic is $(sepa.parameters.zeroing_heuristic)"
     separating_lp = Model(Xpress.Optimizer)
-    JuMP.set_attribute(
-        separating_lp, "DEFAULTALG", 3
-    )
-    JuMP.set_attribute(
-        separating_lp, "OUTPUTLOG", 0
-    )
+
+    xpress_version = String(get_attribute(separating_lp, "XPRESSVERSION"))
+    if xpress_version[1] == '9'
+        @debug "XPress version 9"
+        TIMELIMIT_LABEL = "TIMELIMIT"
+    elseif xpress_version[1] == '8'
+        @debug "XPress version 8"
+        TIMELIMIT_LABEL = "MAXTIME"
+    else
+        error("XPRESSVERSION not recognized")
+    end
+
+    #JuMP.set_attribute(
+    #    separating_lp, "OUTPUTLOG", 0
+    #)
     # First, translate the points so that the lp_solution is at the origin 
     projected_point_collection = get_points(sepa.point_ray_collection)
     point_collection_in_nonbasic_space = map(projected_point_collection) do corner_point
@@ -134,10 +143,11 @@ function solve_separation_subproblems(sepa::VPCSeparator)
     end
 
     # check if the LP is feasible by optimizing using all 0s objective
+    #=
     @objective(separating_lp, Min, 0)
     @debug "Starting Check Feasibility"
     JuMP.set_attribute(
-        separating_lp, "MAXTIME", 300
+        separating_lp, TIMELIMIT_LABEL, 300
     )
     optimize!(separating_lp)
     push!(sepa.prlp_solves, get_solve_stat(separating_lp, "feasibility"))
@@ -145,11 +155,11 @@ function solve_separation_subproblems(sepa::VPCSeparator)
         throw(FailedToProvePRLPFeasibility())
     end
     @debug "Feasibility Check Passed"
-
+    =#
     # Now optimize with all 1s objective
 
     JuMP.set_attribute(
-        separating_lp, "MAXTIME", 30
+        separating_lp, TIMELIMIT_LABEL, 300
     )
     #=
       @objective(separating_lp, Min, sum(x))
@@ -183,7 +193,7 @@ function solve_separation_subproblems(sepa::VPCSeparator)
         # We do this because this is if we cannot pass through this step we cannot generate any cut
         @debug "Trying to reestablish feasiblity"
         JuMP.set_attribute(
-            separating_lp, "MAXTIME", 300
+            separating_lp, TIMELIMIT_LABEL, 300
         )
         optimize!(separating_lp)
         push!(sepa.prlp_solves, get_solve_stat(separating_lp, "p_star_reopt"))
@@ -192,7 +202,7 @@ function solve_separation_subproblems(sepa::VPCSeparator)
         @debug "Regained feasibility"
         optimize!(separating_lp)
         JuMP.set_attribute(
-            separating_lp, "MAXTIME", 30
+            separating_lp, TIMELIMIT_LABEL, 30
         )
         @objective(separating_lp, Min, sum(x[i] * p_star[i] for i in 1:problem_dimension))
         optimize!(separating_lp)
