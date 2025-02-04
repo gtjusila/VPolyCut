@@ -1,5 +1,7 @@
 using SCIP
+using JuMP
 using Printf
+using HiGHS
 
 """
 `RealVector` is an alias for `SCIP.SCIP_Real`
@@ -7,7 +9,7 @@ using Printf
 const RealVector = Vector{SCIP.SCIP_Real}
 # Base Struct for the point ray linear program
 
-@enum PRLPsolveAlgorithm PRIMAL_SIMPLEX BARRIER
+@enum PRLPsolveAlgorithm DUAL_SIMPLEX PRIMAL_SIMPLEX BARRIER HIGHS
 @enum TerminationStatus LPI_OPTIMAL LPI_TIME_LIMIT_EXCEEDED LPI_NOT_SOLVED LPI_UNBOUNDED
 
 mutable struct PRLP
@@ -295,6 +297,54 @@ function PRLPsolveWithPrimalSimplex(prlp::PRLP)
 end
 
 """
+    PRLPsolveWithDualSimplex(prlp::PRLP)
+
+Solve the PRLP using the primal simplex method. The LP must be constructed before solving.
+"""
+function PRLPsolveWithDualSimplex(prlp::PRLP)
+    if !prlp.lp_constructed
+        throw("LP must be constructed before solving")
+    end
+    if is_false(SCIP.SCIPlpiHasDualSolve())
+        throw("LP Solver does not support dual simplex solve")
+    end
+
+    start_time = time()
+    SCIP.@SCIP_CALL SCIP.SCIPlpiSolveDual(prlp.lpi)
+    end_time = time()
+    prlp.last_solve_time = end_time - start_time
+
+    simplex_iteration = Ref{Cint}(0)
+    SCIP.@SCIP_CALL SCIP.SCIPlpiGetIterations(prlp.lpi, simplex_iteration)
+    prlp.last_simplex_iterations = simplex_iteration[]
+
+    if is_true(SCIP.SCIPlpiIsPrimalFeasible(prlp.lpi))
+        prlp.solution_available = true
+        prlp.solution_vector = zeros(SCIP.SCIP_Real, prlp.dimension)
+        obj_val = Ref{SCIP.SCIP_Real}(0)
+        SCIP.@SCIP_CALL SCIP.SCIPlpiGetSol(prlp.lpi, obj_val, pointer(prlp.solution_vector),
+            C_NULL,
+            C_NULL, C_NULL
+        )
+        prlp.solution_objective = obj_val[]
+    end
+end
+
+function PRLPsolveWithHIGHS(prlp::PRLP)
+    SCIP.@SCIP_CALL SCIP.SCIPlpiWriteLP(prlp.lpi, "prlp.lp")
+    model = JuMP.read_from_file("prlp.lp")
+    set_optimizer(model, HiGHS.Optimizer)
+    optimize!(model)
+    if termination_status(model) == MOI.OPTIMAL
+        prlp.solution_available = true
+        prlp.solution_vector = zeros(SCIP.SCIP_Real, prlp.dimension)
+        prlp.solution_objective = objective_value(model)
+        for i in 1:(prlp.dimension)
+            prlp.solution_vector[i] = value(variable_by_name(model, "C$(i)"))
+        end
+    end
+end
+"""
     PRLPsetSolvingAlgorithm(prlp::PRLP, algorithm::PRLPsolveAlgorithm)
 
 Set the solving algorithm for the PRLP. 
@@ -313,6 +363,12 @@ function PRLPsolve(prlp::PRLP)
         PRLPsolveWithPrimalSimplex(prlp)
     elseif prlp.solve_algorithm == BARRIER
         PRLPsolveWithBarrier(prlp)
+    elseif prlp.solve_algorithm == DUAL_SIMPLEX
+        PRLPsolveWithDualSimplex(prlp)
+    elseif prlp.solve_algorithm == HIGHS
+        PRLPsolveWithHIGHS(prlp)
+    else
+        throw("Unknown solving algorithm")
     end
 end
 """

@@ -19,17 +19,26 @@ function solve_separation_subproblems(sepa::VPCSeparator)
             get_orig_objective_value(corner_point)
         )
     end
+    points = map(point_collection_in_nonbasic_space) do corner_point
+        return get_point(corner_point)
+    end
+    points_zeroed = map(points) do point
+        return [!is_zero(scip, p) ? p : 0.0 for p in point]
+    end
     ray_collection = get_rays(sepa.point_ray_collection)
+    rays_zeroed = map(ray_collection) do ray
+        return [!is_zero(scip, p) ? p : 0.0 for p in get_coefficients(ray)]
+    end
 
     # Construct the PRLP
     @debug "Constructing PRLP"
     prlp = PRLP(problem_dimension)
 
-    for point in point_collection_in_nonbasic_space
-        PRLPaddPoint(prlp, get_point(point))
+    for point in points_zeroed
+        PRLPaddPoint(prlp, point)
     end
-    for ray in ray_collection
-        PRLPaddRay(prlp, get_coefficients(ray))
+    for ray in rays_zeroed
+        PRLPaddRay(prlp, ray)
     end
     PRLPconstructLP(prlp)
     @debug "PRLP Constructed"
@@ -37,7 +46,7 @@ function solve_separation_subproblems(sepa::VPCSeparator)
     @debug "Checking PRLP Feasibility"
     PRLPsetTimeLimit(prlp, 300.0)
     feasibility_check = false
-    for algorithm in [PRIMAL_SIMPLEX, BARRIER]
+    for algorithm in [PRIMAL_SIMPLEX, DUAL_SIMPLEX, BARRIER]
         PRLPsetSolvingAlgorithm(prlp, algorithm)
         @debug "Trying Algorithm $(algorithm)"
         feasibility_check = try_objective(
@@ -74,7 +83,8 @@ function solve_separation_subproblems(sepa::VPCSeparator)
     # Check if tightened Pstar is feasible
     @debug "Trying Pstar Tightening"
     PRLPsetTimeLimit(prlp, 300.0)
-    PRLPtighten(prlp, p_star)
+    p_star_zeroed = [!is_zero(scip, p) ? p : 0.0 for p in p_star]
+    PRLPtighten(prlp, p_star_zeroed)
     tight_try = try_objective(
         sepa, prlp, zeros(SCIP.SCIP_Real, problem_dimension), "prlp=_feasibility"
     )
