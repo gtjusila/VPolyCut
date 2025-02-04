@@ -1,4 +1,4 @@
-using Xpress
+import MathOptInterface as MOI
 function solve_separation_subproblems(sepa::VPCSeparator)
     # Setup aliases
     scip = sepa.scipd
@@ -12,22 +12,13 @@ function solve_separation_subproblems(sepa::VPCSeparator)
     #Start building the model
     @debug "Using simplex strategy $(sepa.parameters.lp_solving_method) for HiGHS"
     @debug "Zeroing heuristic is $(sepa.parameters.zeroing_heuristic)"
-    separating_lp = Model(Xpress.Optimizer)
-
-    xpress_version = String(get_attribute(separating_lp, "XPRESSVERSION"))
-    if xpress_version[1] == '9'
-        @debug "XPress version 9"
-        TIMELIMIT_LABEL = "TIMELIMIT"
-    elseif xpress_version[1] == '8'
-        @debug "XPress version 8"
-        TIMELIMIT_LABEL = "MAXTIME"
-    else
-        error("XPRESSVERSION not recognized")
-    end
-
-    #JuMP.set_attribute(
-    #    separating_lp, "OUTPUTLOG", 0
-    #)
+    separating_lp = Model(HiGHS.Optimizer)
+    JuMP.set_optimizer_attribute(
+        separating_lp, "simplex_strategy", sepa.parameters.lp_solving_method
+    )
+    JuMP.set_optimizer_attribute(
+        separating_lp, "output_flag", false
+    )
     # First, translate the points so that the lp_solution is at the origin 
     projected_point_collection = get_points(sepa.point_ray_collection)
     point_collection_in_nonbasic_space = map(projected_point_collection) do corner_point
@@ -142,42 +133,41 @@ function solve_separation_subproblems(sepa::VPCSeparator)
         throw(FailedDisjunctiveLowerBoundTest())
     end
 
+    model = MOI.FileFormats.Model(; format=MOI.FileFormats.FORMAT_LP)
+    MOI.copy_to(model, separating_lp)
+    MOI.write_to_file(model, "separating_jump.lp")
+
     # check if the LP is feasible by optimizing using all 0s objective
-    #=
     @objective(separating_lp, Min, 0)
     @debug "Starting Check Feasibility"
-    JuMP.set_attribute(
-        separating_lp, TIMELIMIT_LABEL, 300
-    )
+    set_time_limit_sec(separating_lp, 300.0)
     optimize!(separating_lp)
     push!(sepa.prlp_solves, get_solve_stat(separating_lp, "feasibility"))
     if primal_status(separating_lp) != MOI.FEASIBLE_POINT
         throw(FailedToProvePRLPFeasibility())
     end
     @debug "Feasibility Check Passed"
-    =#
-    # Now optimize with all 1s objective
 
-    JuMP.set_attribute(
-        separating_lp, TIMELIMIT_LABEL, 300
-    )
-    #=
-      @objective(separating_lp, Min, sum(x))
-      optimize!(separating_lp)
-      push!(sepa.prlp_solves, get_solve_stat(separating_lp, "all_ones"))
-      if is_solved_and_feasible(separating_lp)
-          cut = get_cut_from_separating_solution(sepa, value.(x))
-          push!(sepa.cutpool, cut)
-      else
-          @warn "All ones objective is unbounded"
-      end
-      =#
+    # Now optimize with all 1s objective
+    set_time_limit_sec(separating_lp, 30.0)
+    @objective(separating_lp, Min, sum(x))
+    optimize!(separating_lp)
+    push!(sepa.prlp_solves, get_solve_stat(separating_lp, "all_ones"))
+    if is_solved_and_feasible(separating_lp)
+        cut = get_cut_from_separating_solution(sepa, value.(x))
+        push!(sepa.cutpool, cut)
+    else
+        @warn "All ones objective is unbounded"
+    end
 
     # Now Optimize with p as objective
     @debug "Starting P* Optimization"
     p_star = argmin(point -> get_objective_value(point), point_collection_in_nonbasic_space)
     @objective(separating_lp, Min, sum(x[i] * p_star[i] for i in 1:problem_dimension))
     optimize!(separating_lp)
+    model = MOI.FileFormats.Model(; format=MOI.FileFormats.FORMAT_LP)
+    MOI.copy_to(model, separating_lp)
+    MOI.write_to_file(model, "separating_jump.lp")
     push!(sepa.prlp_solves, get_solve_stat(separating_lp, "p_star"))
     @debug "Finished P* Optimization"
 
@@ -192,18 +182,10 @@ function solve_separation_subproblems(sepa::VPCSeparator)
         # Special strategy try to first reestablish feasibility before optimizing
         # We do this because this is if we cannot pass through this step we cannot generate any cut
         @debug "Trying to reestablish feasiblity"
-        JuMP.set_attribute(
-            separating_lp, TIMELIMIT_LABEL, 300
-        )
-        optimize!(separating_lp)
-        push!(sepa.prlp_solves, get_solve_stat(separating_lp, "p_star_reopt"))
+        set_time_limit_sec(separating_lp, 300.0)
         @objective(separating_lp, Min, 0)
-
-        @debug "Regained feasibility"
         optimize!(separating_lp)
-        JuMP.set_attribute(
-            separating_lp, TIMELIMIT_LABEL, 30
-        )
+        set_time_limit_sec(separating_lp, 30.0)
         @objective(separating_lp, Min, sum(x[i] * p_star[i] for i in 1:problem_dimension))
         optimize!(separating_lp)
         push!(sepa.prlp_solves, get_solve_stat(separating_lp, "p_star_reopt"))
@@ -301,7 +283,7 @@ end
 function get_solve_stat(model::JuMP.AbstractModel, obj_name::String)
     return Dict(
         "solve_time" => solve_time(model),
-        #"simplex_iterations" => simplex_iterations(model),
+        "simplex_iterations" => simplex_iterations(model),
         "primal_status" => primal_status(model),
         "dual_status" => dual_status(model),
         "termination_status" => termination_status(model),

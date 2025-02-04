@@ -34,7 +34,7 @@ end
 function _exec_lp(sepa::VPCSeparator)
     # Aliasing for easier call
     scip = sepa.scipd
-
+    sepa.start_time = time()
     # Increase the call counter and set separated to false (since no cut have been found)
     @debug "VPC Separator Called"
     sepa.called += 1
@@ -120,7 +120,7 @@ function vpolyhedralcut_separation(sepa::VPCSeparator)
     sepa.n_fractional_variables = SCIP.SCIPgetNLPBranchCands(scip)
 
     # Step 0: Get complemented tableau
-    sepa.lp_obj = SCIP.SCIPgetLPObjval(scip)
+    sepa.lp_obj = SCIP.SCIPgetSolOrigObj(scip, C_NULL)
     construct_complemented_tableau(sepa)
 
     # Step 1: Get Disjunction
@@ -133,15 +133,26 @@ function vpolyhedralcut_separation(sepa::VPCSeparator)
 
     # Step 2: Setup projection used and get the points and rays from the disjunctions
     sepa.projection = create_projection_to_nonbasic_space(sepa.complemented_tableau)
+
+    # Step 3: Collect Point Ray
     get_point_ray_collection(sepa)
     @debug "Number of points: $(num_points(sepa.point_ray_collection))"
     @debug "Number of rays: $(num_rays(sepa.point_ray_collection))"
 
-    # Step 3: Setup Cut Pool 
+    # Step 4: Setup cutpool
     sepa.cutpool = CutPool(; tableau=sepa.complemented_tableau, scip=scip)
 
-    # Step 4: Solve Separation Problem
-    solve_separation_subproblems_with_scip(sepa)
+    # Step 5: Verify that the disjunctive lower bound is strictly larger than the current LP
+    sepa.disjunctive_lower_bound = minimum(
+        x -> get_orig_objective_value(x), get_points(sepa.point_ray_collection)
+    )
+    if is_LE(scip, sepa.disjunctive_lower_bound, sepa.lp_obj)
+        @debug "Disjunctive Lower Bound is not strictly larger than the current LP"
+        throw(FailedDisjunctiveLowerBoundTest())
+    end
+
+    # Step 6: Solve Separation Problem
+    solve_separation_subproblems(sepa)
 end
 
 function get_cut_limit(

@@ -23,7 +23,6 @@ function main()
         required = true
     end
     parameter = ArgParse.parse_args(args_setting)
-    println(parameter)
 
     # Setup output directory
     output_path = abspath(parameter["output_dir"])
@@ -52,7 +51,8 @@ function main()
         n_leaves=config["n_leaves"],
         write_log=true,
         log_directory=output_path,
-        lp_solving_method=4
+        lp_solving_method=4,
+        time_limit=900
     )
 
     # Read Problem
@@ -80,6 +80,7 @@ function main()
     result["prlp_solves"] = vpcsepa.prlp_solves
     result["cbar_test"] = vpcsepa.cbar_test
     result["lp_solving_method"] = 4
+    result["prlp_solve_method"] = vpcsepa.solve_method
 
     result_path = joinpath(output_path, "results.json")
     open(result_path, "w") do io

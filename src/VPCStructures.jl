@@ -31,6 +31,8 @@ is passed during the creation of the VPCSeparator.
     log_directory::String = ""
     "HiGHS LP Method"
     lp_solving_method::Int = 4
+    "Time Limit"
+    time_limit::Int = 2^29
 end
 
 """
@@ -62,7 +64,10 @@ Constructors:
     prlp_solves::Vector{Dict{String,Any}} = []
     "Cbar Test"
     cbar_test::Bool = true
-
+    "Start Time"
+    start_time::Float64 = 0.0
+    "Solve Method"
+    solve_method::PRLPsolveAlgorithm = PRIMAL_SIMPLEX
     "Complemented Tableau"
     complemented_tableau::Union{Nothing,ComplementedTableau} = nothing
     "Disjunction"
@@ -94,7 +99,8 @@ function include_vpolyhedral_sepa(
     write_log=false,
     log_directory="",
     zeroing_heuristic=false,
-    lp_solving_method=4
+    lp_solving_method=4,
+    time_limit=2^29
 )
     parameters = VPCParameters(;
         n_leaves=n_leaves,
@@ -102,7 +108,8 @@ function include_vpolyhedral_sepa(
         write_log=write_log,
         log_directory=log_directory,
         zeroing_heuristic=zeroing_heuristic,
-        lp_solving_method=lp_solving_method
+        lp_solving_method=lp_solving_method,
+        time_limit=time_limit
     )
 
     if write_log

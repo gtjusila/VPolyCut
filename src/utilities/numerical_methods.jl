@@ -44,3 +44,11 @@ end
 function is_integral(scip::SCIP.SCIPData, x::SCIP.SCIP_Real)
     return SCIP.SCIPisFeasIntegral(scip, x) == 1
 end
+
+function is_true(i)
+    return i == 1
+end
+
+function is_false(i)
+    return i == 0
+end

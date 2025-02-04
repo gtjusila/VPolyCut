@@ -1,7 +1,6 @@
-using Xpress
 using SCIP
 
-function solve_separation_subproblems_with_scip(sepa::VPCSeparator)
+function solve_separation_subproblems(sepa::VPCSeparator)
     # Setup aliases
     scip = sepa.scipd
 
@@ -22,69 +21,96 @@ function solve_separation_subproblems_with_scip(sepa::VPCSeparator)
     end
     ray_collection = get_rays(sepa.point_ray_collection)
 
-    # Create SCIP problem
-    subscip = CPtr(SCIP.SCIP_)
-    SCIP.@SCIP_CALL SCIP.SCIPcreate(address(subscip))
-    SCIP.@SCIP_CALL SCIP.SCIPincludeDefaultPlugins(subscip)
-    SCIP.@SCIP_CALL SCIP.SCIPcreateProbBasic(subscip, "PRLP")
-    SCIP.@SCIP_CALL SCIP.SCIPsetSubscipsOff(subscip, 0)
-    SCIP.@SCIP_CALL SCIP.SCIPenableReoptimization(subscip, true)
-    # Variables 
-    vars = [CPtr(SCIP.SCIP_Var) for i in 1:problem_dimension]
-    for i in 1:problem_dimension
-        SCIP.@SCIP_CALL SCIP.SCIPcreateVarBasic(
-            subscip, address(vars[i]), "x_$(i)",
-            -SCIP.SCIPinfinity(subscip), SCIP.SCIPinfinity(subscip),
-            0, SCIP.SCIP_VARTYPE_CONTINUOUS
-        )
-        SCIP.@SCIP_CALL SCIP.SCIPaddVar(subscip, vars[i])
+    # Construct the PRLP
+    @debug "Constructing PRLP"
+    prlp = PRLP(problem_dimension)
+
+    for point in point_collection_in_nonbasic_space
+        PRLPaddPoint(prlp, get_point(point))
     end
-    # Point constraint
-    n_points = length(point_collection_in_nonbasic_space)
-    point_constraints = [CPtr(SCIP.SCIP_Cons) for i in 1:n_points]
+    for ray in ray_collection
+        PRLPaddRay(prlp, get_coefficients(ray))
+    end
+    PRLPconstructLP(prlp)
+    @debug "PRLP Constructed"
 
-    for i in 1:n_points
-        vertex = get_point(point_collection_in_nonbasic_space[i])
-        SCIP.@SCIP_CALL SCIP.SCIPcreateConsBasicLinear(
-            subscip, address(point_constraints[i]), "p_$(i)",
-            0, C_NULL, C_NULL, 1, SCIP.SCIPinfinity(scip)
+    @debug "Checking PRLP Feasibility"
+    PRLPsetTimeLimit(prlp, 300.0)
+    feasibility_check = false
+    for algorithm in [PRIMAL_SIMPLEX, BARRIER]
+        PRLPsetSolvingAlgorithm(prlp, algorithm)
+        @debug "Trying Algorithm $(algorithm)"
+        feasibility_check = try_objective(
+            sepa, prlp, zeros(SCIP.SCIP_Real, problem_dimension), "feasibility"
         )
-
-        for j in 1:problem_dimension
-            SCIP.@SCIP_CALL SCIP.SCIPaddCoefLinear(
-                subscip, point_constraints[i], vars[j], vertex[j]
-            )
+        if feasibility_check
+            @debug "Success with $(algorithm)"
+            break
         end
-        SCIP.@SCIP_CALL SCIP.SCIPaddCons(subscip, point_constraints[i])
     end
-    # Ray constraint
-    n_rays = length(ray_collection)
-    ray_constraints = [CPtr(SCIP.SCIP_Cons) for i in 1:n_rays]
-    for i in 1:n_rays
-        ray = get_coefficients(ray_collection[i])
-        SCIP.@SCIP_CALL SCIP.SCIPcreateConsBasicLinear(
-            subscip, address(ray_constraints[i]), "r_$(i)",
-            0, C_NULL, C_NULL, 0, SCIP.SCIPinfinity(scip)
-        )
-
-        for j in 1:problem_dimension
-            SCIP.@SCIP_CALL SCIP.SCIPaddCoefLinear(
-                subscip, ray_constraints[i], vars[j], ray[j]
-            )
-        end
-
-        SCIP.@SCIP_CALL SCIP.SCIPaddCons(subscip, ray_constraints[i])
+    if !feasibility_check
+        PRLPdestroy(prlp)
+        throw(FailedToProvePRLPFeasibility())
     end
 
-    # Use P* as objective
+    # All Ones
+    PRLPsetTimeLimit(prlp, 30.0)
+    try_objective(
+        sepa, prlp, ones(SCIP.SCIP_Real, problem_dimension), "all_ones"
+    )
+    # We can live if all ones is not optimized to optimality 
+
+    # Pstar
     p_star = argmin(point -> get_objective_value(point), point_collection_in_nonbasic_space)
-    for i in 1:problem_dimension
-        SCIP.@SCIP_CALL SCIP.SCIPchgVarObj(subscip, vars[i], p_star[i])
+    p_star = get_point(p_star)
+    p_run = try_objective(sepa, prlp, p_star, "p_star")
+    # Unless it is a barrier solve, only proceed if objective is 1.
+    if !p_run && PRLPgetSolvingAlgorithm(prlp) != BARRIER &&
+        is_EQ(scip, PRLPgetObjValue(prlp), 1.0)
+        PRLPdestroy(prlp)
+        throw(PStarNotTight())
     end
-    SCIP.@SCIP_CALL SCIP.SCIPwriteOrigProblem(subscip, "separating_test.lp", C_NULL, true)
-    SCIP.@SCIP_CALL SCIP.SCIPsolve(subscip)
 
+    # Check if tightened Pstar is feasible
+    @debug "Trying Pstar Tightening"
+    PRLPsetTimeLimit(prlp, 300.0)
+    PRLPtighten(prlp, p_star)
+    tight_try = try_objective(
+        sepa, prlp, zeros(SCIP.SCIP_Real, problem_dimension), "prlp=_feasibility"
+    )
+    if !tight_try
+        PRLPdestroy(prlp)
+        throw(PStarInfeasible())
+    end
+
+    @debug "Pstar Tightening Successful"
+    PRLPsetTimeLimit(prlp, 30.0)
+    a_bar = PRLPgetSolution(prlp)
+    r_bar = filter(ray -> !is_zero(scip, dot(a_bar, ray)), ray_collection)
+    sort!(r_bar; by=ray -> abs(get_obj(get_generating_variable(ray))))
+    objective_tried = 0
+
+    for ray in r_bar
+        r_run = try_objective(sepa, prlp, get_coefficients(ray), "prlp=_$(objective_tried)")
+        objective_tried += 1
+        if r_run
+            @debug "Generated $(length(sepa.cutpool)) cuts. Cutlimit is $(sepa.parameters.cut_limit)"
+        end
+        if length(sepa.cutpool) >= sepa.parameters.cut_limit
+            @goto cleanup
+        end
+        elapsed_time = time() - sepa.start_time
+        if elapsed_time > sepa.parameters.time_limit
+            @goto cleanup
+        end
+    end
+
+    @label cleanup
+    PRLPdestroy(prlp)
     add_all_cuts!(sepa.cutpool, sepa)
+    if length(sepa.cutpool) >= 0
+        sepa.separated = true
+    end
 end
 
 function get_cut_from_separating_solution(
@@ -108,13 +134,27 @@ function get_cut_from_separating_solution(
     return Cut(-cut_vector, -b)
 end
 
-function get_solve_stat(model::JuMP.AbstractModel, obj_name::String)
+function try_objective(
+    sepa::VPCSeparator, prlp::PRLP, objective::Vector{SCIP.SCIP_Real}, label=""
+)
+    PRLPsetObjective(prlp, objective)
+    PRLPsolve(prlp)
+    push!(sepa.prlp_solves, get_solve_stat(prlp, label))
+    if PRLPisSolutionAvailable(prlp)
+        push!(sepa.cutpool, get_cut_from_separating_solution(sepa, PRLPgetSolution(prlp)))
+        return true
+    end
+    return false
+end
+
+function get_solve_stat(prlp::PRLP, obj_name::String)
+    # Since SCIP LPI doesn't support solve time, this needed to be passed manually
     return Dict(
-        "solve_time" => solve_time(model),
-        #"simplex_iterations" => simplex_iterations(model),
-        "primal_status" => primal_status(model),
-        "dual_status" => dual_status(model),
-        "termination_status" => termination_status(model),
+        "solve_algorithm" => PRLPgetSolvingAlgorithm(prlp),
+        "solve_time" => PRLPgetLastSolveTime(prlp),
+        "simplex_iterations" => PRLPgetLastSimplexIterations(prlp),
+        "primal_status" => PRLPisSolutionAvailable(prlp),
+        "termination_status" => PRLPgetLastTerminationStatus(prlp),
         "objective_name" => obj_name
     )
 end

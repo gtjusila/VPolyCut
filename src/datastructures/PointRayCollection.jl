@@ -2,7 +2,10 @@
 using SCIP
 
 """
-A corner point is a container a point and its objective value
+    CornerPoint
+
+A CornerPoint represents a vertex of the LP. It have a point which holds the actual coordinates 
+and objective value associated to it 
 """
 @kwdef struct CornerPoint
     point::Point
