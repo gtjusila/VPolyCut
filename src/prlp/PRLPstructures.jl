@@ -1,7 +1,5 @@
 using SCIP
-using JuMP
 using Printf
-using HiGHS
 
 """
 `RealVector` is an alias for `SCIP.SCIP_Real`
@@ -330,20 +328,6 @@ function PRLPsolveWithDualSimplex(prlp::PRLP)
     end
 end
 
-function PRLPsolveWithHIGHS(prlp::PRLP)
-    SCIP.@SCIP_CALL SCIP.SCIPlpiWriteLP(prlp.lpi, "prlp.lp")
-    model = JuMP.read_from_file("prlp.lp")
-    set_optimizer(model, HiGHS.Optimizer)
-    optimize!(model)
-    if termination_status(model) == MOI.OPTIMAL
-        prlp.solution_available = true
-        prlp.solution_vector = zeros(SCIP.SCIP_Real, prlp.dimension)
-        prlp.solution_objective = objective_value(model)
-        for i in 1:(prlp.dimension)
-            prlp.solution_vector[i] = value(variable_by_name(model, "C$(i)"))
-        end
-    end
-end
 """
     PRLPsetSolvingAlgorithm(prlp::PRLP, algorithm::PRLPsolveAlgorithm)
 
@@ -365,8 +349,6 @@ function PRLPsolve(prlp::PRLP)
         PRLPsolveWithBarrier(prlp)
     elseif prlp.solve_algorithm == DUAL_SIMPLEX
         PRLPsolveWithDualSimplex(prlp)
-    elseif prlp.solve_algorithm == HIGHS
-        PRLPsolveWithHIGHS(prlp)
     else
         throw("Unknown solving algorithm")
     end
@@ -479,6 +461,6 @@ function lpi_termination_status(lpi::CPtr{SCIP.SCIP_LPI})::TerminationStatus
     if is_true(SCIP.SCIPlpiExistsPrimalRay(lpi))
         return LPI_UNBOUNDED
     end
-    @error "Undandled termination status" SCIP.SCIPlpiGetInternalStatus(lpi)
+    @error "Undandled termination status. Status code $(SCIP.SCIPlpiGetInternalStatus(lpi))"
     throw("Undandled termination status")
 end
