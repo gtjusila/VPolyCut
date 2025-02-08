@@ -462,5 +462,5 @@ function lpi_termination_status(lpi::CPtr{SCIP.SCIP_LPI})::TerminationStatus
         return LPI_UNBOUNDED
     end
     @error "Undandled termination status. Status code $(SCIP.SCIPlpiGetInternalStatus(lpi))"
-    throw("Undandled termination status")
+    return LPI_NOT_SOLVED
 end
