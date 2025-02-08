@@ -228,3 +228,8 @@ function get_problem_variables_pointers(tableau::Tableau)::Vector{Ptr{SCIP.SCIP_
     end
     return pointers
 end
+
+function get_tableau_density(scip::SCIP.SCIPData, tableau::Tableau)::Float64
+    return sum([!is_zero(scip, i) ? 1 : 0 for i in tableau.tableau_matrix]) /
+           length(tableau.tableau_matrix)
+end

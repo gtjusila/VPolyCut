@@ -140,6 +140,7 @@ function vpolyhedralcut_separation(sepa::VPCSeparator)
     @debug "Number of rays: $(num_rays(sepa.point_ray_collection))"
 
     # Step 4: Setup cutpool
+    @info "Tableau Density $(get_tableau_density(sepa.scipd, sepa.complemented_tableau.complemented_tableau))"
     sepa.cutpool = CutPool(; tableau=sepa.complemented_tableau, scip=scip)
 
     # Step 5: Verify that the disjunctive lower bound is strictly larger than the current LP

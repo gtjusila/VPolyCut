@@ -56,6 +56,8 @@ Constructors:
     # Statistics
     "Termination Message"
     termination_message::String = ""
+    "Tableau Density"
+    tableau_density::SCIP.SCIP_Real = 0.0
     "Disjunctive Lower Bound"
     disjunctive_lower_bound::SCIP.SCIP_Real = 0.0
     "Number of Fractional Variables"

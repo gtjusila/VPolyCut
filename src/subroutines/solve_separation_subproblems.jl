@@ -124,18 +124,6 @@ function solve_separation_subproblems(sepa::VPCSeparator)
 
     # Check if disjunctive lower bound is worse than optimal LP objective
     p_star = argmin(point -> get_objective_value(point), point_collection_in_nonbasic_space)
-    disjunctive_lower_bound = get_objective_value(p_star)
-    sepa.disjunctive_lower_bound = get_orig_objective_value(p_star)
-    @debug "Disjunctive Lower Bound is: $(disjunctive_lower_bound) and LP Objective is: $(sepa.lp_obj)"
-    if !is_GT(scip, disjunctive_lower_bound, sepa.lp_obj)
-        # In this case cbar criterium does not apply and should be ignored
-        sepa.cbar_test = true
-        throw(FailedDisjunctiveLowerBoundTest())
-    end
-
-    model = MOI.FileFormats.Model(; format=MOI.FileFormats.FORMAT_LP)
-    MOI.copy_to(model, separating_lp)
-    MOI.write_to_file(model, "separating_jump.lp")
 
     # check if the LP is feasible by optimizing using all 0s objective
     @objective(separating_lp, Min, 0)
