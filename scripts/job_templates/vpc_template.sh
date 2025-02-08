@@ -29,4 +29,4 @@ fi
 IFS=$'\t' read -r id instance_path output_path <<< "$line"
 
 # Run the Julia script with the extracted parameters
-julia --project /home/htc/gtjusila/Project/VPolyCut/scripts/vpc.jl -i="$instance_path" -o="$output_path" 
+julia --project /home/htc/gtjusila/Project/VPolyCut/scripts/vpc.jl -i="$instance_path" -o="$output_path" -c="{{{CONFIG_PATH}}}" 

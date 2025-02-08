@@ -1,3 +1,4 @@
+import MathOptInterface as MOI
 function solve_separation_subproblems(sepa::VPCSeparator)
     # Setup aliases
     scip = sepa.scipd
@@ -12,11 +13,12 @@ function solve_separation_subproblems(sepa::VPCSeparator)
     @debug "Using simplex strategy $(sepa.parameters.lp_solving_method) for HiGHS"
     @debug "Zeroing heuristic is $(sepa.parameters.zeroing_heuristic)"
     separating_lp = Model(HiGHS.Optimizer)
-    JuMP.set_optimizer_attribute(separating_lp, "output_flag", false)
     JuMP.set_optimizer_attribute(
         separating_lp, "simplex_strategy", sepa.parameters.lp_solving_method
     )
-
+    JuMP.set_optimizer_attribute(
+        separating_lp, "output_flag", false
+    )
     # First, translate the points so that the lp_solution is at the origin 
     projected_point_collection = get_points(sepa.point_ray_collection)
     point_collection_in_nonbasic_space = map(projected_point_collection) do corner_point
@@ -122,14 +124,6 @@ function solve_separation_subproblems(sepa::VPCSeparator)
 
     # Check if disjunctive lower bound is worse than optimal LP objective
     p_star = argmin(point -> get_objective_value(point), point_collection_in_nonbasic_space)
-    disjunctive_lower_bound = get_objective_value(p_star)
-    sepa.disjunctive_lower_bound = get_orig_objective_value(p_star)
-    @debug "Disjunctive Lower Bound is: $(disjunctive_lower_bound) and LP Objective is: $(sepa.lp_obj)"
-    if !is_GT(scip, disjunctive_lower_bound, sepa.lp_obj)
-        # In this case cbar criterium does not apply and should be ignored
-        sepa.cbar_test = true
-        throw(FailedDisjunctiveLowerBoundTest())
-    end
 
     # check if the LP is feasible by optimizing using all 0s objective
     @objective(separating_lp, Min, 0)
@@ -159,18 +153,42 @@ function solve_separation_subproblems(sepa::VPCSeparator)
     p_star = argmin(point -> get_objective_value(point), point_collection_in_nonbasic_space)
     @objective(separating_lp, Min, sum(x[i] * p_star[i] for i in 1:problem_dimension))
     optimize!(separating_lp)
+    model = MOI.FileFormats.Model(; format=MOI.FileFormats.FORMAT_LP)
+    MOI.copy_to(model, separating_lp)
+    MOI.write_to_file(model, "separating_jump.lp")
     push!(sepa.prlp_solves, get_solve_stat(separating_lp, "p_star"))
     @debug "Finished P* Optimization"
 
-    if is_solved_and_feasible(separating_lp)
+    if termination_status(separating_lp) == TIME_LIMIT
+        @debug "P* optimization hit time limit"
+    end
+
+    if primal_status(separating_lp) == MOI.FEASIBLE_POINT
         cut = get_cut_from_separating_solution(sepa, value.(x))
         push!(sepa.cutpool, cut)
     else
-        error("p* as objective is unbounded")
+        # Special strategy try to first reestablish feasibility before optimizing
+        # We do this because this is if we cannot pass through this step we cannot generate any cut
+        @debug "Trying to reestablish feasiblity"
+        set_time_limit_sec(separating_lp, 300.0)
+        @objective(separating_lp, Min, 0)
+        optimize!(separating_lp)
+        set_time_limit_sec(separating_lp, 30.0)
+        @objective(separating_lp, Min, sum(x[i] * p_star[i] for i in 1:problem_dimension))
+        optimize!(separating_lp)
+        push!(sepa.prlp_solves, get_solve_stat(separating_lp, "p_star_reopt"))
+        @debug "Finished P* Optimization"
+        if primal_status(separating_lp) == MOI.FEASIBLE_POINT
+            cut = get_cut_from_separating_solution(sepa, value.(x))
+            push!(sepa.cutpool, cut)
+        else
+            throw(PStarInfeasible())
+        end
     end
 
     if !is_EQ(scip, objective_value(separating_lp), 1.0)
         @error "Cannot find cut tight at p_star is not 1.0"
+        throw(PStarNotTight())
     end
 
     # Now transition to PRLP= 

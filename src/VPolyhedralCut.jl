@@ -26,10 +26,15 @@ include("datastructures/PointRayCollection.jl")
 include("datastructures/CornerPolyhedron.jl")
 
 # Utilities
+include("utilities/CPointer.jl")
 include("utilities/sepa_row_helpers.jl")
 include("utilities/log_helpers.jl")
 include("utilities/numerical_methods.jl")
 include("utilities/eliminate_duplicate_rows.jl")
+include("utilities/indicator_connector.jl")
+
+# PRLP
+include("prlp/PRLPstructures.jl")
 
 # Branch and Bound
 include("branchandbound/Node.jl")
@@ -44,9 +49,11 @@ include("VPCStructures.jl")
 
 # Parts 
 include("subroutines/collect_point_rays.jl")
-include("subroutines/solve_separation_subproblems.jl")
+#include("subroutines/solve_separation_subproblems.jl")
+include("subroutines/solve_separation_subproblems_with_scip.jl")
 
 # Separators
+include("IndicatorSeparator.jl")
 include("IntersectionSeparator.jl")
 include("VPCexeclp.jl")
 
