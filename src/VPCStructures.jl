@@ -35,6 +35,17 @@ is passed during the creation of the VPCSeparator.
     time_limit::Int = 2^29
 end
 
+@enum StatisticsKey begin
+    CALLED
+    PRLP_SOLVES
+    TABLEAU_DENSITY
+    DISJUNCTIVE_LOWER_BOUND
+    N_FRACTIONAL_VARIABLES
+    CBAR_TEST
+    PRLP_SOLVE_METHOD
+    LP_OBJ
+end
+
 """
 VPCSeparator
 
@@ -44,53 +55,41 @@ Constructors:
 - `VPCSeparator(scipd::SCIP.SCIPData, params::VPCParameters)`: Create a new VPCSeparator
 """
 @kwdef mutable struct VPCSeparator <: SCIP.AbstractSeparator
+    # Shared Data among the functions
     "Pointer to SCIP"
     scipd::SCIP.SCIPData
-    "Number of times the seperation routine have been called"
-    called::Int = 0
     "Have any cut been found during the round?"
     separated::Bool = false
     "SEPA Parameters"
     parameters::VPCParameters
-
-    # Statistics
-    "Termination Message"
-    termination_message::String = ""
-    "Tableau Density"
-    tableau_density::SCIP.SCIP_Real = 0.0
-    "Disjunctive Lower Bound"
-    disjunctive_lower_bound::SCIP.SCIP_Real = 0.0
-    "Number of Fractional Variables"
-    n_fractional_variables::Int = 0
-    "PRLP Solves Statistics"
-    prlp_solves::Vector{Dict{String,Any}} = []
-    "Cbar Test"
-    cbar_test::Bool = true
+    "LP Solution"
+    lp_sol::Union{Nothing,Vector{SCIP.SCIP_Real}} = nothing
     "Start Time"
     start_time::Float64 = 0.0
-    "Solve Method"
-    solve_method::PRLPsolveAlgorithm = PRIMAL_SIMPLEX
     "Complemented Tableau"
     complemented_tableau::Union{Nothing,ComplementedTableau} = nothing
     "Disjunction"
-    disjunction::Vector{Node} = []
+    disjunction::Disjunction = Disjunction()
     "PointRayCollection"
     point_ray_collection::Union{Nothing,PointRayCollection} = nothing
     "Projection"
     projection::Union{Nothing,Projection} = nothing
     "Cut Pool"
     cutpool::Union{Nothing,CutPool} = nothing
-    "Separating Problem"
-    separating_problem::Union{Nothing,AbstractModel} = nothing
-    "LP Solution"
-    lp_sol::Union{Nothing,Vector{SCIP.SCIP_Real}} = nothing
-    "LP solution objective value"
-    lp_obj::Union{Nothing,SCIP.SCIP_Real} = nothing
+
+    # Statistics
+    statistics::Dict{StatisticsKey,Any} = Dict()
+
+    # Return message
+    "Termination Message"
+    termination_message::String = ""
 end
 
 # Constructor
 function VPCSeparator(scipd::SCIP.SCIPData, params::VPCParameters)
-    return VPCSeparator(; scipd=scipd, parameters=params)
+    obj = VPCSeparator(; scipd=scipd, parameters=params)
+    obj.statistics[CALLED] = 0
+    return obj
 end
 
 # Include Helper
@@ -102,7 +101,7 @@ function include_vpolyhedral_sepa(
     log_directory="",
     zeroing_heuristic=false,
     lp_solving_method=4,
-    time_limit=2^29
+    time_limit=typemax(Float64)
 )
     parameters = VPCParameters(;
         n_leaves=n_leaves,

@@ -34,10 +34,11 @@ end
 function _exec_lp(sepa::VPCSeparator)
     # Aliasing for easier call
     scip = sepa.scipd
-    sepa.start_time = time()
-    # Increase the call counter and set separated to false (since no cut have been found)
+
+    # Initialization: start timer, set separated to false, and increment call count 
     @debug "VPC Separator Called"
-    sepa.called += 1
+    sepa.statistics[CALLED] += 1
+    sepa.start_time = time()
     sepa.separated = false
 
     # Check Preconditions and handle accordingly
@@ -60,72 +61,69 @@ function _exec_lp(sepa::VPCSeparator)
     try
         # Call Separation Subroutine
         vpolyhedralcut_separation(sepa)
-    catch e
-        print(e)
+
+        if sepa.separated
+            sepa.termination_message = "CUT_FOUND"
+            return SCIP.SCIP_SEPARATED
+        else
+            return SCIP.SCIP_DIDNOTFIND
+        end
+    catch error
         error_occurred = false
-        if SCIP.SCIPinProbing(scip) == 1
+
+        if is_true(SCIP.SCIPinProbing(scip))
             SCIP.SCIPendProbing(scip)
         end
-        if e isa TimeLimitExceeded
+
+        if error isa TimeLimitExceeded
             @debug "Time Limit Exceeded"
             error_occurred = true
             sepa.termination_message = "TIME_LIMIT_EXCEEDED"
-            # Do nothing
-        elseif e isa FailedToProvePRLPFeasibility
+        elseif error isa FailedToProvePRLPFeasibility
             @debug "Failed to prove PRLP Feasibility"
             error_occurred = true
             sepa.termination_message = "FAILED_TO_PROVE_PRLP_FEASIBILITY"
-        elseif e isa FailedDisjunctiveLowerBoundTest
+        elseif error isa FailedDisjunctiveLowerBoundTest
             @debug "Failed Disjunctive Lower Bound Test"
             error_occurred = true
             sepa.termination_message = "FAILED_DISJUNCTIVE_LOWER_BOUND_TEST"
-        elseif e isa PStarInfeasible
+        elseif error isa PStarInfeasible
             @debug "PStar Is Infeasible"
             error_occurred = true
             sepa.termination_message = "PSTAR_INFEASIBLE"
-        elseif e isa PStarNotTight
+        elseif error isa PStarNotTight
             @debug "PStar Not Tight"
             error_occurred = true
             sepa.termination_message = "PSTAR_NOT_TIGHT"
         else
-            rethrow(e)
+            rethrow(error)
         end
-    end
-
-    if sepa.separated
-        if !error_occurred
-            sepa.termination_message = "CUT_FOUND"
-        end
-        return SCIP.SCIP_SEPARATED
-    else
-        if !error_occurred
-            sepa.termination_message = "NO_CUT_FOUND"
-        end
-        return SCIP.SCIP_DIDNOTRUN
+        return SCIP.SCIP_DIDNOTFIND
     end
 end
 
 function vpolyhedralcut_separation(sepa::VPCSeparator)
-    #
-    # Preparation
-    #
+    # Aliasing for easier call
     scip = sepa.scipd
 
     # If cut limit is -1 or -2 convert them to the actual limit 
     # We do the conversion here because for option -2 we need the number of fractional variables
-    if sepa.parameters.cut_limit == -1 || sepa.parameters.cut_limit == -2
-        sepa.parameters.cut_limit = get_cut_limit(sepa, sepa.parameters)
+    if sepa.parameters.cut_limit == -1
+        sepa.parameters.cut_limit = typemax(Int)
+    elseif sepa.parameters.cut_limit == -2
+        sepa.parameters.cut_limit = SCIP.SCIPgetNLPBranchCands(scip)
     end
+
     # Capture fractional variables statistic
-    sepa.n_fractional_variables = SCIP.SCIPgetNLPBranchCands(scip)
+    sepa.statistics[N_FRACTIONAL_VARIABLES] = SCIP.SCIPgetNLPBranchCands(scip)
 
     # Step 0: Get complemented tableau
-    sepa.lp_obj = SCIP.SCIPgetSolOrigObj(scip, C_NULL)
+    sepa.statistics[LP_OBJ] = SCIP.SCIPgetSolOrigObj(scip, C_NULL)
     construct_complemented_tableau(sepa)
 
     # Step 1: Get Disjunction
     @debug "Getting Disjunction by Branch and Bound"
-    get_disjunction_by_branchandbound(sepa)
+    sepa.disjunction = get_disjunction_by_branchandbound(scip, sepa.parameters.n_leaves)
 
     #
     # Main Algorithm 
@@ -156,27 +154,7 @@ function vpolyhedralcut_separation(sepa::VPCSeparator)
     solve_separation_subproblems(sepa)
 end
 
-function get_cut_limit(
-    sepa::VPCSeparator, sepa_parameter::VPCParameters
-)
-    if sepa_parameter.cut_limit == -1
-        return typemax(Int)
-    elseif sepa_parameter.cut_limit == -2
-        return SCIP.SCIPgetNLPBranchCands(sepa.scipd)
-    else
-        return sepa_parameter.cut_limit
-    end
-end
-
 function construct_complemented_tableau(sepa::VPCSeparator)
     original_tableau = construct_tableau_with_constraint_matrix(sepa.scipd)
     sepa.complemented_tableau = ComplementedTableau(original_tableau)
-end
-
-function get_disjunction_by_branchandbound(sepa::VPCSeparator)
-    branchandbound = BranchAndBound(
-        sepa.scipd; max_leaves=sepa.parameters.n_leaves
-    )
-    execute_branchandbound(branchandbound)
-    sepa.disjunction = get_leaves(branchandbound)
 end

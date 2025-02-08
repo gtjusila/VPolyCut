@@ -44,6 +44,9 @@ include("branchandbound/BranchAndBound.jl")
 include("branchandbound/scip_connector.jl")
 include("branchandbound/execute.jl")
 
+# Disjunction
+include("disjunction/structures.jl")
+include("disjunction/branch_and_bound_adaptor.jl")
 # Datastructures for VPolyhedralCut
 include("VPCStructures.jl")
 
