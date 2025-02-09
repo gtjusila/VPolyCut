@@ -65,7 +65,7 @@ function construct_non_basic_ray(
 )::Union{Ray,Nothing}
     direction = 1.0
 
-    if abs(get_ub(var)-get_lb(var)) < 1e-7
+    if abs(get_ub(var) - get_lb(var)) < 1e-7
         return nothing
     end
     if is_at_upper_bound(var)
@@ -93,7 +93,9 @@ function construct_non_basic_ray(
     for row_idx in 1:get_nbasis(tableau)
         basic_var = get_var_from_row(tableau, row_idx)
         basic_col = get_column_from_var(tableau, basic_var)
-        # The assumption that the coefficient of the basic variable is +1 may be broken in the complemented tableau 
+        # When we do point ray collection, we compliment the columns in according to the original tableau of the node
+        # it may be the case that a basic column is complemented in this case the assumption
+        # that the basic column coefficients is +1 is not valid, i.e. the last term in the following line may be -1
         value = -direction * tableau[row_idx, col_idx] * tableau[row_idx, basic_col]
         ray[basic_col] = value
     end

@@ -66,8 +66,10 @@ Constructors:
     lp_sol::Union{Nothing,Vector{SCIP.SCIP_Real}} = nothing
     "Start Time"
     start_time::Float64 = 0.0
-    "Complemented Tableau"
-    complemented_tableau::Union{Nothing,ComplementedTableau} = nothing
+    "LP Tableau"
+    tableau::Union{Nothing,Tableau} = nothing
+    "NonBasicSpace"
+    nonbasic_space::Union{Nothing,NonBasicSpace} = nothing
     "Disjunction"
     disjunction::Disjunction = Disjunction()
     "PointRayCollection"
@@ -89,6 +91,8 @@ end
 function VPCSeparator(scipd::SCIP.SCIPData, params::VPCParameters)
     obj = VPCSeparator(; scipd=scipd, parameters=params)
     obj.statistics[CALLED] = 0
+    obj.statistics[CBAR_TEST] = true
+    obj.statistics[PRLP_SOLVE_METHOD] = "PRIMAL_SIMPLEX"
     return obj
 end
 

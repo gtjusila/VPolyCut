@@ -122,6 +122,21 @@ function get_bounds(
 end
 
 """
+    apply_bound_changes(term::DisjunctiveTerm, scip::SCIP.SCIPData)
+
+scip should be in probing mode, this function will apply the bounds in the disjunctive term to the scip data
+"""
+function apply_bound_changes(term::DisjunctiveTerm, scip::SCIP.SCIPData)
+    @assert is_true(SCIP.SCIPinProbing(scip)) "SCIP should be in probing mode"
+    for (var, lower) in term.lower_bounds
+        SCIP.SCIPchgVarLbProbing(scip, var, lower)
+    end
+    for (var, upper) in term.upper_bounds
+        SCIP.SCIPchgVarUbProbing(scip, var, upper)
+    end
+end
+
+"""
     Disjunction
 
 A disjunction is a set of disjunctive terms. It have one member variable `terms` which is a vector of disjunctive terms.

@@ -74,13 +74,13 @@ function main()
     result["final_lp_obj"] = SCIP.SCIPgetDualboundRoot(scip)
     result["sepa_termination_message"] = vpcsepa.termination_message
     result["number_of_cuts"] = length(vpcsepa.cutpool)
-    result["disjunctive_lower_bound"] = vpcsepa.disjunctive_lower_bound
-    result["n_fractional_variables"] = vpcsepa.n_fractional_variables
+    result["disjunctive_lower_bound"] = vpcsepa.statistics[VPolyhedralCut.DISJUNCTIVE_LOWER_BOUND]
+    result["n_fractional_variables"] = vpcsepa.statistics[VPolyhedralCut.N_FRACTIONAL_VARIABLES]
     result["n_leaves"] = 64
-    result["prlp_solves"] = vpcsepa.prlp_solves
-    result["cbar_test"] = vpcsepa.cbar_test
+    result["prlp_solves"] = vpcsepa.statistics[VPolyhedralCut.PRLP_SOLVES]
+    result["cbar_test"] = vpcsepa.statistics[VPolyhedralCut.CBAR_TEST]
     result["lp_solving_method"] = 4
-    result["prlp_solve_method"] = vpcsepa.solve_method
+    result["prlp_solve_method"] = vpcsepa.statistics[VPolyhedralCut.PRLP_SOLVE_METHOD]
 
     result_path = joinpath(output_path, "results.json")
     open(result_path, "w") do io

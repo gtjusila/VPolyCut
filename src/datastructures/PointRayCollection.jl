@@ -28,17 +28,8 @@ end
 @forward CornerPoint.point Base.size, Base.getindex, Base.setindex!
 
 @kwdef mutable struct PointRayCollection
-    scip::SCIP.SCIPData
     points::Vector{CornerPoint} = []
     rays::Vector{Ray} = []
-    disposed::Int = 0
-    projection::Union{Projection,Nothing} = nothing
-end
-
-function PointRayCollection(
-    scip::SCIP.SCIPData; projection::Projection=nothing
-)::PointRayCollection
-    return PointRayCollection(scip, [], [], 0, projection)
 end
 
 get_points(collection::PointRayCollection) = collection.points
@@ -52,23 +43,10 @@ function add_point(
     objective_value::SCIP.SCIP_Real,
     orig_objective_value::SCIP.SCIP_Real
 )
-    if !isnothing(collection.projection)
-        new_point = project(collection.projection, new_point)
-    end
-
-    for point in get_points(collection)
-        if is_zero(collection.scip, norm(get_point(point) - new_point))
-            return nothing
-        end
-    end
-
     push!(collection.points, CornerPoint(new_point, objective_value, orig_objective_value))
 end
 
 function add_ray(collection::PointRayCollection, new_ray::Ray)
-    if !isnothing(collection.projection)
-        new_ray = project(collection.projection, new_ray)
-    end
     push!(collection.rays, new_ray)
 end
 
