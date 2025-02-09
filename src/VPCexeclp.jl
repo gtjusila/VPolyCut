@@ -123,9 +123,7 @@ function vpolyhedralcut_separation(sepa::VPCSeparator)
     sepa.statistics[LP_OBJ] = SCIP.SCIPgetSolOrigObj(scip, C_NULL)
     sepa.tableau = construct_tableau_with_constraint_matrix(scip)
     sepa.nonbasic_space = NonBasicSpace(sepa.tableau)
-    projection = create_projection_to_nonbasic_space(sepa.tableau)
-    complemented_tableau = ComplementedTableau(sepa.tableau)
-    @info sepa.nonbasic_space.complemented_columns
+
     # Step 2: Get Disjunction
     @debug "Getting Disjunction by Branch and Bound"
     get_disjunction_by_branchandbound(sepa)
