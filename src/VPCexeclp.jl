@@ -119,58 +119,72 @@ function vpolyhedralcut_separation(sepa::VPCSeparator)
     # Capture fractional variables statistic
     sepa.n_fractional_variables = SCIP.SCIPgetNLPBranchCands(scip)
 
-    # Step 0: Get complemented tableau
-    sepa.lp_obj = SCIP.SCIPgetSolOrigObj(scip, C_NULL)
-    construct_complemented_tableau(sepa)
-
-    # Step 1: Get Disjunction
+    # Step 1: Get Tableau
+    sepa.statistics[LP_OBJ] = SCIP.SCIPgetSolOrigObj(scip, C_NULL)
+    sepa.tableau = construct_tableau_with_constraint_matrix(scip)
+    sepa.nonbasic_space = NonBasicSpace(sepa.tableau)
+    projection = create_projection_to_nonbasic_space(sepa.tableau)
+    complemented_tableau = ComplementedTableau(sepa.tableau)
+    @info sepa.nonbasic_space.complemented_columns
+    # Step 2: Get Disjunction
     @debug "Getting Disjunction by Branch and Bound"
     get_disjunction_by_branchandbound(sepa)
 
     #
     # Main Algorithm 
     #
-
-    # Step 2: Setup projection used and get the points and rays from the disjunctions
-    sepa.projection = create_projection_to_nonbasic_space(sepa.complemented_tableau)
-
     # Step 3: Collect Point Ray
-    get_point_ray_collection(sepa)
+    sepa.point_ray_collection = get_point_ray_collection(
+        scip, sepa.disjunction
+    )
     @debug "Number of points: $(num_points(sepa.point_ray_collection))"
     @debug "Number of rays: $(num_rays(sepa.point_ray_collection))"
 
+    # Step 4: Project Points and Rays to NonBasic Space
+    projected_points = [
+        project_point_to_nonbasic_space(sepa.nonbasic_space, get_point(point))
+        for point in get_points(sepa.point_ray_collection)
+    ]
+    projected_rays = [
+        project_ray_to_nonbasic_space(sepa.nonbasic_space, ray)
+        for ray in get_rays(sepa.point_ray_collection)
+    ]
+
     # Step 4: Setup cutpool
-    @info "Tableau Density $(get_tableau_density(sepa.scipd, sepa.complemented_tableau.complemented_tableau))"
-    sepa.cutpool = CutPool(; tableau=sepa.complemented_tableau, scip=scip)
+    sepa.cutpool = CutPool(; tableau=sepa.tableau, scip=scip)
 
     # Step 5: Verify that the disjunctive lower bound is strictly larger than the current LP
-    sepa.disjunctive_lower_bound = minimum(
-        x -> get_orig_objective_value(x), get_points(sepa.point_ray_collection)
-    )
-    if is_LE(scip, sepa.disjunctive_lower_bound, sepa.lp_obj)
+    pstar = argmin(x -> get_orig_objective_value(x), get_points(sepa.point_ray_collection))
+    sepa.statistics[DISJUNCTIVE_LOWER_BOUND] = get_orig_objective_value(pstar)
+    pstar = project_point_to_nonbasic_space(sepa.nonbasic_space, get_point(pstar))
+    if is_LE(scip, sepa.statistics[DISJUNCTIVE_LOWER_BOUND], sepa.statistics[LP_OBJ])
         @debug "Disjunctive Lower Bound is not strictly larger than the current LP"
         throw(FailedDisjunctiveLowerBoundTest())
     end
 
     # Step 6: Solve Separation Problem
-    solve_separation_subproblems(sepa)
-end
+    sepa.statistics[PRLP_SOLVES] = []
+    separating_solutions = solve_separation_subproblems(
+        scip, projected_points, projected_rays, pstar,
+        sepa.statistics[PRLP_SOLVES], sepa.parameters.cut_limit,
+        900.0
+    )
+    println(separating_solutions)
 
-function get_cut_limit(
-    sepa::VPCSeparator, sepa_parameter::VPCParameters
-)
-    if sepa_parameter.cut_limit == -1
-        return typemax(Int)
-    elseif sepa_parameter.cut_limit == -2
-        return SCIP.SCIPgetNLPBranchCands(sepa.scipd)
-    else
-        return sepa_parameter.cut_limit
+    # Step 7: Process Cuts and Add to SCIP
+    for solution in separating_solutions
+        cut = get_cut_from_separating_solution(
+            scip, sepa.tableau, sepa.nonbasic_space, solution
+        )
+        push!(sepa.cutpool, cut)
     end
+    add_all_cuts!(sepa.cutpool, sepa)
 end
 
-function construct_complemented_tableau(sepa::VPCSeparator)
-    original_tableau = construct_tableau_with_constraint_matrix(sepa.scipd)
-    sepa.complemented_tableau = ComplementedTableau(original_tableau)
+function construct_complemented_tableau(scipd::SCIP.SCIPData)
+    original_tableau = construct_tableau_with_constraint_matrix(scipd)
+    complemented_tableau = ComplementedTableau(original_tableau)
+    return complemented_tableau
 end
 
 function get_disjunction_by_branchandbound(sepa::VPCSeparator)

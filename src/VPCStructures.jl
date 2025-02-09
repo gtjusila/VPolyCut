@@ -68,10 +68,10 @@ Constructors:
     cbar_test::Bool = true
     "Start Time"
     start_time::Float64 = 0.0
-    "Solve Method"
-    solve_method::PRLPsolveAlgorithm = PRIMAL_SIMPLEX
-    "Complemented Tableau"
-    complemented_tableau::Union{Nothing,ComplementedTableau} = nothing
+    "LP Tableau"
+    tableau::Union{Nothing,Tableau} = nothing
+    "NonBasicSpace"
+    nonbasic_space::Union{Nothing,NonBasicSpace} = nothing
     "Disjunction"
     disjunction::Vector{Node} = []
     "PointRayCollection"
@@ -90,7 +90,11 @@ end
 
 # Constructor
 function VPCSeparator(scipd::SCIP.SCIPData, params::VPCParameters)
-    return VPCSeparator(; scipd=scipd, parameters=params)
+    obj = VPCSeparator(; scipd=scipd, parameters=params)
+    obj.statistics[CALLED] = 0
+    obj.statistics[CBAR_TEST] = true
+    obj.statistics[PRLP_SOLVE_METHOD] = "PRIMAL_SIMPLEX"
+    return obj
 end
 
 # Include Helper

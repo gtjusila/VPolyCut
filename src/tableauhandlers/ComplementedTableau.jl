@@ -3,8 +3,7 @@ using Lazy
 
 # The complemented tableau is a tableau of a problem in SCIP general form 
 # with the following additionals rules
-# - If a column variable x is at upper bound then replace the variable with x' := -x in the tableau
-# - If a row/slack variable y is at an lower bound (i.e. maximal row activity) then replace the variable with y' := -y in the tableau
+# - If a variable/slack x is at upper bound then replace the variable with x' := -x in the tableau
 # WARNING! The ConstraintMatrix does not get complemented
 struct ComplementedTableau
     complemented_tableau::Tableau
@@ -45,8 +44,6 @@ Create a ComplementedTableau structure that wraps around an existing tableau
 and modify the existing tableau accordingly
 """
 function ComplementedTableau(tableau::Tableau)
-    noriginalcols = get_noriginalcols(tableau)
-    noriginalrows = get_noriginalrows(tableau)
     complemented_columns = Vector{Int}()
 
     for i in 1:get_nvars(tableau)

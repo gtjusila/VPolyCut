@@ -24,6 +24,7 @@ include("datastructures/Projection.jl")
 include("datastructures/CutPool.jl")
 include("datastructures/PointRayCollection.jl")
 include("datastructures/CornerPolyhedron.jl")
+include("datastructures/NonBasicSpace.jl")
 
 # Utilities
 include("utilities/CPointer.jl")
@@ -43,6 +44,10 @@ include("branchandbound/BranchingRule.jl")
 include("branchandbound/BranchAndBound.jl")
 include("branchandbound/scip_connector.jl")
 include("branchandbound/execute.jl")
+
+# Disjunction
+include("disjunction/structures.jl")
+include("disjunction/branch_and_bound_adaptor.jl")
 
 # Datastructures for VPolyhedralCut
 include("VPCStructures.jl")

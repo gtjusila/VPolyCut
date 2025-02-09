@@ -17,7 +17,7 @@ function get_rhs(cut::Cut)
 end
 
 @kwdef mutable struct CutPool <: AbstractVector{Cut}
-    tableau::ComplementedTableau
+    tableau::Tableau
     scip::SCIP.SCIPData
     cuts::Vector{Cut} = []
 end
@@ -33,6 +33,7 @@ function add_all_cuts!(cutpool::CutPool, sepa::T) where {T<:SCIP.AbstractSeparat
             get_problem_variables_pointers(cutpool.tableau),
             get_rhs(cut)
         )
+        SCIP.@SCIP_CALL SCIP.SCIPprintRow(cutpool.scip, row[], C_NULL)
         SCIP.@SCIP_CALL SCIP.SCIPreleaseRow(cutpool.scip, row)
     end
 end
