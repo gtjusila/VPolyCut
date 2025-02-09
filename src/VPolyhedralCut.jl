@@ -54,7 +54,6 @@ include("VPCStructures.jl")
 
 # Parts 
 include("subroutines/collect_point_rays.jl")
-#include("subroutines/solve_separation_subproblems.jl")
 include("subroutines/solve_separation_subproblems_with_scip.jl")
 
 # Separators

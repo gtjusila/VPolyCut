@@ -75,7 +75,7 @@ function solve_separation_subproblems(sepa::VPCSeparator)
     frac = dot(c_bar, p_star)
     check = c_bar / frac
     checkvar = Dict{typeof(x[1]),Float64}(x[i] => check[i] for i in 1:problem_dimension)
-    p = primal_feasibility_report(separating_lp, checkvar; atol=1e-7)
+    p = primal_feasibility_report(separating_lp, checkvar; atol = 1e-7)
     if (length(p) > 0)
         sepa.cbar_test = false
     end
@@ -153,7 +153,7 @@ function solve_separation_subproblems(sepa::VPCSeparator)
     p_star = argmin(point -> get_objective_value(point), point_collection_in_nonbasic_space)
     @objective(separating_lp, Min, sum(x[i] * p_star[i] for i in 1:problem_dimension))
     optimize!(separating_lp)
-    model = MOI.FileFormats.Model(; format=MOI.FileFormats.FORMAT_LP)
+    model = MOI.FileFormats.Model(; format = MOI.FileFormats.FORMAT_LP)
     MOI.copy_to(model, separating_lp)
     MOI.write_to_file(model, "separating_jump.lp")
     push!(sepa.prlp_solves, get_solve_stat(separating_lp, "p_star"))
@@ -195,7 +195,7 @@ function solve_separation_subproblems(sepa::VPCSeparator)
     a_bar = value.(x)
     @constraint(separating_lp, sum(x[i] * p_star[i] for i in 1:problem_dimension) == 1)
     r_bar = filter(ray -> !is_zero(scip, dot(a_bar, ray)), ray_collection)
-    sort!(r_bar; by=ray -> abs(get_obj(get_generating_variable(ray))))
+    sort!(r_bar; by = ray -> abs(get_obj(get_generating_variable(ray))))
     objective_tried = 0
     marked = fill(false, length(r_bar))
     start_time = time()
@@ -223,10 +223,6 @@ function solve_separation_subproblems(sepa::VPCSeparator)
         if elapsed_time > 1800
             break
         end
-    end
-
-    if length(sepa.cutpool) > 0
-        sepa.separated = true
     end
 
     add_all_cuts!(sepa.cutpool, sepa)

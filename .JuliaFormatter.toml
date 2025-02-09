@@ -2,4 +2,5 @@
 style = "blue"
 always_use_return = false
 trailing_comma = false
+whitespace_in_kwargs = true
 join_lines_based_on_source = true

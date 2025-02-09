@@ -23,27 +23,20 @@ is passed during the creation of the VPCSeparator.
     cut_limit::Int = -2
     "Maximum number of separation rounds"
     call_limit::Int = 1
-    "Should zeroing heuristic be used?"
-    zeroing_heuristic::Bool = false
     "Should log be written?"
     write_log::Bool = false
     "Directory to write cut log"
     log_directory::String = ""
-    "HiGHS LP Method"
-    lp_solving_method::Int = 4
     "Time Limit"
-    time_limit::Int = 2^29
+    time_limit::Float64 = typemax(64)
 end
 
-@enum StatisticsKey begin
-    CALLED
-    PRLP_SOLVES
-    TABLEAU_DENSITY
-    DISJUNCTIVE_LOWER_BOUND
-    N_FRACTIONAL_VARIABLES
-    CBAR_TEST
-    PRLP_SOLVE_METHOD
-    LP_OBJ
+@kwdef mutable struct VPCStatistics
+    called::Int = 0
+    prlp_solves_data::Vector{Any} = []
+    n_fractional_variables::Int = 0
+    cbar_test::Bool = true
+    prlp_solve_method::String = "PRIMAL_SIMPLEX"
 end
 
 """
@@ -58,29 +51,30 @@ Constructors:
     # Shared Data among the functions
     "Pointer to SCIP"
     scipd::SCIP.SCIPData
-    "Have any cut been found during the round?"
-    separated::Bool = false
+
     "SEPA Parameters"
     parameters::VPCParameters
-    "LP Solution"
-    lp_sol::Union{Nothing,Vector{SCIP.SCIP_Real}} = nothing
+    "SEPA statistics"
+    statistics::VPCStatistics = VPCStatistics()
+
     "Start Time"
     start_time::Float64 = 0.0
+    "LP Solution"
+    lp_sol::Union{Nothing,Vector{SCIP.SCIP_Real}} = nothing
+    "LP Objective"
+    lp_obj::SCIP.SCIP_Real = 0.0
+    "Disjunctive Lower bound"
+    disjunctive_lower_bound::SCIP.SCIP_Real = 0.0
     "LP Tableau"
     tableau::Union{Nothing,Tableau} = nothing
     "NonBasicSpace"
     nonbasic_space::Union{Nothing,NonBasicSpace} = nothing
     "Disjunction"
-    disjunction::Disjunction = Disjunction()
+    disjunction::Union{Nothing,Disjunction} = nothing
     "PointRayCollection"
     point_ray_collection::Union{Nothing,PointRayCollection} = nothing
-    "Projection"
-    projection::Union{Nothing,Projection} = nothing
     "Cut Pool"
     cutpool::Union{Nothing,CutPool} = nothing
-
-    # Statistics
-    statistics::Dict{StatisticsKey,Any} = Dict()
 
     # Return message
     "Termination Message"
@@ -89,32 +83,25 @@ end
 
 # Constructor
 function VPCSeparator(scipd::SCIP.SCIPData, params::VPCParameters)
-    obj = VPCSeparator(; scipd=scipd, parameters=params)
-    obj.statistics[CALLED] = 0
-    obj.statistics[CBAR_TEST] = true
-    obj.statistics[PRLP_SOLVE_METHOD] = "PRIMAL_SIMPLEX"
+    obj = VPCSeparator(; scipd = scipd, parameters = params)
     return obj
 end
 
 # Include Helper
 function include_vpolyhedral_sepa(
     scipd::SCIP.SCIPData;
-    n_leaves=2,
-    cut_limit=-2,
-    write_log=false,
-    log_directory="",
-    zeroing_heuristic=false,
-    lp_solving_method=4,
-    time_limit=typemax(Float64)
+    n_leaves = 2,
+    cut_limit = -2,
+    write_log = false,
+    log_directory = "",
+    time_limit = typemax(Float64)
 )
     parameters = VPCParameters(;
-        n_leaves=n_leaves,
-        cut_limit=cut_limit,
-        write_log=write_log,
-        log_directory=log_directory,
-        zeroing_heuristic=zeroing_heuristic,
-        lp_solving_method=lp_solving_method,
-        time_limit=time_limit
+        n_leaves = n_leaves,
+        cut_limit = cut_limit,
+        write_log = write_log,
+        log_directory = log_directory,
+        time_limit = time_limit
     )
 
     if write_log
@@ -125,7 +112,7 @@ function include_vpolyhedral_sepa(
 
     sepa = VPCSeparator(scipd, parameters)
     SCIP.include_sepa(
-        scipd.scip[], scipd.sepas, sepa; priority=9999, freq=0, usessubscip=true
+        scipd.scip[], scipd.sepas, sepa; priority = 9999, freq = 0, usessubscip = true
     )
     return sepa
 end

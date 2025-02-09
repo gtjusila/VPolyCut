@@ -37,9 +37,8 @@ function _exec_lp(sepa::VPCSeparator)
 
     # Initialization: start timer, set separated to false, and increment call count 
     @debug "VPC Separator Called"
-    sepa.statistics[CALLED] += 1
+    sepa.statistics.called += 1
     sepa.start_time = time()
-    sepa.separated = false
 
     # Check Preconditions and handle accordingly
     if SCIP.SCIPgetStage(scip) != SCIP.SCIP_STAGE_SOLVING
@@ -57,43 +56,36 @@ function _exec_lp(sepa::VPCSeparator)
 
     # Do everything in a try block to ensure time limit requirement
     @debug "Starting separation subroutine"
-    error_occurred = false
     try
         # Call Separation Subroutine
         vpolyhedralcut_separation(sepa)
 
-        if sepa.separated
+        if length(sepa.cutpool) > 0
             sepa.termination_message = "CUT_FOUND"
             return SCIP.SCIP_SEPARATED
         else
             return SCIP.SCIP_DIDNOTFIND
         end
     catch error
-        error_occurred = false
-
+        # If error occured while in probing mode, we need to cleanup
         if is_true(SCIP.SCIPinProbing(scip))
             SCIP.SCIPendProbing(scip)
         end
 
         if error isa TimeLimitExceeded
             @debug "Time Limit Exceeded"
-            error_occurred = true
             sepa.termination_message = "TIME_LIMIT_EXCEEDED"
         elseif error isa FailedToProvePRLPFeasibility
             @debug "Failed to prove PRLP Feasibility"
-            error_occurred = true
             sepa.termination_message = "FAILED_TO_PROVE_PRLP_FEASIBILITY"
         elseif error isa FailedDisjunctiveLowerBoundTest
             @debug "Failed Disjunctive Lower Bound Test"
-            error_occurred = true
             sepa.termination_message = "FAILED_DISJUNCTIVE_LOWER_BOUND_TEST"
         elseif error isa PStarInfeasible
             @debug "PStar Is Infeasible"
-            error_occurred = true
             sepa.termination_message = "PSTAR_INFEASIBLE"
         elseif error isa PStarNotTight
             @debug "PStar Not Tight"
-            error_occurred = true
             sepa.termination_message = "PSTAR_NOT_TIGHT"
         else
             rethrow(error)
@@ -115,10 +107,10 @@ function vpolyhedralcut_separation(sepa::VPCSeparator)
     end
 
     # Capture fractional variables statistic
-    sepa.statistics[N_FRACTIONAL_VARIABLES] = SCIP.SCIPgetNLPBranchCands(scip)
+    sepa.statistics.n_fractional_variables = SCIP.SCIPgetNLPBranchCands(scip)
 
     # Step 1: Get Tableau
-    sepa.statistics[LP_OBJ] = SCIP.SCIPgetSolOrigObj(scip, C_NULL)
+    sepa.lp_obj = SCIP.SCIPgetSolOrigObj(scip, C_NULL)
     sepa.tableau = construct_tableau_with_constraint_matrix(scip)
     sepa.nonbasic_space = NonBasicSpace(sepa.tableau)
 
@@ -148,22 +140,22 @@ function vpolyhedralcut_separation(sepa::VPCSeparator)
     ]
 
     # Step 4: Setup cutpool
-    sepa.cutpool = CutPool(; tableau=sepa.tableau, scip=scip)
+    sepa.cutpool = CutPool(; tableau = sepa.tableau, scip = scip)
 
     # Step 5: Verify that the disjunctive lower bound is strictly larger than the current LP
     pstar = argmin(x -> get_orig_objective_value(x), get_points(sepa.point_ray_collection))
-    sepa.statistics[DISJUNCTIVE_LOWER_BOUND] = get_orig_objective_value(pstar)
+    sepa.disjunctive_lower_bound = get_orig_objective_value(pstar)
     pstar = project_point_to_nonbasic_space(sepa.nonbasic_space, get_point(pstar))
-    if is_LE(scip, sepa.statistics[DISJUNCTIVE_LOWER_BOUND], sepa.statistics[LP_OBJ])
+    if is_LE(scip, sepa.disjunctive_lower_bound, sepa.lp_obj)
         @debug "Disjunctive Lower Bound is not strictly larger than the current LP"
         throw(FailedDisjunctiveLowerBoundTest())
     end
 
     # Step 6: Solve Separation Problem
-    sepa.statistics[PRLP_SOLVES] = []
+    sepa.statistics.prlp_solves_data = []
     separating_solutions = solve_separation_subproblems(
         scip, projected_points, projected_rays, pstar,
-        sepa.statistics[PRLP_SOLVES], sepa.parameters.cut_limit,
+        sepa.statistics.prlp_solves_data, sepa.parameters.cut_limit,
         900.0
     )
 

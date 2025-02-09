@@ -9,7 +9,7 @@ using VPolyhedralCut.SCIPJLUtils
 function main()
     ### Command Line Argument ###
     args_setting = ArgParseSettings(;
-        description="Solve the LP relaxation of the instance, do 1 round of vpc cuts and get the gap closed information. Output will be a results.json file containing gap information and scip solving statistic"
+        description = "Solve the LP relaxation of the instance, do 1 round of vpc cuts and get the gap closed information. Output will be a results.json file containing gap information and scip solving statistic"
     )
     @add_arg_table args_setting begin
         "--instance", "-i"
@@ -48,11 +48,10 @@ function main()
     # Turn on vpc cut
     vpcsepa = VPolyhedralCut.include_vpolyhedral_sepa(
         scip;
-        n_leaves=config["n_leaves"],
-        write_log=false,
-        log_directory=output_path,
-        lp_solving_method=4,
-        time_limit=900
+        n_leaves = config["n_leaves"],
+        write_log = false,
+        log_directory = output_path,
+        time_limit = 900
     )
 
     # Read Problem
@@ -74,13 +73,13 @@ function main()
     result["final_lp_obj"] = SCIP.SCIPgetDualboundRoot(scip)
     result["sepa_termination_message"] = vpcsepa.termination_message
     result["number_of_cuts"] = length(vpcsepa.cutpool)
-    result["disjunctive_lower_bound"] = vpcsepa.statistics[VPolyhedralCut.DISJUNCTIVE_LOWER_BOUND]
-    result["n_fractional_variables"] = vpcsepa.statistics[VPolyhedralCut.N_FRACTIONAL_VARIABLES]
+    result["disjunctive_lower_bound"] = vpcsepa.disjunctive_lower_bound
+    result["n_fractional_variables"] = vpcsepa.statistics.n_fractional_variables
     result["n_leaves"] = 64
-    result["prlp_solves"] = vpcsepa.statistics[VPolyhedralCut.PRLP_SOLVES]
-    result["cbar_test"] = vpcsepa.statistics[VPolyhedralCut.CBAR_TEST]
+    result["prlp_solves"] = vpcsepa.statistics.prlp_solves_data
+    result["cbar_test"] = vpcsepa.statistics.cbar_test
     result["lp_solving_method"] = 4
-    result["prlp_solve_method"] = vpcsepa.statistics[VPolyhedralCut.PRLP_SOLVE_METHOD]
+    result["prlp_solve_method"] = vpcsepa.statistics.prlp_solve_method
 
     result_path = joinpath(output_path, "results.json")
     open(result_path, "w") do io
