@@ -165,7 +165,7 @@ function is_branchable(scip::SCIP.SCIPData, var::Variable)::Bool
     end
 
     # If the primal is integral we cannot branch
-    if is_integral(scip, get_sol(var))
+    if is_integral(get_sol(var))
         return false
     end
 
@@ -173,7 +173,7 @@ function is_branchable(scip::SCIP.SCIPData, var::Variable)::Bool
 end
 
 function convert_standard_inequality_to_general(
-    scip::SCIP.SCIPData, tableau::Tableau, standard_row::Vector{SCIP.SCIP_Real}, b
+    tableau::Tableau, standard_row::Vector{SCIP.SCIP_Real}, b
 )
     if !has_constraint_matrix_information(tableau)
         error("Tableau does not have constraint matrix information")
@@ -185,7 +185,7 @@ function convert_standard_inequality_to_general(
     constraint_matrix = get_constraint_matrix(tableau)
 
     for i in 1:nvars
-        if is_zero(scip, standard_row[i])
+        if is_zero(standard_row[i])
             continue
         end
         var = get_var_from_column(tableau, i)
@@ -230,6 +230,6 @@ function get_problem_variables_pointers(tableau::Tableau)::Vector{Ptr{SCIP.SCIP_
 end
 
 function get_tableau_density(scip::SCIP.SCIPData, tableau::Tableau)::Float64
-    return sum([!is_zero(scip, i) ? 1 : 0 for i in tableau.tableau_matrix]) /
+    return sum([!is_zero(i) ? 1 : 0 for i in tableau.tableau_matrix]) /
            length(tableau.tableau_matrix)
 end

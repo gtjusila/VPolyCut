@@ -18,21 +18,22 @@ end
 
 @kwdef mutable struct CutPool <: AbstractVector{Cut}
     tableau::Tableau
-    scip::SCIP.SCIPData
     cuts::Vector{Cut} = []
 end
 
 @forward CutPool.cuts Base.push!, Base.size
 
-function add_all_cuts!(cutpool::CutPool, sepa::T) where {T<:SCIP.AbstractSeparator}
+function add_all_cuts!(
+    scip::SCIP.SCIPData, cutpool::CutPool, sepa::T
+) where {T<:SCIP.AbstractSeparator}
     for cut in cutpool.cuts
         row = add_sepa_row!(
-            cutpool.scip,
+            scip,
             sepa,
             get_coefficients(cut),
             get_problem_variables_pointers(cutpool.tableau),
             get_rhs(cut)
         )
-        SCIP.@SCIP_CALL SCIP.SCIPreleaseRow(cutpool.scip, row)
+        SCIP.@SCIP_CALL SCIP.SCIPreleaseRow(scip, row)
     end
 end

@@ -1,48 +1,64 @@
 # wrapper around SCIP Numerics Library To Prevent ugly SCIP.SCIPisInfinity(scip, x) == 1 calls
 using SCIP
 
-function is_infinity(scip::SCIP.SCIPData, x::SCIP.SCIP_Real)
-    return SCIP.SCIPisInfinity(scip, x) == 1
+const global numeric_scip = Ref{Union{SCIP.SCIPData,Nothing}}(nothing)
+function is_numeric_scip_set()
+    return !isnothing(numeric_scip[])
+end
+function check_numeric_scip()
+    if !is_numeric_scip_set()
+        throw(
+            "numeric_scip is not set. before using the wrapped numerics function set numeric_scip by calling set_numeric_scip(scip)"
+        )
+    end
 end
 
-function is_zero(scip::SCIP.SCIPData, x::SCIP.SCIP_Real)
-    return SCIP.SCIPisZero(scip, x) == 1
+function set_numeric_scip(scip::SCIP.SCIPData)
+    global numeric_scip[] = scip
 end
 
-function is_non_zero(scip::SCIP.SCIPData, x::SCIP.SCIP_Real)
-    return SCIP.SCIPisZero(scip, x) == 0
+function is_infinity(x::SCIP.SCIP_Real)
+    return SCIP.SCIPisInfinity(numeric_scip[], x) == 1
 end
 
-function is_positive(scip::SCIP.SCIPData, x::SCIP.SCIP_Real)
-    return SCIP.SCIPisPositive(scip, x) == 1
+function is_zero(x::SCIP.SCIP_Real)
+    return SCIP.SCIPisZero(numeric_scip[], x) == 1
 end
 
-function is_negative(scip::SCIP.SCIPData, x::SCIP.SCIP_Real)
-    return SCIP.SCIPisNegative(scip, x) == 1
+function is_non_zero(x::SCIP.SCIP_Real)
+    return SCIP.SCIPisZero(numeric_scip[], x) == 0
 end
 
-function is_EQ(scip::SCIP.SCIPData, x::SCIP.SCIP_Real, y::SCIP.SCIP_Real)
-    return SCIP.SCIPisEQ(scip, x, y) == 1
+function is_positive(x::SCIP.SCIP_Real)
+    return SCIP.SCIPisPositive(numeric_scipp[], x) == 1
 end
 
-function is_GT(scip::SCIP.SCIPData, x::SCIP.SCIP_Real, y::SCIP.SCIP_Real)
-    return SCIP.SCIPisGT(scip, x, y) == 1
+function is_negative(x::SCIP.SCIP_Real)
+    return SCIP.SCIPisNegative(numeric_scip[], x) == 1
 end
 
-function is_GE(scip::SCIP.SCIPData, x::SCIP.SCIP_Real, y::SCIP.SCIP_Real)
-    return SCIP.SCIPisGE(scip, x, y) == 1
+function is_EQ(x::SCIP.SCIP_Real, y::SCIP.SCIP_Real)
+    return SCIP.SCIPisEQ(numeric_scip[], x, y) == 1
 end
 
-function is_LT(scip::SCIP.SCIPData, x::SCIP.SCIP_Real, y::SCIP.SCIP_Real)
-    return SCIP.SCIPisLT(scip, x, y) == 1
+function is_GT(x::SCIP.SCIP_Real, y::SCIP.SCIP_Real)
+    return SCIP.SCIPisGT(numeric_scip[], x, y) == 1
 end
 
-function is_LE(scip::SCIP.SCIPData, x::SCIP.SCIP_Real, y::SCIP.SCIP_Real)
-    return SCIP.SCIPisLE(scip, x, y) == 1
+function is_GE(x::SCIP.SCIP_Real, y::SCIP.SCIP_Real)
+    return SCIP.SCIPisGE(numeric_scip[], x, y) == 1
 end
 
-function is_integral(scip::SCIP.SCIPData, x::SCIP.SCIP_Real)
-    return SCIP.SCIPisFeasIntegral(scip, x) == 1
+function is_LT(x::SCIP.SCIP_Real, y::SCIP.SCIP_Real)
+    return SCIP.SCIPisLT(numeric_scip[], x, y) == 1
+end
+
+function is_LE(x::SCIP.SCIP_Real, y::SCIP.SCIP_Real)
+    return SCIP.SCIPisLE(numeric_scip[], x, y) == 1
+end
+
+function is_integral(x::SCIP.SCIP_Real)
+    return SCIP.SCIPisFeasIntegral(numeric_scip[], x) == 1
 end
 
 function is_true(i)

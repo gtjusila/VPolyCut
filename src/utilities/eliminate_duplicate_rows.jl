@@ -30,7 +30,7 @@ function get_unique_row_indices(
         r0 = -1
 
         # Iterate through each row r with a_{rj} != 0
-        non_zero_indices = findall(z -> !is_zero(scip, z), original_matrix[:, j])
+        non_zero_indices = findall(z -> !is_zero(z), original_matrix[:, j])
         for (k, r) in enumerate(non_zero_indices)
             # Divide into cases based on set[r]
             if set[r] == 0

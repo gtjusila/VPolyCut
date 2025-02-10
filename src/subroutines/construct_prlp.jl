@@ -6,8 +6,7 @@ using SCIP
 Construct a PRLP object from a given point ray collection
 """
 function construct_prlp(
-    point_ray_collection::PointRayCollection, non_basic_space::NonBasicSpace;
-    scip::SCIP.SCIPData = SCIP.Optimizer().inner
+    point_ray_collection::PointRayCollection, non_basic_space::NonBasicSpace
 )
     # Step 1: Project points and ray
     projected_points = [
@@ -21,11 +20,11 @@ function construct_prlp(
 
     #Step 2: Apply zeroing step
     points_zeroed = map(projected_points) do point
-        return [!is_zero(scip, p) ? p : 0.0 for p in point]
+        return [!is_zero(p) ? p : 0.0 for p in point]
     end
 
     rays_zeroed = map(projected_rays) do ray
-        return [!is_zero(scip, p) ? p : 0.0 for p in get_coefficients(ray)]
+        return [!is_zero(p) ? p : 0.0 for p in get_coefficients(ray)]
     end
 
     #Step 3: Construct PRLP

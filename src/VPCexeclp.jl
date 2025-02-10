@@ -42,6 +42,9 @@ function _exec_lp(sepa::VPCSeparator)
     if sepa.should_be_skipped
         return SCIP.SCIP_DIDNOTRUN
     end
+    if !is_numeric_scip_set()
+        set_numeric_scip(scip)
+    end
     if SCIP.SCIPgetStage(scip) != SCIP.SCIP_STAGE_SOLVING
         return SCIP.SCIP_DIDNOTRUN
     end
@@ -138,15 +141,16 @@ function vpolyhedralcut_separation(sepa::VPCSeparator)
     # only determine whether we can skipped if the test fail 
     pstar = argmin(x -> get_orig_objective_value(x), get_points(sepa.point_ray_collection))
     sepa.disjunctive_lower_bound = get_orig_objective_value(pstar)
-    if is_LE(scip, sepa.disjunctive_lower_bound, sepa.lp_obj) &&
+    if is_LE(sepa.disjunctive_lower_bound, sepa.lp_obj) &&
         sepa.parameters.test_disjunctive_lower_bound
         @debug "Disjunctive Lower Bound is not strictly larger than the current LP"
         throw(FailedDisjunctiveLowerBoundTest())
     end
 
     # Step 5: Construct PRLP problem
-    prlp = construct_prlp(sepa.point_ray_collection, sepa.nonbasic_space; scip = scip)
+    prlp = construct_prlp(sepa.point_ray_collection, sepa.nonbasic_space)
     # Determine the method to solve PRLP
+    @info "PRLP" memory_in_mb(prlp)
     if !PRLPcalibrate(prlp)
         throw(FailedToProvePRLPFeasibility())
     end
@@ -156,19 +160,18 @@ function vpolyhedralcut_separation(sepa::VPCSeparator)
         prlp, sepa.point_ray_collection, sepa.nonbasic_space;
         cut_limit = sepa.parameters.cut_limit,
         time_limit = sepa.parameters.time_limit,
-        start_time = sepa.start_time,
-        scip = scip
+        start_time = sepa.start_time
     )
     # Capture statistics from PRLP
     sepa.statistics.prlp_solves_data = prlp.solve_statistics
 
     # Step 7: Process Cuts and Add to SCIP
-    sepa.cutpool = CutPool(; tableau = sepa.tableau, scip = scip)
+    sepa.cutpool = CutPool(; tableau = sepa.tableau)
     for solution in separating_solutions
         cut = get_cut_from_separating_solution(
-            scip, sepa.tableau, sepa.nonbasic_space, solution
+            sepa.tableau, sepa.nonbasic_space, solution
         )
         push!(sepa.cutpool, cut)
     end
-    add_all_cuts!(sepa.cutpool, sepa)
+    add_all_cuts!(scip, sepa.cutpool, sepa)
 end
