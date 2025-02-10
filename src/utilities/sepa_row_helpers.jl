@@ -7,9 +7,9 @@ function add_sepa_row!(
     alpha::Vector{Float64},
     xs::Vector{Ptr{SCIP.SCIP_Var}},
     beta::Float64;
-    valid_globaly::Bool=true,
-    modifiable::Bool=false,
-    removable::Bool=false
+    valid_globaly::Bool = true,
+    modifiable::Bool = false,
+    removable::Bool = false
 ) where {T<:SCIP.AbstractSeparator}
     @assert length(alpha) == length(xs)
 
@@ -28,8 +28,8 @@ function add_sepa_row!(
 
     infeasible = Ref{SCIP.SCIP_Bool}(0)
     for (var, sol) in zip(xs, alpha)
-        @assert !is_infinity(scip, abs(sol))
-        if is_non_zero(scip, sol)
+        @assert !is_infinity(abs(sol))
+        if is_non_zero(sol)
             SCIP.@SCIP_CALL SCIP.SCIPaddVarToRow(scip, new_row[], var, sol)
         end
     end

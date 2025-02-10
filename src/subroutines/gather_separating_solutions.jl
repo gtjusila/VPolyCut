@@ -4,8 +4,7 @@ function gather_separating_solutions(
     non_basic_space::NonBasicSpace;
     cut_limit::Int = typemax(Int),
     time_limit::Float64 = typemax(Float64),
-    start_time::Float64 = time(),
-    scip::SCIP.SCIPData = SCIP.Optimizer().inner
+    start_time::Float64 = time()
 )
     separating_solutions = []
     # 6.1 The solution for feasibility is obtained from the callibration
@@ -35,7 +34,7 @@ function gather_separating_solutions(
     end
 
     # 6.4 Tighten Pstar and recalibrate PRLP
-    p_star_zeroed = [!is_zero(scip, p) ? p : 0.0 for p in pstar_projected]
+    p_star_zeroed = [!is_zero(p) ? p : 0.0 for p in pstar_projected]
     PRLPtighten(prlp, p_star_zeroed)
     if !PRLPcalibrate(prlp)
         throw(PStarNotTight())
@@ -46,8 +45,8 @@ function gather_separating_solutions(
     a_bar = PRLPgetSolution(prlp)
     r_bar = filter(get_rays(point_ray_collection)) do ray
         projected_ray = project_ray_to_nonbasic_space(non_basic_space, ray)
-        zeroed_ray = [!is_zero(scip, p) ? p : 0.0 for p in get_coefficients(projected_ray)]
-        return !is_zero(scip, dot(a_bar, zeroed_ray))
+        zeroed_ray = [!is_zero(p) ? p : 0.0 for p in get_coefficients(projected_ray)]
+        return !is_zero(dot(a_bar, zeroed_ray))
     end
     sort!(r_bar; by = ray -> abs(get_obj(get_generating_variable(ray))))
     objective_tried = 0

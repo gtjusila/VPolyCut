@@ -29,13 +29,12 @@ end
 @forward ComplementedTableau.complemented_tableau get_problem_variables_pointers
 
 function convert_standard_inequality_to_general(
-    scip::SCIP.SCIPData,
     ctableau::ComplementedTableau,
     standard_row::Vector{SCIP.SCIP_Real},
     b::SCIP.SCIP_Real
 )
     convert_standard_inequality_to_general(
-        scip, ctableau.complemented_tableau, standard_row, b
+        ctableau.complemented_tableau, standard_row, b
     )
 end
 
