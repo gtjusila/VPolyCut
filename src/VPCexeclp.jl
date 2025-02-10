@@ -14,23 +14,21 @@ Balas, Egon, and Aleksandr M. Kazachkov. "V-polyhedral disjunctive cuts." arXiv 
 Disjunction are obtained from partial branch and bound trees
 """
 
+# The first layer is a wrapper for logging
 function SCIP.exec_lp(sepa::VPCSeparator)
     # Wrapper for writing logs
-    logger = nothing
-    if sepa.parameters.write_log
-        logger = setup_file_logger(
-            joinpath(sepa.parameters.log_directory, "vpc_separation.log")
-        )
-    else
-        logger = ConsoleLogger(Logging.Debug)
-    end
+    file_logger = setup_file_logger(
+        joinpath(sepa.parameters.log_directory, "vpc_separation.log")
+    )
+    console_logger = ConsoleLogger(Logging.Debug)
+    logger = TeeLogger(file_logger, console_logger)
 
     with_logger(logger) do
         return _exec_lp(sepa)
     end
 end
 
-# Actual function
+# The second layer is a try block to catch potential error arising during cut generation
 function _exec_lp(sepa::VPCSeparator)
     # Aliasing for easier call
     scip = sepa.scipd
@@ -41,6 +39,9 @@ function _exec_lp(sepa::VPCSeparator)
     sepa.start_time = time()
 
     # Check Preconditions and handle accordingly
+    if sepa.should_be_skipped
+        return SCIP.SCIP_DIDNOTRUN
+    end
     if SCIP.SCIPgetStage(scip) != SCIP.SCIP_STAGE_SOLVING
         return SCIP.SCIP_DIDNOTRUN
     end
@@ -59,19 +60,16 @@ function _exec_lp(sepa::VPCSeparator)
     try
         # Call Separation Subroutine
         vpolyhedralcut_separation(sepa)
-
-        if length(sepa.cutpool) > 0
-            sepa.termination_message = "CUT_FOUND"
-            return SCIP.SCIP_SEPARATED
-        else
-            return SCIP.SCIP_DIDNOTFIND
-        end
     catch error
         # If error occured while in probing mode, we need to cleanup
         if is_true(SCIP.SCIPinProbing(scip))
             SCIP.SCIPendProbing(scip)
         end
 
+        # Mark sepa to be skipped on next call
+        sepa.should_be_skipped = true
+
+        # Handle different types of errors
         if error isa TimeLimitExceeded
             @debug "Time Limit Exceeded"
             sepa.termination_message = "TIME_LIMIT_EXCEEDED"
@@ -90,6 +88,15 @@ function _exec_lp(sepa::VPCSeparator)
         else
             rethrow(error)
         end
+
+        # In any case if an error occurs, we return didnotrun to avoid future calls 
+        return SCIP.SCIP_DIDNOTFIND
+    end
+
+    # Ordinary termination, return separated if cuts are found and didnotfind otherwise
+    if length(sepa.cutpool) > 0
+        return SCIP.SCIP_SEPARATED
+    else
         return SCIP.SCIP_DIDNOTFIND
     end
 end
@@ -105,61 +112,58 @@ function vpolyhedralcut_separation(sepa::VPCSeparator)
     elseif sepa.parameters.cut_limit == -2
         sepa.parameters.cut_limit = SCIP.SCIPgetNLPBranchCands(scip)
     end
-
     # Capture fractional variables statistic
     sepa.statistics.n_fractional_variables = SCIP.SCIPgetNLPBranchCands(scip)
 
-    # Step 1: Get Tableau
+    # Step 1: Get LP objective Tableau
     sepa.lp_obj = SCIP.SCIPgetSolOrigObj(scip, C_NULL)
     sepa.tableau = construct_tableau_with_constraint_matrix(scip)
+    sepa.lp_sol = get_solution_vector(sepa.tableau)
     sepa.nonbasic_space = NonBasicSpace(sepa.tableau)
 
-    @info sepa.nonbasic_space.complemented_columns
     # Step 2: Get Disjunction
     @debug "Getting Disjunction by Branch and Bound"
     sepa.disjunction = get_disjunction_by_branchandbound(scip, sepa.parameters.n_leaves)
 
-    #
-    # Main Algorithm 
-    #
     # Step 3: Collect Point Ray
     sepa.point_ray_collection = get_point_ray_collection(
         scip, sepa.disjunction
     )
+
     @debug "Number of points: $(num_points(sepa.point_ray_collection))"
     @debug "Number of rays: $(num_rays(sepa.point_ray_collection))"
 
-    # Step 4: Project Points and Rays to NonBasic Space
-    projected_points = [
-        project_point_to_nonbasic_space(sepa.nonbasic_space, get_point(point))
-        for point in get_points(sepa.point_ray_collection)
-    ]
-    projected_rays = [
-        project_ray_to_nonbasic_space(sepa.nonbasic_space, ray)
-        for ray in get_rays(sepa.point_ray_collection)
-    ]
-
-    # Step 4: Setup cutpool
-    sepa.cutpool = CutPool(; tableau = sepa.tableau, scip = scip)
-
-    # Step 5: Verify that the disjunctive lower bound is strictly larger than the current LP
+    # Step 4: Test disjunctive_lower_bound
+    # This test is always runned! The parameter sepa.parameters.test_disjunctive_lower_bound 
+    # only determine whether we can skipped if the test fail 
     pstar = argmin(x -> get_orig_objective_value(x), get_points(sepa.point_ray_collection))
     sepa.disjunctive_lower_bound = get_orig_objective_value(pstar)
-    pstar = project_point_to_nonbasic_space(sepa.nonbasic_space, get_point(pstar))
-    if is_LE(scip, sepa.disjunctive_lower_bound, sepa.lp_obj)
+    if is_LE(scip, sepa.disjunctive_lower_bound, sepa.lp_obj) &&
+        sepa.parameters.test_disjunctive_lower_bound
         @debug "Disjunctive Lower Bound is not strictly larger than the current LP"
         throw(FailedDisjunctiveLowerBoundTest())
     end
 
-    # Step 6: Solve Separation Problem
-    sepa.statistics.prlp_solves_data = []
-    separating_solutions = solve_separation_subproblems(
-        scip, projected_points, projected_rays, pstar,
-        sepa.statistics.prlp_solves_data, sepa.parameters.cut_limit,
-        900.0
+    # Step 5: Construct PRLP problem
+    prlp = construct_prlp(sepa.point_ray_collection, sepa.nonbasic_space; scip = scip)
+    # Determine the method to solve PRLP
+    if !PRLPcalibrate(prlp)
+        throw(FailedToProvePRLPFeasibility())
+    end
+
+    # Step 6: Gather separating solutions
+    separating_solutions = gather_separating_solutions(
+        prlp, sepa.point_ray_collection, sepa.nonbasic_space;
+        cut_limit = sepa.parameters.cut_limit,
+        time_limit = sepa.parameters.time_limit,
+        start_time = sepa.start_time,
+        scip = scip
     )
+    # Capture statistics from PRLP
+    sepa.statistics.prlp_solves_data = prlp.solve_statistics
 
     # Step 7: Process Cuts and Add to SCIP
+    sepa.cutpool = CutPool(; tableau = sepa.tableau, scip = scip)
     for solution in separating_solutions
         cut = get_cut_from_separating_solution(
             scip, sepa.tableau, sepa.nonbasic_space, solution
@@ -167,10 +171,4 @@ function vpolyhedralcut_separation(sepa::VPCSeparator)
         push!(sepa.cutpool, cut)
     end
     add_all_cuts!(sepa.cutpool, sepa)
-end
-
-function construct_complemented_tableau(scipd::SCIP.SCIPData)
-    original_tableau = construct_tableau_with_constraint_matrix(scipd)
-    complemented_tableau = ComplementedTableau(original_tableau)
-    return complemented_tableau
 end

@@ -23,12 +23,12 @@ is passed during the creation of the VPCSeparator.
     cut_limit::Int = -2
     "Maximum number of separation rounds"
     call_limit::Int = 1
-    "Should log be written?"
-    write_log::Bool = false
     "Directory to write cut log"
     log_directory::String = ""
     "Time Limit"
     time_limit::Float64 = typemax(64)
+    "Test if disjunctive_lower_bound is better than LP Objective"
+    test_disjunctive_lower_bound::Bool = true
 end
 
 @kwdef mutable struct VPCStatistics
@@ -56,6 +56,8 @@ Constructors:
     parameters::VPCParameters
     "SEPA statistics"
     statistics::VPCStatistics = VPCStatistics()
+    "should be skipped?"
+    should_be_skipped::Bool = false
 
     "Start Time"
     start_time::Float64 = 0.0
@@ -92,23 +94,15 @@ function include_vpolyhedral_sepa(
     scipd::SCIP.SCIPData;
     n_leaves = 2,
     cut_limit = -2,
-    write_log = false,
     log_directory = "",
     time_limit = typemax(Float64)
 )
     parameters = VPCParameters(;
         n_leaves = n_leaves,
         cut_limit = cut_limit,
-        write_log = write_log,
         log_directory = log_directory,
         time_limit = time_limit
     )
-
-    if write_log
-        if !isdir(log_directory)
-            mkpath(log_directory)
-        end
-    end
 
     sepa = VPCSeparator(scipd, parameters)
     SCIP.include_sepa(

@@ -49,7 +49,6 @@ function main()
     vpcsepa = VPolyhedralCut.include_vpolyhedral_sepa(
         scip;
         n_leaves = config["n_leaves"],
-        write_log = false,
         log_directory = output_path,
         time_limit = 900
     )

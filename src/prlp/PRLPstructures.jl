@@ -10,18 +10,19 @@ const RealVector = Vector{SCIP.SCIP_Real}
 @enum PRLPsolveAlgorithm DUAL_SIMPLEX PRIMAL_SIMPLEX BARRIER HIGHS
 @enum TerminationStatus LPI_OPTIMAL LPI_TIME_LIMIT_EXCEEDED LPI_NOT_SOLVED LPI_UNBOUNDED
 
-mutable struct PRLP
-    dimension::Int
-    points::Vector{RealVector}
-    rays::Vector{RealVector}
-    lp_constructed::Bool
-    lpi::CPtr{SCIP.SCIP_LPI}
-    last_solve_time::SCIP.SCIP_Real
-    last_simplex_iterations::Int
-    solution_available::Bool
-    solution_vector::RealVector
-    solution_objective::SCIP.SCIP_Real
-    solve_algorithm::PRLPsolveAlgorithm
+@kwdef mutable struct PRLP
+    dimension::Int = 0
+    points::Vector{RealVector} = []
+    rays::Vector{RealVector} = []
+    lp_constructed::Bool = false
+    lpi::CPtr{SCIP.SCIP_LPI} = CPtr(SCIP.SCIP_LPI)
+    last_solve_time::SCIP.SCIP_Real = 0.0
+    last_simplex_iterations::Int = 0.0
+    solution_available::Bool = false
+    solution_vector::RealVector = []
+    solution_objective::SCIP.SCIP_Real = 0.0
+    solve_algorithm::PRLPsolveAlgorithm = PRIMAL_SIMPLEX
+    solve_statistics::Vector{Any} = []
 end
 Base.show(io::IO, prlp::PRLP) = print(io, "PRLP with dimension $(prlp.dimension)")
 Base.show(io::IO, scip::SCIP.SCIPData) = print(io, "SCIPData")
@@ -31,18 +32,8 @@ Base.show(io::IO, scip::SCIP.SCIPData) = print(io, "SCIPData")
 Constructor for the PRLP struct. The `dimension` is the dimension of the space in which the points and rays live. 
 """
 function PRLP(dimension::Int)
-    return PRLP(
-        dimension,
-        [],
-        [],
-        false,
-        CPtr(SCIP.SCIP_LPI),
-        0.0,
-        0,
-        false,
-        [],
-        0.0,
-        PRIMAL_SIMPLEX
+    return PRLP(;
+        dimension = dimension
     )
 end
 
@@ -463,4 +454,59 @@ function lpi_termination_status(lpi::CPtr{SCIP.SCIP_LPI})::TerminationStatus
     end
     @error "Undandled termination status. Status code $(SCIP.SCIPlpiGetInternalStatus(lpi))"
     return LPI_NOT_SOLVED
+end
+
+"""
+    PRLPcalibrate(prlp::PRLP)
+
+Determine the algorithm used to solve PRLP. Return true if a method is found, otherwise return false.
+"""
+function PRLPcalibrate(prlp::PRLP)
+    feasibility_check = false
+    # We iterate over the algorithms to check which one find a feasible solution
+    for algorithm in [PRIMAL_SIMPLEX, DUAL_SIMPLEX, BARRIER]
+        PRLPsetSolvingAlgorithm(prlp, algorithm)
+        @debug "Trying Algorithm $(algorithm)"
+        feasibility_check = PRLPtryObjective(
+            prlp,
+            zeros(SCIP.SCIP_Real, prlp.dimension);
+            time_limit = 180.0,
+            label = "feasibility"
+        )
+        if !isnothing(feasibility_check)
+            @debug "Success with $(algorithm)"
+            return true
+        end
+    end
+    return false
+end
+
+"""
+    PRLPtryObjective(prlp::PRLP, objective::RealVector; time_limit = 30.0, label::String = "")
+
+Try to optimize the given objective. If the solution is found, return the solution vector, otherwise return nothing.
+"""
+function PRLPtryObjective(
+    prlp::PRLP, objective::RealVector; time_limit = 30.0, label::String = ""
+)::Union{Vector{SCIP.SCIP_Real},Nothing}
+    PRLPsetTimeLimit(prlp, time_limit)
+    PRLPsetObjective(prlp, objective)
+    PRLPsolve(prlp)
+    PRLPrecordSolveStats(prlp, label)
+    if PRLPisSolutionAvailable(prlp)
+        return PRLPgetSolution(prlp)
+    end
+    return nothing
+end
+
+function PRLPrecordSolveStats(prlp::PRLP, label::String)
+    stats = Dict(
+        "solve_algorithm" => PRLPgetSolvingAlgorithm(prlp),
+        "solve_time" => PRLPgetLastSolveTime(prlp),
+        "simplex_iterations" => PRLPgetLastSimplexIterations(prlp),
+        "primal_status" => PRLPisSolutionAvailable(prlp),
+        "termination_status" => PRLPgetLastTerminationStatus(prlp),
+        "objective_name" => label
+    )
+    push!(prlp.solve_statistics, stats)
 end
