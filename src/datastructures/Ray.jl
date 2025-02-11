@@ -18,7 +18,7 @@ end
 function Ray(coefficients::Vector{SCIP.SCIP_Real}, generating_variable::Variable)
     ray = Ray(length(coefficients), generating_variable)
     for i in 1:length(coefficients)
-        if !iszero(coefficients[i])
+        if !is_zero(coefficients[i])
             ray[i] = coefficients[i]
         end
     end
