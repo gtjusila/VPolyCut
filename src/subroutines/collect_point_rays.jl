@@ -37,8 +37,9 @@ function get_point_ray_collection(
                 throw(NodeInfeasible())
             end
             tableau = construct_tableau(scip)
-            corner_polyhedron = construct_corner_polyhedron(tableau)
 
+            corner_polyhedron = construct_corner_polyhedron(tableau)
+            #=
             # Add point to point ray collection
             corner_point = get_solution_vector(tableau)
             corner_point = project_point_to_nonbasic_space(nb_space, corner_point)
@@ -54,6 +55,7 @@ function get_point_ray_collection(
                 ray = project_ray_to_nonbasic_space(nb_space, ray)
                 add_ray(point_ray_collection, ray)
             end
+            =#
         catch error
             if !(error isa NodeInfeasible)
                 rethrow(error)
