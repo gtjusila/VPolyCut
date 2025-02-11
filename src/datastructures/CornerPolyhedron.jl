@@ -20,7 +20,6 @@ function construct_corner_polyhedron(tableau::Tableau)::CornerPolyhedron
     # Initiate a vector to collect corner polyhedron ray
     rays = get_non_basic_rays(tableau)
     sol = get_solution_vector(tableau)
-
     return CornerPolyhedron(sol, rays)
 end
 

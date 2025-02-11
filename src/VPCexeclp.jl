@@ -129,9 +129,11 @@ function vpolyhedralcut_separation(sepa::VPCSeparator)
     sepa.disjunction = get_disjunction_by_branchandbound(scip, sepa.parameters.n_leaves)
 
     # Step 3: Collect Point Ray
+    start_point_colllection_time = time()
     sepa.point_ray_collection = get_point_ray_collection(
         scip, sepa.disjunction, sepa.nonbasic_space
     )
+    @info "Point Ray Collection" time() - start_point_colllection_time
 
     @debug "Number of points: $(num_points(sepa.point_ray_collection))"
     @debug "Number of rays: $(num_rays(sepa.point_ray_collection))"

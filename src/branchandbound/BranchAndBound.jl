@@ -6,7 +6,7 @@ using DataStructures
     _scip::SCIP.SCIPData
     _primal_bound::SCIP.SCIP_Real
     _original_cols::Vector{Ptr{SCIP.SCIP_COL}}
-    _best_solution::Union{Nothing,Point}
+    _best_solution::Union{Nothing,Vector{SCIP.SCIP_Real}}
     _node_queue::NodeQueue
     _max_leaves::Int
     _leaf_nodes::Vector{Node} = Node[]
@@ -15,22 +15,22 @@ end
 
 function BranchAndBound(
     scip::SCIP.SCIPData;
-    max_leaves=-1,
-    branching_rule::BranchingRule=PseudoCostBranching()
+    max_leaves = -1,
+    branching_rule::BranchingRule = PseudoCostBranching()
 )::BranchAndBound
     return BranchAndBound(
         scip,
-        BestFirstQueue(; scip=scip);
-        max_leaves=max_leaves,
-        branching_rule=branching_rule
+        BestFirstQueue(; scip = scip);
+        max_leaves = max_leaves,
+        branching_rule = branching_rule
     )
 end
 
 function BranchAndBound(
     scip::SCIP.SCIPData,
     node_queue::NodeQueue;
-    max_leaves=-1,
-    branching_rule::BranchingRule=PseudoCostBranching()
+    max_leaves = -1,
+    branching_rule::BranchingRule = PseudoCostBranching()
 )::BranchAndBound
     # Initialize
     n = SCIP.SCIPgetNLPCols(scip)
@@ -38,13 +38,13 @@ function BranchAndBound(
     original_cols = unsafe_wrap(Vector{Ptr{SCIP.SCIP_COL}}, original_cols, n)
 
     return BranchAndBound(;
-        _scip=scip,
-        _primal_bound=SCIP.SCIPinfinity(scip),
-        _original_cols=original_cols,
-        _best_solution=nothing,
-        _node_queue=node_queue,
-        _max_leaves=max_leaves,
-        _branching_rule=branching_rule
+        _scip = scip,
+        _primal_bound = SCIP.SCIPinfinity(scip),
+        _original_cols = original_cols,
+        _best_solution = nothing,
+        _node_queue = node_queue,
+        _max_leaves = max_leaves,
+        _branching_rule = branching_rule
     )
 end
 
@@ -64,11 +64,15 @@ function get_original_cols(branchandbound::BranchAndBound)::Vector{Ptr{SCIP.SCIP
     return branchandbound._original_cols
 end
 
-function get_best_solution(branchandbound::BranchAndBound)::Union{Nothing,Point}
+function get_best_solution(
+    branchandbound::BranchAndBound
+)::Union{Nothing,Vector{SCIP.SCIP_Real}}
     return branchandbound._best_solution
 end
 
-function set_best_solution(branchandbound::BranchAndBound, sol::Union{Nothing,Point})
+function set_best_solution(
+    branchandbound::BranchAndBound, sol::Union{Nothing,Vector{SCIP.SCIP_Real}}
+)
     branchandbound._best_solution = sol
 end
 
