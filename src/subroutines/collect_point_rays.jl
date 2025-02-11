@@ -15,7 +15,6 @@ function get_point_ray_collection(
 )
     point_ray_collection = PointRayCollection()
     @debug "Collecting Points and Rays from disjunction"
-    @info "$(memory_in_mb(point_ray_collection)) MB"
     SCIP.SCIPstartProbing(scip)
     for (i, term) in enumerate(disjunction)
         @debug "Collecting Point and Ray from term $i"
@@ -39,7 +38,7 @@ function get_point_ray_collection(
             tableau = construct_tableau(scip)
 
             corner_polyhedron = construct_corner_polyhedron(tableau)
-            #=
+
             # Add point to point ray collection
             corner_point = get_solution_vector(tableau)
             corner_point = project_point_to_nonbasic_space(nb_space, corner_point)
@@ -55,7 +54,7 @@ function get_point_ray_collection(
                 ray = project_ray_to_nonbasic_space(nb_space, ray)
                 add_ray(point_ray_collection, ray)
             end
-            =#
+
         catch error
             if !(error isa NodeInfeasible)
                 rethrow(error)
@@ -63,13 +62,7 @@ function get_point_ray_collection(
             # if error is infeasible do nothing
         end
         SCIP.SCIPbacktrackProbing(scip, 0)
-        @info "$(memory_in_mb(point_ray_collection)) MB"
     end
     SCIP.SCIPendProbing(scip)
     return point_ray_collection
-end
-
-function memory_in_mb(obj)
-    bytes = Base.summarysize(obj)
-    return bytes / (1024^2)  # Convert to MB
 end

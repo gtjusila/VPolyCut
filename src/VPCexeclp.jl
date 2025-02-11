@@ -5,6 +5,8 @@ using SCIP
 using JuMP
 using LinearAlgebra
 import MathOptInterface as MOI
+using Profile
+using StatProfilerHTML
 
 """
 VPolyhedral Cut Separator
@@ -130,10 +132,13 @@ function vpolyhedralcut_separation(sepa::VPCSeparator)
 
     # Step 3: Collect Point Ray
     start_time = time()
-    sepa.point_ray_collection = get_point_ray_collection(
+    @profile get_point_ray_collection(
         scip, sepa.disjunction, sepa.nonbasic_space
     )
+
     @info "Point Ray Collection time $(time() - start_time)"
+    statprofilehtml()
+    exit(1)
 
     @debug "Number of points: $(num_points(sepa.point_ray_collection))"
     @debug "Number of rays: $(num_rays(sepa.point_ray_collection))"
@@ -152,7 +157,6 @@ function vpolyhedralcut_separation(sepa::VPCSeparator)
     # Step 5: Construct PRLP problem
     prlp = construct_prlp(sepa.point_ray_collection)
     # Determine the method to solve PRLP
-    @info "PRLP" memory_in_mb(prlp)
     if !PRLPcalibrate(prlp)
         throw(FailedToProvePRLPFeasibility())
     end
