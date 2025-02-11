@@ -73,7 +73,7 @@ function construct_non_basic_ray(
     col_idx = get_column_from_var(tableau, var)
     # Construct ray r
     dim = get_nvars(tableau)
-    ray = zeros(dim)
+    ray = Ray(dim, var)
 
     ray[col_idx] = direction
 
@@ -90,8 +90,11 @@ function construct_non_basic_ray(
         # it may be the case that a basic column is complemented in this case the assumption
         # that the basic column coefficients is +1 is not valid, i.e. the last term in the following line may be -1
         value = -direction * tableau[row_idx, col_idx] * tableau[row_idx, basic_col]
-        ray[basic_col] = value
+
+        if !is_zero(value)
+            ray[basic_col] = value
+        end
     end
 
-    return Ray(ray, var)
+    return ray
 end
