@@ -207,7 +207,7 @@ end
 """
 The Objective function is stored such that it is a function of nonbasic variables 
 """
-function get_objective_direction(tableau::Tableau)::Ray
+function get_objective_direction(tableau::Tableau)::Vector{SCIP.SCIP_Real}
     dim = get_nvars(tableau)
     objective_direction = zeros(dim)
     for i in 1:dim

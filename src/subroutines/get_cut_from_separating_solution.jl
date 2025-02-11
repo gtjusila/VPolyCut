@@ -5,7 +5,9 @@ function get_cut_from_separating_solution(
 )::Cut
     lp_solution = get_solution_vector(tableau)
 
-    separating_solution = revert_point_to_original_space(nonbasicspace, separating_solution)
+    separating_solution = revert_cut_vector_to_original_space(
+        nonbasicspace, separating_solution
+    )
     b = dot(separating_solution, lp_solution) + 1
 
     cut_vector, b = convert_standard_inequality_to_general(

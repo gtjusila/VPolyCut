@@ -9,6 +9,10 @@ struct NonBasicSpace
     origin_point::Point
 end
 
+function dimension(nbspace::NonBasicSpace)
+    return length(nbspace.nonbasic_indices)
+end
+
 """
     NonBasicSpace(tableau::Tableau)
 
@@ -39,12 +43,13 @@ end
 function project_point_to_nonbasic_space(
     nbspace::NonBasicSpace,
     point::Point
-)
+)::Point
     # To project a point we need to remove the basic variables and complement the necessary non-basic columns
     point = point - nbspace.origin_point
-    new_point = Point()
-    for idx in nbspace.nonbasic_indices
-        push!(new_point, ((idx in nbspace.complemented_columns) ? -1 : 1) * point[idx])
+    new_point = Point(dimension(nbspace))
+    for i in 1:dimension(nbspace)
+        idx = nbspace.nonbasic_indices[i]
+        new_point[i] = ((idx in nbspace.complemented_columns) ? -1 : 1) * point[idx]
     end
     return new_point
 end
@@ -52,13 +57,14 @@ end
 function project_ray_to_nonbasic_space(
     nbspace::NonBasicSpace,
     ray::Ray
-)
+)::Ray
     # To project a ray we need to remove the basic variables and complement the necessary non-basic columns
-    new_ray = Vector{SCIP.SCIP_Real}(undef, 0)
-    for idx in nbspace.nonbasic_indices
-        push!(new_ray, ((idx in nbspace.complemented_columns) ? -1 : 1) * ray[idx])
+    new_ray = Ray(dimension(nbspace), get_generating_variable(ray))
+    for i in 1:dimension(nbspace)
+        idx = nbspace.nonbasic_indices[i]
+        new_ray[i] = ((idx in nbspace.complemented_columns) ? -1 : 1) * ray[idx]
     end
-    return Ray(new_ray, get_generating_variable(ray))
+    return new_ray
 end
 
 function revert_point_to_original_space(
@@ -67,6 +73,7 @@ function revert_point_to_original_space(
 )
     # To revert a point we need to add the basic variables and complement the necessary non-basic columns
     new_point = zeros(SCIP.SCIP_Real, length(nbspace.origin_point))
+
     for (idx, val) in enumerate(point)
         new_point[nbspace.nonbasic_indices[idx]] = val
     end
@@ -76,4 +83,22 @@ function revert_point_to_original_space(
     end
 
     return new_point
+end
+
+function revert_cut_vector_to_original_space(
+    nbspace::NonBasicSpace,
+    cut_vector::Vector{SCIP.SCIP_Real}
+)
+    # To revert a cut vector we need to add the basic variables and complement the necessary non-basic columns
+    new_cut_vector = zeros(SCIP.SCIP_Real, length(nbspace.origin_point))
+
+    for (idx, val) in enumerate(cut_vector)
+        new_cut_vector[nbspace.nonbasic_indices[idx]] = val
+    end
+
+    for idx in nbspace.complemented_columns
+        new_cut_vector[idx] = -new_cut_vector[idx]
+    end
+
+    return new_cut_vector
 end

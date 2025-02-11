@@ -39,7 +39,7 @@ function get_solution_vector(tableau::Tableau)::Point
         solution[i] = get_sol(var)
     end
 
-    return solution
+    return Point(solution)
 end
 
 function get_non_basic_rays(tableau::Tableau)::Vector{Ray}

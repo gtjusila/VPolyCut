@@ -27,7 +27,7 @@ function gather_separating_solutions(
         non_basic_space, get_point(pstar)
     )
     pstar_separating_solution = PRLPtryObjective(
-        prlp, pstar_projected; label = "pstar"
+        prlp, as_vector(pstar_projected); label = "pstar"
     )
     if !isnothing(pstar_separating_solution)
         push!(separating_solutions, pstar_separating_solution)
