@@ -24,12 +24,6 @@ function construct_corner_polyhedron(tableau::Tableau)::CornerPolyhedron
     return CornerPolyhedron(sol, rays)
 end
 
-function construct_corner_polyhedron(
-    complemented_tableau::ComplementedTableau
-)::CornerPolyhedron
-    return construct_corner_polyhedron(complemented_tableau.complemented_tableau)
-end
-
 function get_solution_vector(tableau::Tableau)::Point
     dim = get_nvars(tableau)
     solution = zeros(dim)
@@ -65,7 +59,7 @@ function construct_non_basic_ray(
 )::Union{Ray,Nothing}
     direction = 1.0
 
-    if abs(get_ub(var) - get_lb(var)) < 1e-7
+    if is_EQ(get_ub(var), get_lb(var))
         return nothing
     end
     if is_at_upper_bound(var)

@@ -12,8 +12,8 @@ const RealVector = Vector{SCIP.SCIP_Real}
 
 @kwdef mutable struct PRLP
     dimension::Int = 0
-    points::Vector{RealVector} = []
-    rays::Vector{RealVector} = []
+    points::Vector{Point} = []
+    rays::Vector{Ray} = []
     lp_constructed::Bool = false
     lpi::CPtr{SCIP.SCIP_LPI} = CPtr(SCIP.SCIP_LPI)
     last_solve_time::SCIP.SCIP_Real = 0.0
@@ -78,8 +78,8 @@ end
 
 Add a single point to PRLP. If the LP for the PRLP have been constructed, this will invalidate the LP. Point will only be added if it is nonzero. 
 """
-function PRLPaddPoint(prlp::PRLP, point::RealVector)
-    @assert length(point) == prlp.dimension "Point dimension does not match PRLP dimension"
+function PRLPaddPoint(prlp::PRLP, point::Point)
+    @assert length(point) == prlp.dimension "Point dimension does not match PRLP dimension. Expected $(prlp.dimension), got $(length(point))"
     if (norm(point) != 0)
         push!(prlp.points, point)
     else
@@ -93,7 +93,7 @@ end
 
 Add a single ray to PRLP. If the LP for the PRLP have been constructed, this will invalidate the LP. Ray will only be added if it is nonzero.
 """
-function PRLPaddRay(prlp::PRLP, ray::Vector{Float64})
+function PRLPaddRay(prlp::PRLP, ray::Ray)
     @assert length(ray) == prlp.dimension "Ray dimension does not match PRLP dimension"
     if (norm(ray) != 0)
         push!(prlp.rays, ray)
@@ -136,12 +136,10 @@ function PRLPconstructLP(prlp::PRLP)
     val = Vector{SCIP.SCIP_Real}()
     for point in prlp.points
         push!(beg, length(ind))
-        for (i, v) in enumerate(point)
-            if !iszero(v)
-                push!(ind, i - 1)
-                push!(val, v)
-            end
-        end
+        index, value = findnz(point)
+        index .-= 1
+        append!(ind, index)
+        append!(val, value)
     end
 
     SCIP.SCIPlpiAddRows(
@@ -162,12 +160,10 @@ function PRLPconstructLP(prlp::PRLP)
     val = Vector{SCIP.SCIP_Real}()
     for ray in prlp.rays
         push!(beg, length(ind))
-        for (i, v) in enumerate(ray)
-            if !iszero(v)
-                push!(ind, i - 1)
-                push!(val, v)
-            end
-        end
+        index, value = findnz(ray)
+        index .-= 1
+        append!(ind, index)
+        append!(val, value)
     end
 
     SCIP.SCIPlpiAddRows(
@@ -382,7 +378,7 @@ end
 
 Set the inequality constraint corresponding to point to be an equality constraint.
 """
-function PRLPtighten(prlp::PRLP, point::RealVector)
+function PRLPtighten(prlp::PRLP, point::Point)
     if prlp.lp_constructed == false
         throw("LP must be constructed before tightening")
     end

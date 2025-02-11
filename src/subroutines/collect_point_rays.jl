@@ -10,7 +10,8 @@ Point ray collection will run in probing mode
 """
 function get_point_ray_collection(
     scip::SCIP.SCIPData,
-    disjunction::Disjunction
+    disjunction::Disjunction,
+    nb_space::NonBasicSpace
 )
     point_ray_collection = PointRayCollection()
     @debug "Collecting Points and Rays from disjunction"
@@ -40,6 +41,7 @@ function get_point_ray_collection(
 
             # Add point to point ray collection
             corner_point = get_solution_vector(tableau)
+            corner_point = project_point_to_nonbasic_space(nb_space, corner_point)
             add_point(
                 point_ray_collection,
                 corner_point,
@@ -49,6 +51,7 @@ function get_point_ray_collection(
 
             # Add rays to point ray collection
             for ray in get_lp_rays(corner_polyhedron)
+                ray = project_ray_to_nonbasic_space(nb_space, ray)
                 add_ray(point_ray_collection, ray)
             end
         catch error

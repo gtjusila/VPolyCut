@@ -1,11 +1,26 @@
 using SCIP
+using SparseArrays
 
 struct Point <: AbstractVector{SCIP.SCIP_Real}
-    coordinates::Vector{SCIP.SCIP_Real}
+    coordinates::SparseVector{SCIP.SCIP_Real}
 end
 
 function Point(dimension::Int)
-    return Point(zeros(dimension))
+    return Point(spzeros(dimension))
+end
+
+function Point(coordinates::Vector{SCIP.SCIP_Real})
+    point = Point(length(coordinates))
+    for i in 1:length(coordinates)
+        if !iszero(coordinates[i])
+            point[i] = coordinates[i]
+        end
+    end
+    return point
+end
+
+function SparseArrays.findnz(point::Point)
+    return findnz(point.coordinates)
 end
 
 function Base.getindex(point::Point, i::Int)
@@ -38,6 +53,6 @@ function Base.iterate(point::Point, i::Int = 1)
     end
 end
 
-function as_vector(point::Point)::Vector{SCIP.SCIP_Real}
-    return point.coordinates
+function as_dense_vector(point::Point)::Vector{SCIP.SCIP_Real}
+    return Vector(point.coordinates)
 end

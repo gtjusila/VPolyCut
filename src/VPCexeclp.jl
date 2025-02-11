@@ -130,7 +130,7 @@ function vpolyhedralcut_separation(sepa::VPCSeparator)
 
     # Step 3: Collect Point Ray
     sepa.point_ray_collection = get_point_ray_collection(
-        scip, sepa.disjunction
+        scip, sepa.disjunction, sepa.nonbasic_space
     )
 
     @debug "Number of points: $(num_points(sepa.point_ray_collection))"
@@ -148,7 +148,7 @@ function vpolyhedralcut_separation(sepa::VPCSeparator)
     end
 
     # Step 5: Construct PRLP problem
-    prlp = construct_prlp(sepa.point_ray_collection, sepa.nonbasic_space)
+    prlp = construct_prlp(sepa.point_ray_collection)
     # Determine the method to solve PRLP
     @info "PRLP" memory_in_mb(prlp)
     if !PRLPcalibrate(prlp)

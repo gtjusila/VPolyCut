@@ -14,7 +14,6 @@ include("tableauhandlers/LPColumn.jl")
 include("tableauhandlers/ConstraintMatrix.jl")
 include("tableauhandlers/Tableau.jl")
 include("tableauhandlers/scip_connector.jl")
-include("tableauhandlers/ComplementedTableau.jl")
 
 # Common Data Structures
 include("datastructures/Exceptions.jl")

@@ -23,19 +23,15 @@ function gather_separating_solutions(
     pstar = argmin(
         x -> get_orig_objective_value(x), get_points(point_ray_collection)
     )
-    pstar_projected = project_point_to_nonbasic_space(
-        non_basic_space, get_point(pstar)
-    )
     pstar_separating_solution = PRLPtryObjective(
-        prlp, as_vector(pstar_projected); label = "pstar"
+        prlp, as_dense_vector(pstar); label = "pstar"
     )
     if !isnothing(pstar_separating_solution)
         push!(separating_solutions, pstar_separating_solution)
     end
 
     # 6.4 Tighten Pstar and recalibrate PRLP
-    p_star_zeroed = [!is_zero(p) ? p : 0.0 for p in pstar_projected]
-    PRLPtighten(prlp, p_star_zeroed)
+    PRLPtighten(prlp, get_point(pstar))
     if !PRLPcalibrate(prlp)
         throw(PStarNotTight())
     end
@@ -44,17 +40,14 @@ function gather_separating_solutions(
     # Now iterate over the rays 
     a_bar = PRLPgetSolution(prlp)
     r_bar = filter(get_rays(point_ray_collection)) do ray
-        projected_ray = project_ray_to_nonbasic_space(non_basic_space, ray)
-        zeroed_ray = [!is_zero(p) ? p : 0.0 for p in get_coefficients(projected_ray)]
-        return !is_zero(dot(a_bar, zeroed_ray))
+        return !is_zero(dot(a_bar, ray))
     end
     sort!(r_bar; by = ray -> abs(get_obj(get_generating_variable(ray))))
     objective_tried = 0
 
     for ray in r_bar
-        objective = get_coefficients(project_ray_to_nonbasic_space(non_basic_space, ray))
         r_run = PRLPtryObjective(
-            prlp, objective;
+            prlp, as_dense_vector(ray);
             label = "prlp_$(objective_tried)"
         )
         objective_tried += 1
