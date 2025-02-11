@@ -18,6 +18,7 @@ LinearAlgebra = "37e2e46d-f89d-539d-b4ee-838fcccc9c8e"
 LoggingExtras = "e6f89c97-d47a-5376-807f-9c37f3926c36"
 MathOptInterface = "b8f27783-ece8-5eb3-8dc8-9495eed66fee"
 Mustache = "ffc61752-8dc7-55ee-8c37-f3e9cdd09e70"
+PackageAnalyzer = "e713c705-17e4-4cec-abe0-95bf5bf3e10c"
 Printf = "de0858da-6303-5e67-8744-51eddeeeb8d7"
 Random = "9a3f8284-a2c9-5f02-9a11-845980a1fd5c"
 Revise = "295af30f-e4ad-537b-8983-00126c2a3abe"
@@ -28,6 +29,7 @@ UUIDs = "cf7118a7-6976-5b1a-9a39-7adc72f591a4"
 Xpress = "9e70acf3-d6c9-5be6-b5bd-4e2c73e3e054"
 
 [compat]
+PackageAnalyzer = "3.1.0"
 Xpress = "0.17.1"
 julia = "1.9"
 
