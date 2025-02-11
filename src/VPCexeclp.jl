@@ -95,7 +95,7 @@ function _exec_lp(sepa::VPCSeparator)
         # In any case if an error occurs, we return didnotrun to avoid future calls 
         return SCIP.SCIP_DIDNOTFIND
     end
-
+    @info "Total Time" time() - sepa.start_time
     # Ordinary termination, return separated if cuts are found and didnotfind otherwise
     if length(sepa.cutpool) > 0
         return SCIP.SCIP_SEPARATED
