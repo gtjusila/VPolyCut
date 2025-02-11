@@ -131,13 +131,18 @@ function PRLPconstructLP(prlp::PRLP)
     )
 
     # Add point constraints
-    beg = Vector{Cint}()
-    ind = Vector{Cint}()
-    val = Vector{SCIP.SCIP_Real}()
+    beg::Vector{Cint} = []
+    ind::Vector{Cint} = []
+    val::Vector{SCIP.SCIP_Real} = []
+    first = true
     for point in prlp.points
         push!(beg, length(ind))
         index, value = findnz(point)
-        index .-= 1
+        index .-= Cint(1)
+        if first
+            first = false
+            @info typeof(index)
+        end
         append!(ind, index)
         append!(val, value)
     end
@@ -154,10 +159,12 @@ function PRLPconstructLP(prlp::PRLP)
         pointer(val)
     )
 
+    # Clear the arrays 
+    empty!(beg)
+    empty!(ind)
+    empty!(val)
+
     # Add ray constraints
-    beg = Vector{Cint}()
-    ind = Vector{Cint}()
-    val = Vector{SCIP.SCIP_Real}()
     for ray in prlp.rays
         push!(beg, length(ind))
         index, value = findnz(ray)

@@ -12,6 +12,7 @@ function construct_prlp(
     problem_dimension = dimension(point_ray_collection)
     prlp = PRLP(problem_dimension)
 
+    first = true
     for point in get_points(point_ray_collection)
         PRLPaddPoint(prlp, get_point(point))
     end
@@ -20,6 +21,7 @@ function construct_prlp(
     end
 
     PRLPconstructLP(prlp)
+    SCIP.@SCIP_CALL SCIP.SCIPlpiWriteLP(prlp.lpi, "prlp.lp")
     @debug "PRLP Constructed"
 
     return prlp
