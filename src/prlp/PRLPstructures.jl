@@ -89,11 +89,11 @@ function PRLPaddPoint(prlp::PRLP, point::RealVector)
 end
 
 """
-    PRLPaddRay(prlp::PRLP, ray::RealVector)
+    PRLPaddRay(prlp::PRLP, ray::Ray)
 
 Add a single ray to PRLP. If the LP for the PRLP have been constructed, this will invalidate the LP. Ray will only be added if it is nonzero.
 """
-function PRLPaddRay(prlp::PRLP, ray::RealVector)
+function PRLPaddRay(prlp::PRLP, ray::Vector{Float64})
     @assert length(ray) == prlp.dimension "Ray dimension does not match PRLP dimension"
     if (norm(ray) != 0)
         push!(prlp.rays, ray)
