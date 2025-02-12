@@ -87,6 +87,9 @@ function _exec_lp(sepa::VPCSeparator)
         elseif error isa PStarNotTight
             @debug "PStar Not Tight"
             sepa.termination_status = FAILED_TO_TIGHTEN_PSTAR
+        elseif error isa AssumptionViolated
+            @debug "Assumption Violated"
+            sepa.termination_status = ASSUMPTION_VIOLATED
         else
             rethrow(error)
         end
