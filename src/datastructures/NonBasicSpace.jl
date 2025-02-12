@@ -25,7 +25,6 @@ function NonBasicSpace(tableau::Tableau)
     mask = Vector{Int64}()
     n_tableau_vars = get_nvars(tableau)
     origin_point = get_solution_vector(tableau)
-    j = 1
     for i in 1:n_tableau_vars
         var = get_var_from_column(tableau, i)
         if !is_basic(var)
@@ -39,7 +38,6 @@ function NonBasicSpace(tableau::Tableau)
         if is_at_upper_bound(var)
             # Mark that the var is complemented
             push!(complemented_columns, i)
-            origin_point[j] = -origin_point[j]
         end
     end
     return NonBasicSpace(nonbasic_indices, mask, complemented_columns, origin_point)
