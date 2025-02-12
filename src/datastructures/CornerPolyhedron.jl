@@ -89,7 +89,7 @@ function construct_non_basic_ray(
         # When we do point ray collection, we compliment the columns in according to the original tableau of the node
         # it may be the case that a basic column is complemented in this case the assumption
         # that the basic column coefficients is +1 is not valid, i.e. the last term in the following line may be -1
-        if !is_EQ(tableau[row_idx, col_idx], 1.0)
+        if !is_EQ(tableau[row_idx, basic_col], 1.0)
             throw(AssumptionViolated())
         end
         value = -direction * tableau[row_idx, col_idx] * tableau[row_idx, basic_col]
