@@ -71,7 +71,7 @@ function SCIP.exec_lp(sepa::IndicatorSeparator)
                 projection = create_projection_to_nonbasic_space(complemented_tableau)
                 point_ray_collection = PointRayCollection(scip; projection=projection)
                 sol1 = CPtr(SCIP.SCIP_Sol)
-                SCIP.@SCIP_CALL SCIP.SCIPcreateLPSol(scip, address(sol1), C_NULL)
+                SCIP.@SCIP_CALL SCIP.SCIPcreateLPSol(scip, address_of(sol1), C_NULL)
               =#
         # Start Probing model
         SCIP.@SCIP_CALL SCIP.SCIPstartProbing(scip)
@@ -128,7 +128,7 @@ function SCIP.exec_lp(sepa::IndicatorSeparator)
             add_ray(point_ray_collection, ray)
         end
         sol2 = CPtr(SCIP.SCIP_Sol)
-        SCIP.@SCIP_CALL SCIP.SCIPcreateLPSol(scip, address(sol2), C_NULL)
+        SCIP.@SCIP_CALL SCIP.SCIPcreateLPSol(scip, address_of(sol2), C_NULL)
         =#
         #Done with the first corner polyhedron
         # Again now some prints for debug
@@ -190,7 +190,7 @@ function SCIP.exec_lp(sepa::IndicatorSeparator)
              add_ray(point_ray_collection, ray)
          end
          sol3 = CPtr(SCIP.SCIP_Sol)
-         SCIP.@SCIP_CALL SCIP.SCIPcreateLPSol(scip, address(sol3), C_NULL)
+         SCIP.@SCIP_CALL SCIP.SCIPcreateLPSol(scip, address_of(sol3), C_NULL)
          # Done with the second corner polyhedron
 
          println("Objective After Fixing Binary to 0: $(SCIP.SCIPgetLPObjval(scip))")
@@ -308,6 +308,6 @@ function SCIP.exec_lp(sepa::IndicatorSeparator)
 end
 
 function include_indicator_sepa(scip::SCIP.SCIPData)
-    sepa = IndicatorSeparator(; scipd=scip)
-    SCIP.include_sepa(scip.scip[], scip.sepas, sepa; freq=0, usessubscip=true)
+    sepa = IndicatorSeparator(; scipd = scip)
+    SCIP.include_sepa(scip.scip[], scip.sepas, sepa; freq = 0, usessubscip = true)
 end

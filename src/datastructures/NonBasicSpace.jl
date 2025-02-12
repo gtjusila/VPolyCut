@@ -15,6 +15,65 @@ function dimension(nbspace::NonBasicSpace)
 end
 
 """
+    NonBasicSpace(scip::SCIP.SCIPData)
+
+Create a NonBasicSpace object from a given SCIPData object.
+
+We need to collect:
+1. The LP solution which is (x,-y) where x is the solution to the problem variables and y is the row activity.
+2. The complemented columns and rows which are the indices of columns which are at their upper bound and rows which are at their lower bound.
+3. Finally, we should only store values in the LP solution if they are non-zero
+"""
+function NonBasicSpace(scip::SCIP.SCIPData)
+    n_rows::Int64 = SCIP.SCIPgetNLPRows(scip)
+    n_cols::Int64 = SCIP.SCIPgetNLPCols(scip)
+    dim = n_rows + n_cols
+
+    sol = Point(dim)
+    nonbasic_indices = Vector{Int64}()
+    complemented_columns = Set{Int64}()
+    complement_nonbasic_mask = Vector{Int64}()
+
+    cols = SCIP.SCIPgetLPCols(scip)
+    cols = unsafe_wrap(Vector{Ptr{SCIP.SCIP_Col}}, cols, n_cols)
+    for i in 1:n_cols
+        col = cols[i]
+        val = SCIP.SCIPcolGetPrimsol(col)
+        sol[i] = val
+        if SCIP.SCIPcolGetBasisStatus(col) == SCIP.SCIP_BASESTAT_UPPER
+            push!(complemented_columns, i)
+            push!(complement_nonbasic_mask, length(nonbasic_indices) + 1)
+        end
+        if SCIP.SCIPcolGetBasisStatus(col) == SCIP.SCIP_BASESTAT_LOWER ||
+            SCIP.SCIPcolGetBasisStatus(col) == SCIP.SCIP_BASESTAT_UPPER
+            push!(nonbasic_indices, i)
+        end
+    end
+
+    rows = SCIP.SCIPgetLPRows(scip)
+    rows = unsafe_wrap(Vector{Ptr{SCIP.SCIP_Row}}, rows, n_rows)
+    for i in 1:n_rows
+        row = rows[i]
+        val = -SCIP.SCIPgetRowActivity(scip, row)
+        println(val)
+        sol[n_cols + i] = val
+        if SCIP.SCIProwGetBasisStatus(row) == SCIP.SCIP_BASESTAT_LOWER
+            @info "Complemented row $(i)"
+            push!(complemented_columns, n_cols + i)
+            push!(complement_nonbasic_mask, length(nonbasic_indices) + 1)
+        end
+        if SCIP.SCIProwGetBasisStatus(row) == SCIP.SCIP_BASESTAT_LOWER ||
+            SCIP.SCIProwGetBasisStatus(row) == SCIP.SCIP_BASESTAT_UPPER
+            push!(nonbasic_indices, n_cols + i)
+        end
+    end
+    sol = clean(sol)
+    return NonBasicSpace(
+        nonbasic_indices, complement_nonbasic_mask, complemented_columns, sol
+    )
+end
+
+"""
     NonBasicSpace(tableau::Tableau)
 
 Create a NonBasicSpace object from a given tableau
@@ -25,7 +84,6 @@ function NonBasicSpace(tableau::Tableau)
     mask = Vector{Int64}()
     n_tableau_vars = get_nvars(tableau)
     origin_point = get_solution_vector(tableau)
-    j = 1
     for i in 1:n_tableau_vars
         var = get_var_from_column(tableau, i)
         if !is_basic(var)
@@ -39,7 +97,6 @@ function NonBasicSpace(tableau::Tableau)
         if is_at_upper_bound(var)
             # Mark that the var is complemented
             push!(complemented_columns, i)
-            origin_point[j] = -origin_point[j]
         end
     end
     return NonBasicSpace(nonbasic_indices, mask, complemented_columns, origin_point)

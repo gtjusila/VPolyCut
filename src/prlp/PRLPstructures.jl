@@ -68,7 +68,7 @@ function PRLPinvalidate(prlp::PRLP)
         if prlp.solution_available
             PRLPinvalidateSolution(prlp)
         end
-        SCIP.SCIPlpiFree(address(prlp.lpi))
+        SCIP.SCIPlpiFree(address_of(prlp.lpi))
         prlp.lp_constructed = false
     end
 end
@@ -113,7 +113,7 @@ function PRLPconstructLP(prlp::PRLP)
     prlp.lp_constructed = true
     prlp.lpi = CPtr(SCIP.SCIP_LPI)
     SCIP.@SCIP_CALL SCIP.SCIPlpiCreate(
-        address(prlp.lpi), C_NULL, "PRLP", SCIP.SCIP_OBJSEN_MINIMIZE
+        address_of(prlp.lpi), C_NULL, "PRLP", SCIP.SCIP_OBJSEN_MINIMIZE
     )
 
     # Add variables

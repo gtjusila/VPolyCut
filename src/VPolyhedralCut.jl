@@ -15,6 +15,8 @@ include("tableauhandlers/ConstraintMatrix.jl")
 include("tableauhandlers/Tableau.jl")
 include("tableauhandlers/scip_connector.jl")
 
+include("tableauhelpers/lp_solution_methods.jl")
+
 # Common Data Structures
 include("datastructures/Exceptions.jl")
 include("datastructures/Point.jl")
@@ -29,7 +31,6 @@ include("utilities/CPointer.jl")
 include("utilities/sepa_row_helpers.jl")
 include("utilities/log_helpers.jl")
 include("utilities/numerical_methods.jl")
-include("utilities/eliminate_duplicate_rows.jl")
 include("utilities/indicator_connector.jl")
 
 # PRLP

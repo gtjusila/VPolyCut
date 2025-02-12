@@ -42,6 +42,7 @@ function get_point_ray_collection(
             # Add point to point ray collection
             corner_point = get_solution_vector(tableau)
             corner_point = project_point_to_nonbasic_space(nb_space, corner_point)
+
             add_point(
                 point_ray_collection,
                 corner_point,

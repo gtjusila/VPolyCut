@@ -5,7 +5,7 @@
 #
 # We emulate this by
 # x = CPtr(SCIP); 
-# SCIPcreate(address(x))
+# SCIPcreate(address_of(x))
 
 struct CPtr{T}
     pointer::Ref{Ptr{T}}
@@ -21,6 +21,6 @@ Base.convert(::Type{Ptr{T}}, cptr::CPtr{T}) where {T} = cptr.pointer[]
 # Needed for passing `CPtr` to C functions expecting `Ptr{T}`
 Base.unsafe_convert(::Type{Ptr{T}}, cptr::CPtr{T}) where {T} = cptr.pointer[]
 
-function address(pt::CPtr)
+function address_of(pt::CPtr)
     return pt.pointer
 end

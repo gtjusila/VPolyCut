@@ -120,11 +120,12 @@ function vpolyhedralcut_separation(sepa::VPCSeparator)
     # Capture fractional variables statistic
     sepa.statistics.n_fractional_variables = SCIP.SCIPgetNLPBranchCands(scip)
 
-    # Step 1: Get LP objective Tableau
+    # Step 1: Create nonbasic space from current SCIP solution 
     sepa.lp_obj = SCIP.SCIPgetSolOrigObj(scip, C_NULL)
+    #sepa.lp_sol = sepa.nonbasic_space.origin_point
     sepa.tableau = construct_tableau_with_constraint_matrix(scip)
-    sepa.lp_sol = get_solution_vector(sepa.tableau)
     sepa.nonbasic_space = NonBasicSpace(sepa.tableau)
+    @info sepa.nonbasic_space.origin_point
 
     # Step 2: Get Disjunction
     @debug "Getting Disjunction by Branch and Bound"
