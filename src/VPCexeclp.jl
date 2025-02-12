@@ -5,7 +5,8 @@ using SCIP
 using JuMP
 using LinearAlgebra
 import MathOptInterface as MOI
-
+using Profile
+using StatProfilerHTML
 """
 VPolyhedral Cut Separator
 
@@ -70,24 +71,25 @@ function _exec_lp(sepa::VPCSeparator)
         end
 
         # Mark sepa to be skipped on next call
+        # Any errors happening means sepa is not good for the current problem
         sepa.should_be_skipped = true
 
         # Handle different types of errors
         if error isa TimeLimitExceeded
             @debug "Time Limit Exceeded"
-            sepa.termination_message = "TIME_LIMIT_EXCEEDED"
+            sepa.termination_status = TIME_LIMIT_EXCEEDED
         elseif error isa FailedToProvePRLPFeasibility
             @debug "Failed to prove PRLP Feasibility"
-            sepa.termination_message = "FAILED_TO_PROVE_PRLP_FEASIBILITY"
+            sepa.termination_status = FAILED_TO_PROVE_PRLP_FEASIBILITY
         elseif error isa FailedDisjunctiveLowerBoundTest
             @debug "Failed Disjunctive Lower Bound Test"
-            sepa.termination_message = "FAILED_DISJUNCTIVE_LOWER_BOUND_TEST"
-        elseif error isa PStarInfeasible
-            @debug "PStar Is Infeasible"
-            sepa.termination_message = "PSTAR_INFEASIBLE"
+            sepa.termination_status = FAILED_DISJUNCTIVE_LOWER_BOUND_TEST
         elseif error isa PStarNotTight
             @debug "PStar Not Tight"
-            sepa.termination_message = "PSTAR_NOT_TIGHT"
+            sepa.termination_status = FAILED_TO_TIGHTEN_PSTAR
+        elseif error isa AssumptionViolated
+            @debug "Assumption Violated"
+            sepa.termination_status = ASSUMPTION_VIOLATED
         else
             rethrow(error)
         end
@@ -97,7 +99,7 @@ function _exec_lp(sepa::VPCSeparator)
     end
 
     # Ordinary termination, return separated if cuts are found and didnotfind otherwise
-    if length(sepa.cutpool) > 0
+    if sepa.termination_status == FOUND_CUTS
         return SCIP.SCIP_SEPARATED
     else
         return SCIP.SCIP_DIDNOTFIND
@@ -129,10 +131,11 @@ function vpolyhedralcut_separation(sepa::VPCSeparator)
     sepa.disjunction = get_disjunction_by_branchandbound(scip, sepa.parameters.n_leaves)
 
     # Step 3: Collect Point Ray
+    point_ray_time = time()
     sepa.point_ray_collection = get_point_ray_collection(
-        scip, sepa.disjunction
+        scip, sepa.disjunction, sepa.nonbasic_space
     )
-
+    @info "Point Ray Collection Time: $(time() - point_ray_time)"
     @debug "Number of points: $(num_points(sepa.point_ray_collection))"
     @debug "Number of rays: $(num_rays(sepa.point_ray_collection))"
 
@@ -148,20 +151,23 @@ function vpolyhedralcut_separation(sepa::VPCSeparator)
     end
 
     # Step 5: Construct PRLP problem
-    prlp = construct_prlp(sepa.point_ray_collection, sepa.nonbasic_space)
+    prlp = construct_prlp(sepa.point_ray_collection)
     # Determine the method to solve PRLP
-    @info "PRLP" memory_in_mb(prlp)
+    @info "Checking Feasibility"
     if !PRLPcalibrate(prlp)
         throw(FailedToProvePRLPFeasibility())
     end
 
     # Step 6: Gather separating solutions
+    separating_solution_time = time()
     separating_solutions = gather_separating_solutions(
-        prlp, sepa.point_ray_collection, sepa.nonbasic_space;
+        prlp, sepa.point_ray_collection;
         cut_limit = sepa.parameters.cut_limit,
         time_limit = sepa.parameters.time_limit,
         start_time = sepa.start_time
     )
+    @info "Separating Solution Time: $(time() - separating_solution_time)"
+
     # Capture statistics from PRLP
     sepa.statistics.prlp_solves_data = prlp.solve_statistics
 
@@ -174,4 +180,10 @@ function vpolyhedralcut_separation(sepa::VPCSeparator)
         push!(sepa.cutpool, cut)
     end
     add_all_cuts!(scip, sepa.cutpool, sepa)
+
+    if length(sepa.cutpool) > 0
+        sepa.termination_status = FOUND_CUTS
+    else
+        sepa.termination_status = NO_CUTS_FOUND
+    end
 end

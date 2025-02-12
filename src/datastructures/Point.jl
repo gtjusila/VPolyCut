@@ -1,11 +1,30 @@
 using SCIP
+using SparseArrays
 
 struct Point <: AbstractVector{SCIP.SCIP_Real}
-    coordinates::Vector{SCIP.SCIP_Real}
+    coordinates::SparseVector{SCIP.SCIP_Real}
 end
 
 function Point(dimension::Int)
-    return Point(zeros(dimension))
+    return Point(spzeros(dimension))
+end
+
+function Point(coordinates::Vector{SCIP.SCIP_Real})
+    point = Point(length(coordinates))
+    for i in 1:length(coordinates)
+        if !is_zero(coordinates[i])
+            point[i] = coordinates[i]
+        end
+    end
+    return point
+end
+
+function SparseArrays.findnz(point::Point)
+    return findnz(point.coordinates)
+end
+
+function SparseArrays.nnz(point::Point)
+    return nnz(point.coordinates)
 end
 
 function Base.getindex(point::Point, i::Int)
@@ -27,7 +46,19 @@ function Base.:-(
     if length(point1) != length(point2)
         error("Points must have the same dimension")
     end
-    return Point(point1.coordinates - point2.coordinates)
+    temp = Point(point1.coordinates - point2.coordinates)
+    # New zero entry may occur so we need to clean the point
+    return clean(temp)
+end
+
+function clean(point::Point)::Point
+    index, _ = findnz(point.coordinates)
+    for i in index
+        if is_zero(point.coordinates[i])
+            point.coordinates[i] = 0
+        end
+    end
+    return point
 end
 
 function Base.iterate(point::Point, i::Int = 1)
@@ -38,6 +69,6 @@ function Base.iterate(point::Point, i::Int = 1)
     end
 end
 
-function as_vector(point::Point)::Vector{SCIP.SCIP_Real}
-    return point.coordinates
+function as_dense_vector(point::Point)::Vector{SCIP.SCIP_Real}
+    return Vector(point.coordinates)
 end

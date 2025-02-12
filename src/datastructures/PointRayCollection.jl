@@ -7,7 +7,7 @@ using SCIP
 A CornerPoint represents a vertex of the LP. It have a point which holds the actual coordinates 
 and objective value associated to it 
 """
-@kwdef struct CornerPoint
+@kwdef struct CornerPoint <: AbstractVector{SCIP.SCIP_Real}
     point::Point
     objective_value::SCIP.SCIP_Real
     orig_objective_value::SCIP.SCIP_Real
@@ -25,6 +25,9 @@ function get_orig_objective_value(corner::CornerPoint)::SCIP.SCIP_Real
     return corner.orig_objective_value
 end
 
+function as_dense_vector(corner::CornerPoint)::Vector{SCIP.SCIP_Real}
+    return as_dense_vector(get_point(corner))
+end
 @forward CornerPoint.point Base.size, Base.getindex, Base.setindex!
 
 @kwdef mutable struct PointRayCollection
@@ -50,14 +53,10 @@ function add_ray(collection::PointRayCollection, new_ray::Ray)
     push!(collection.rays, new_ray)
 end
 
-"""
-A helper function to remove duplicate ray
-"""
-function remove_duplicate_rays(collection::PointRayCollection)
-    rays = get_rays(collection)
-    unique_indices = get_unique_row_indices(
-        map(ray -> get_coefficients(ray), collection.rays),
-        collection.scip
-    )
-    collection.rays = rays[unique_indices]
+function dimension(collection::PointRayCollection)
+    if isempty(collection.points)
+        throw("Cannot get dimension of an empty PointRayCollection")
+    else
+        return length(get_point(collection.points[1]))
+    end
 end

@@ -1,25 +1,44 @@
 using SCIP
 using Lazy
+using SparseArrays
 
 struct Ray <: AbstractVector{SCIP.SCIP_Real}
-    coefficients::Vector{SCIP.SCIP_Real}
+    coefficients::SparseVector{SCIP.SCIP_Real}
     generating_variable::Variable
 end
 
-function Ray(dimension::Int)
-    return Ray(zeros(dimension), Variable())
+function Ray(dimension::Int, generating_variable::Variable)
+    return Ray(spzeros(dimension), generating_variable)
 end
 
-function Ray(dimension::Int, generating_variable::Variable)
-    return Ray(zeros(dimension), generating_variable)
+function Ray(dimension::Int)
+    return Ray(dimension, Variable())
+end
+
+function Ray(coefficients::Vector{SCIP.SCIP_Real}, generating_variable::Variable)
+    ray = Ray(length(coefficients), generating_variable)
+    for i in 1:length(coefficients)
+        if !is_zero(coefficients[i])
+            ray[i] = coefficients[i]
+        end
+    end
+    return ray
+end
+
+function SparseArrays.nnz(ray::Ray)
+    return nnz(ray.coefficients)
 end
 
 function Ray(coefficients::Vector{SCIP.SCIP_Real})
     return Ray(coefficients, Variable())
 end
 
-function get_coefficients(ray::Ray)
-    return ray.coefficients
+function as_dense_vector(ray::Ray)
+    return Vector(ray.coefficients)
+end
+
+function SparseArrays.findnz(ray::Ray)
+    return findnz(ray.coefficients)
 end
 
 function Base.getindex(ray::Ray, i::Int)
@@ -36,4 +55,8 @@ end
 
 function set_coefficients!(ray::Ray, coefficients::Vector{SCIP.SCIP_Real})
     ray.coefficients = coefficients
+end
+
+function Base.size(ray::Ray)
+    return size(ray.coefficients)
 end

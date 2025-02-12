@@ -14,7 +14,7 @@ function write_output(experiment::Experiment)
     result["initial_lp_obj"] = SCIP.SCIPgetFirstLPDualboundRoot(experiment.scip)
     result["final_lp_obj"] = SCIP.SCIPgetDualboundRoot(experiment.scip)
     if result["separator"] == "vpc"
-        result["sepa_termination_message"] = experiment.vpcsepa.termination_message
+        result["sepa_termination_message"] = experiment.vpcsepa.termination_status
         result["number_of_cuts"] = length(experiment.vpcsepa.cutpool)
         result["disjunctive_lower_bound"] = experiment.vpcsepa.disjunctive_lower_bound
         result["n_fractional_variables"] = experiment.vpcsepa.n_fractional_variables

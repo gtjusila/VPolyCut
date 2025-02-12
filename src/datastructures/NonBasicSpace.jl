@@ -5,6 +5,7 @@
 #
 struct NonBasicSpace
     nonbasic_indices::Vector{Int64}
+    complement_nonbasic_mask::Vector{Int64}
     complemented_columns::Set{Int64}
     origin_point::Point
 end
@@ -21,6 +22,7 @@ Create a NonBasicSpace object from a given tableau
 function NonBasicSpace(tableau::Tableau)
     nonbasic_indices = Vector{Int64}()
     complemented_columns = Set{Int64}()
+    mask = Vector{Int64}()
     n_tableau_vars = get_nvars(tableau)
     origin_point = get_solution_vector(tableau)
     j = 1
@@ -29,6 +31,10 @@ function NonBasicSpace(tableau::Tableau)
         if !is_basic(var)
             # Mark that the var is non-basic
             push!(nonbasic_indices, i)
+            # Mark non-basic indices that must be complemented
+            if is_at_upper_bound(var)
+                push!(mask, length(nonbasic_indices))
+            end
         end
         if is_at_upper_bound(var)
             # Mark that the var is complemented
@@ -36,8 +42,7 @@ function NonBasicSpace(tableau::Tableau)
             origin_point[j] = -origin_point[j]
         end
     end
-
-    return NonBasicSpace(nonbasic_indices, complemented_columns, origin_point)
+    return NonBasicSpace(nonbasic_indices, mask, complemented_columns, origin_point)
 end
 
 function project_point_to_nonbasic_space(
@@ -59,11 +64,8 @@ function project_ray_to_nonbasic_space(
     ray::Ray
 )::Ray
     # To project a ray we need to remove the basic variables and complement the necessary non-basic columns
-    new_ray = Ray(dimension(nbspace), get_generating_variable(ray))
-    for i in 1:dimension(nbspace)
-        idx = nbspace.nonbasic_indices[i]
-        new_ray[i] = ((idx in nbspace.complemented_columns) ? -1 : 1) * ray[idx]
-    end
+    new_ray = Ray(ray.coefficients[nbspace.nonbasic_indices], get_generating_variable(ray))
+    new_ray[nbspace.complement_nonbasic_mask] .= -new_ray[nbspace.complement_nonbasic_mask]
     return new_ray
 end
 

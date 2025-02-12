@@ -20,14 +20,7 @@ function construct_corner_polyhedron(tableau::Tableau)::CornerPolyhedron
     # Initiate a vector to collect corner polyhedron ray
     rays = get_non_basic_rays(tableau)
     sol = get_solution_vector(tableau)
-
     return CornerPolyhedron(sol, rays)
-end
-
-function construct_corner_polyhedron(
-    complemented_tableau::ComplementedTableau
-)::CornerPolyhedron
-    return construct_corner_polyhedron(complemented_tableau.complemented_tableau)
 end
 
 function get_solution_vector(tableau::Tableau)::Point
@@ -65,7 +58,7 @@ function construct_non_basic_ray(
 )::Union{Ray,Nothing}
     direction = 1.0
 
-    if abs(get_ub(var) - get_lb(var)) < 1e-7
+    if is_EQ(get_ub(var), get_lb(var))
         return nothing
     end
     if is_at_upper_bound(var)
@@ -80,7 +73,7 @@ function construct_non_basic_ray(
     col_idx = get_column_from_var(tableau, var)
     # Construct ray r
     dim = get_nvars(tableau)
-    ray = zeros(dim)
+    ray = Ray(dim, var)
 
     ray[col_idx] = direction
 
@@ -96,9 +89,15 @@ function construct_non_basic_ray(
         # When we do point ray collection, we compliment the columns in according to the original tableau of the node
         # it may be the case that a basic column is complemented in this case the assumption
         # that the basic column coefficients is +1 is not valid, i.e. the last term in the following line may be -1
+        if !is_EQ(tableau[row_idx, basic_col], 1.0)
+            throw(AssumptionViolated())
+        end
         value = -direction * tableau[row_idx, col_idx] * tableau[row_idx, basic_col]
-        ray[basic_col] = value
+
+        if !is_zero(value)
+            ray[basic_col] = value
+        end
     end
 
-    return Ray(ray, var)
+    return ray
 end

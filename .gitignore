@@ -4,3 +4,4 @@ logs
 experiment_runs
 temp
 .DS_Store
+statprof
