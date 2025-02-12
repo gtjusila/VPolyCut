@@ -39,6 +39,16 @@ end
     prlp_solve_method::String = "PRIMAL_SIMPLEX"
 end
 
+@enum VPCTerminationStatus begin
+    TIME_LIMIT_EXCEEDED
+    FAILED_TO_PROVE_PRLP_FEASIBILITY
+    FAILED_DISJUNCTIVE_LOWER_BOUND_TEST
+    FAILED_TO_TIGHTEN_PSTAR
+    FOUND_CUTS
+    NO_CUTS_FOUND
+    NOT_RUN
+end
+
 """
 VPCSeparator
 
@@ -80,7 +90,7 @@ Constructors:
 
     # Return message
     "Termination Message"
-    termination_message::String = ""
+    termination_status::VPCTerminationStatus = NOT_RUN
 end
 
 # Constructor

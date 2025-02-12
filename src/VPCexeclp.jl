@@ -71,24 +71,22 @@ function _exec_lp(sepa::VPCSeparator)
         end
 
         # Mark sepa to be skipped on next call
+        # Any errors happening means sepa is not good for the current problem
         sepa.should_be_skipped = true
 
         # Handle different types of errors
         if error isa TimeLimitExceeded
             @debug "Time Limit Exceeded"
-            sepa.termination_message = "TIME_LIMIT_EXCEEDED"
+            sepa.termination_status = TIME_LIMIT_EXCEEDED
         elseif error isa FailedToProvePRLPFeasibility
             @debug "Failed to prove PRLP Feasibility"
-            sepa.termination_message = "FAILED_TO_PROVE_PRLP_FEASIBILITY"
+            sepa.termination_status = FAILED_TO_PROVE_PRLP_FEASIBILITY
         elseif error isa FailedDisjunctiveLowerBoundTest
             @debug "Failed Disjunctive Lower Bound Test"
-            sepa.termination_message = "FAILED_DISJUNCTIVE_LOWER_BOUND_TEST"
-        elseif error isa PStarInfeasible
-            @debug "PStar Is Infeasible"
-            sepa.termination_message = "PSTAR_INFEASIBLE"
+            sepa.termination_status = FAILED_DISJUNCTIVE_LOWER_BOUND_TEST
         elseif error isa PStarNotTight
             @debug "PStar Not Tight"
-            sepa.termination_message = "PSTAR_NOT_TIGHT"
+            sepa.termination_status = FAILED_TO_TIGHTEN_PSTAR
         else
             rethrow(error)
         end
@@ -98,7 +96,7 @@ function _exec_lp(sepa::VPCSeparator)
     end
 
     # Ordinary termination, return separated if cuts are found and didnotfind otherwise
-    if length(sepa.cutpool) > 0
+    if sepa.termination_status == FOUND_CUTS
         return SCIP.SCIP_SEPARATED
     else
         return SCIP.SCIP_DIDNOTFIND
@@ -179,4 +177,10 @@ function vpolyhedralcut_separation(sepa::VPCSeparator)
         push!(sepa.cutpool, cut)
     end
     add_all_cuts!(scip, sepa.cutpool, sepa)
+
+    if length(sepa.cutpool) > 0
+        sepa.termination_status = FOUND_CUTS
+    else
+        sepa.termination_status = NO_CUTS_FOUND
+    end
 end

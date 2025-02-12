@@ -4,4 +4,3 @@ struct LPSolNotOptimal <: Exception end
 struct FailedDisjunctiveLowerBoundTest <: Exception end
 struct FailedToProvePRLPFeasibility <: Exception end
 struct PStarNotTight <: Exception end
-struct PStarInfeasible <: Exception end

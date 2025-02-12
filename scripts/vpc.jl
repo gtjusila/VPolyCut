@@ -70,7 +70,7 @@ function main()
     result["scip_status"] = SCIP.SCIPgetStatus(scip)
     result["initial_lp_obj"] = SCIP.SCIPgetFirstLPDualboundRoot(scip)
     result["final_lp_obj"] = SCIP.SCIPgetDualboundRoot(scip)
-    result["sepa_termination_message"] = vpcsepa.termination_message
+    result["sepa_termination_message"] = vpcsepa.termination_status
     result["number_of_cuts"] = !isnothing(vpcsepa.cutpool) ? length(vpcsepa.cutpool) : 0
     result["disjunctive_lower_bound"] = vpcsepa.disjunctive_lower_bound
     result["n_fractional_variables"] = vpcsepa.statistics.n_fractional_variables
