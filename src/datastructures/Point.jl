@@ -23,6 +23,10 @@ function SparseArrays.findnz(point::Point)
     return findnz(point.coordinates)
 end
 
+function SparseArrays.nnz(point::Point)
+    return nnz(point.coordinates)
+end
+
 function Base.getindex(point::Point, i::Int)
     return point.coordinates[i]
 end

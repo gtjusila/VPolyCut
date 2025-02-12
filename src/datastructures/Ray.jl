@@ -25,6 +25,10 @@ function Ray(coefficients::Vector{SCIP.SCIP_Real}, generating_variable::Variable
     return ray
 end
 
+function SparseArrays.nnz(ray::Ray)
+    return nnz(ray.coefficients)
+end
+
 function Ray(coefficients::Vector{SCIP.SCIP_Real})
     return Ray(coefficients, Variable())
 end

@@ -7,7 +7,6 @@ using LinearAlgebra
 import MathOptInterface as MOI
 using Profile
 using StatProfilerHTML
-
 """
 VPolyhedral Cut Separator
 
@@ -97,7 +96,7 @@ function _exec_lp(sepa::VPCSeparator)
         # In any case if an error occurs, we return didnotrun to avoid future calls 
         return SCIP.SCIP_DIDNOTFIND
     end
-    @info "Total Time" time() - sepa.start_time
+
     # Ordinary termination, return separated if cuts are found and didnotfind otherwise
     if length(sepa.cutpool) > 0
         return SCIP.SCIP_SEPARATED
@@ -131,15 +130,11 @@ function vpolyhedralcut_separation(sepa::VPCSeparator)
     sepa.disjunction = get_disjunction_by_branchandbound(scip, sepa.parameters.n_leaves)
 
     # Step 3: Collect Point Ray
-    start_time = time()
-    @profile get_point_ray_collection(
+    point_ray_time = time()
+    sepa.point_ray_collection = get_point_ray_collection(
         scip, sepa.disjunction, sepa.nonbasic_space
     )
-
-    @info "Point Ray Collection time $(time() - start_time)"
-    statprofilehtml()
-    exit(1)
-
+    @info "Point Ray Collection Time: $(time() - point_ray_time)"
     @debug "Number of points: $(num_points(sepa.point_ray_collection))"
     @debug "Number of rays: $(num_rays(sepa.point_ray_collection))"
 
@@ -157,17 +152,21 @@ function vpolyhedralcut_separation(sepa::VPCSeparator)
     # Step 5: Construct PRLP problem
     prlp = construct_prlp(sepa.point_ray_collection)
     # Determine the method to solve PRLP
+    @info "Checking Feasibility"
     if !PRLPcalibrate(prlp)
         throw(FailedToProvePRLPFeasibility())
     end
 
     # Step 6: Gather separating solutions
+    separating_solution_time = time()
     separating_solutions = gather_separating_solutions(
-        prlp, sepa.point_ray_collection, sepa.nonbasic_space;
+        prlp, sepa.point_ray_collection;
         cut_limit = sepa.parameters.cut_limit,
         time_limit = sepa.parameters.time_limit,
         start_time = sepa.start_time
     )
+    @info "Separating Solution Time: $(time() - separating_solution_time)"
+
     # Capture statistics from PRLP
     sepa.statistics.prlp_solves_data = prlp.solve_statistics
 

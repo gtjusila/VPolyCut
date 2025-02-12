@@ -80,7 +80,7 @@ Add a single point to PRLP. If the LP for the PRLP have been constructed, this w
 """
 function PRLPaddPoint(prlp::PRLP, point::Point)
     @assert length(point) == prlp.dimension "Point dimension does not match PRLP dimension. Expected $(prlp.dimension), got $(length(point))"
-    if (norm(point) != 0)
+    if (nnz(point) > 0)
         push!(prlp.points, point)
     else
         @warn "Trying to add zero point. Point is ignored."
@@ -95,7 +95,7 @@ Add a single ray to PRLP. If the LP for the PRLP have been constructed, this wil
 """
 function PRLPaddRay(prlp::PRLP, ray::Ray)
     @assert length(ray) == prlp.dimension "Ray dimension does not match PRLP dimension"
-    if (norm(ray) != 0)
+    if (nnz(ray) > 0)
         push!(prlp.rays, ray)
     else
         @warn "Trying to add zero ray. Ray is ignored."
@@ -385,13 +385,9 @@ end
 
 Set the inequality constraint corresponding to point to be an equality constraint.
 """
-function PRLPtighten(prlp::PRLP, point::Point)
+function PRLPtighten(prlp::PRLP, index::Int)
     if prlp.lp_constructed == false
         throw("LP must be constructed before tightening")
-    end
-    index = findfirst(x -> x == point, prlp.points)
-    if isnothing(index)
-        throw("Point not found in PRLP")
     end
     SCIP.SCIPlpiChgSides(prlp.lpi, 1, [Cint(index - 1)], [1.0], [1.0])
 end
