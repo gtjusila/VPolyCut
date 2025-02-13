@@ -90,6 +90,9 @@ function _exec_lp(sepa::VPCSeparator)
         elseif error isa AssumptionViolated
             @debug "Assumption Violated"
             sepa.termination_status = ASSUMPTION_VIOLATED
+        elseif error isa BasestatZeroEncountered
+            @debug "Basis Status Zero Encountered"
+            sepa.termination_status = BASESTAT_ZERO_ENCOUNTERED
         else
             rethrow(error)
         end
@@ -135,10 +138,8 @@ function vpolyhedralcut_separation(sepa::VPCSeparator)
     sepa.point_ray_collection = get_point_ray_collection(
         scip, sepa.disjunction, sepa.nonbasic_space
     )
-    @info "Point Ray Collection Time: $(time() - point_ray_time)"
     @debug "Number of points: $(num_points(sepa.point_ray_collection))"
     @debug "Number of rays: $(num_rays(sepa.point_ray_collection))"
-
     # Step 4: Test disjunctive_lower_bound
     # This test is always runned! The parameter sepa.parameters.test_disjunctive_lower_bound 
     # only determine whether we can skipped if the test fail 

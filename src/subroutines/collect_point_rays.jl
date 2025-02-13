@@ -35,16 +35,14 @@ function get_point_ray_collection(
                 @debug "Disjunctive term is detected infeasible during LP solve"
                 throw(NodeInfeasible())
             end
-            tableau = construct_tableau(scip)
 
-            corner_polyhedron = construct_corner_polyhedron(tableau)
+            #tableau = construct_tableau(scip)
 
-            # Add point to point ray collection
-            corner_point = get_solution_vector(tableau)
-            corner_point = set_objective_value!(
-                corner_point, SCIP.SCIPgetSolOrigObj(scip, C_NULL)
+            corner_polyhedron = construct_corner_polyhedron(scip, nb_space)
+
+            corner_point = project_point_to_nonbasic_space(
+                nb_space, corner_polyhedron.lp_sol
             )
-            corner_point = project_point_to_nonbasic_space(nb_space, corner_point)
 
             add_point(
                 point_ray_collection,
@@ -53,7 +51,6 @@ function get_point_ray_collection(
 
             # Add rays to point ray collection
             for ray in get_lp_rays(corner_polyhedron)
-                ray = project_ray_to_nonbasic_space(nb_space, ray)
                 add_ray(point_ray_collection, ray)
             end
 

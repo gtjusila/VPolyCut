@@ -72,7 +72,7 @@ function set_separators_emphasis_off(model::JuMP.AbstractModel)
     # Turn off seperators
     setter("separating/disjunctive/freq", -1)
     setter("separating/impliedbounds/freq", -1)
-    setter("separating/gmi/freq", -1)
+    #setter("separating/gmi/freq", -1)
     setter("separating/gomory/freq", -1)
     setter("separating/strongcg/freq", -1)
     setter("separating/aggregation/freq", -1)

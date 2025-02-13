@@ -25,84 +25,22 @@ We need to collect:
 3. Finally, we should only store values in the LP solution if they are non-zero
 """
 function NonBasicSpace(scip::SCIP.SCIPData)
-    n_rows::Int64 = SCIP.SCIPgetNLPRows(scip)
-    n_cols::Int64 = SCIP.SCIPgetNLPCols(scip)
-    dim = n_rows + n_cols
-
-    sol = Point(dim)
-    nonbasic_indices = Vector{Int64}()
-    complemented_columns = Set{Int64}()
-    complement_nonbasic_mask = Vector{Int64}()
-
-    cols = SCIP.SCIPgetLPCols(scip)
-    cols = unsafe_wrap(Vector{Ptr{SCIP.SCIP_Col}}, cols, n_cols)
-    for i in 1:n_cols
-        col = cols[i]
-        val = SCIP.SCIPcolGetPrimsol(col)
-        if !is_zero(val)
-            sol[i] = val
-        end
-        if SCIP.SCIPcolGetBasisStatus(col) == SCIP.SCIP_BASESTAT_UPPER
-            push!(complemented_columns, i)
-            push!(complement_nonbasic_mask, length(nonbasic_indices) + 1)
-        end
-        if SCIP.SCIPcolGetBasisStatus(col) == SCIP.SCIP_BASESTAT_LOWER ||
-            SCIP.SCIPcolGetBasisStatus(col) == SCIP.SCIP_BASESTAT_UPPER
-            push!(nonbasic_indices, i)
-        end
-    end
-
-    rows = SCIP.SCIPgetLPRows(scip)
-    rows = unsafe_wrap(Vector{Ptr{SCIP.SCIP_Row}}, rows, n_rows)
-    for i in 1:n_rows
-        row = rows[i]
-        val = -SCIP.SCIPgetRowActivity(scip, row)
-        if !is_zero(val)
-            sol[n_cols + i] = val
-        end
-        if SCIP.SCIProwGetBasisStatus(row) == SCIP.SCIP_BASESTAT_LOWER
-            @info "Complemented row $(i)"
-            push!(complemented_columns, n_cols + i)
-            push!(complement_nonbasic_mask, length(nonbasic_indices) + 1)
-        end
-        if SCIP.SCIProwGetBasisStatus(row) == SCIP.SCIP_BASESTAT_LOWER ||
-            SCIP.SCIProwGetBasisStatus(row) == SCIP.SCIP_BASESTAT_UPPER
-            push!(nonbasic_indices, n_cols + i)
-        end
-    end
-    sol = clean(sol)
-    return NonBasicSpace(
-        nonbasic_indices, complement_nonbasic_mask, complemented_columns, sol
+    origin_point = get_solution_vector(scip)
+    # get_basis_status directly reverse the basis status for the rows
+    basis_status = get_basis_status(scip)
+    nonbasic_indices = findall(
+        x -> (x == SCIP.SCIP_BASESTAT_LOWER || x == SCIP.SCIP_BASESTAT_UPPER),
+        basis_status
     )
-end
-
-"""
-    NonBasicSpace(tableau::Tableau)
-
-Create a NonBasicSpace object from a given tableau
-"""
-function NonBasicSpace(tableau::Tableau)
-    nonbasic_indices = Vector{Int64}()
-    complemented_columns = Set{Int64}()
-    mask = Vector{Int64}()
-    n_tableau_vars = get_nvars(tableau)
-    origin_point = get_solution_vector(tableau)
-    for i in 1:n_tableau_vars
-        var = get_var_from_column(tableau, i)
-        if !is_basic(var)
-            # Mark that the var is non-basic
-            push!(nonbasic_indices, i)
-            # Mark non-basic indices that must be complemented
-            if is_at_upper_bound(var)
-                push!(mask, length(nonbasic_indices))
-            end
-        end
-        if is_at_upper_bound(var)
-            # Mark that the var is complemented
-            push!(complemented_columns, i)
-        end
-    end
-    return NonBasicSpace(nonbasic_indices, mask, complemented_columns, origin_point)
+    complemented_columns = Set{Int64}(
+        findall(x -> x == SCIP.SCIP_BASESTAT_UPPER, basis_status)
+    )
+    complement_nonbasic_mask = findall(
+        i -> basis_status[i] == SCIP.SCIP_BASESTAT_UPPER, nonbasic_indices
+    )
+    return NonBasicSpace(
+        nonbasic_indices, complement_nonbasic_mask, complemented_columns, origin_point
+    )
 end
 
 function project_point_to_nonbasic_space(

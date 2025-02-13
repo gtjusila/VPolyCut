@@ -16,6 +16,7 @@ include("tableauhandlers/Tableau.jl")
 include("tableauhandlers/scip_connector.jl")
 
 include("tableauhelpers/lp_solution_methods.jl")
+include("tableauhelpers/basis_methods.jl")
 
 # Common Data Structures
 include("datastructures/Exceptions.jl")
@@ -23,8 +24,8 @@ include("datastructures/Point.jl")
 include("datastructures/Ray.jl")
 include("datastructures/CutPool.jl")
 include("datastructures/PointRayCollection.jl")
-include("datastructures/CornerPolyhedron.jl")
 include("datastructures/NonBasicSpace.jl")
+include("datastructures/CornerPolyhedron.jl")
 
 # Utilities
 include("utilities/CPointer.jl")
