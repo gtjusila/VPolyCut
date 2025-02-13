@@ -39,7 +39,9 @@ function NonBasicSpace(scip::SCIP.SCIPData)
     for i in 1:n_cols
         col = cols[i]
         val = SCIP.SCIPcolGetPrimsol(col)
-        sol[i] = val
+        if !is_zero(val)
+            sol[i] = val
+        end
         if SCIP.SCIPcolGetBasisStatus(col) == SCIP.SCIP_BASESTAT_UPPER
             push!(complemented_columns, i)
             push!(complement_nonbasic_mask, length(nonbasic_indices) + 1)
@@ -55,8 +57,9 @@ function NonBasicSpace(scip::SCIP.SCIPData)
     for i in 1:n_rows
         row = rows[i]
         val = -SCIP.SCIPgetRowActivity(scip, row)
-        println(val)
-        sol[n_cols + i] = val
+        if !is_zero(val)
+            sol[n_cols + i] = val
+        end
         if SCIP.SCIProwGetBasisStatus(row) == SCIP.SCIP_BASESTAT_LOWER
             @info "Complemented row $(i)"
             push!(complemented_columns, n_cols + i)
@@ -107,8 +110,8 @@ function project_point_to_nonbasic_space(
     point::Point
 )::Point
     # To project a point we need to remove the basic variables and complement the necessary non-basic columns
-    point = point - nbspace.origin_point
-    new_point = Point(dimension(nbspace))
+    point = substract(point, nbspace.origin_point)
+    new_point = Point(dimension(nbspace), get_objective_value(point))
     for i in 1:dimension(nbspace)
         idx = nbspace.nonbasic_indices[i]
         new_point[i] = ((idx in nbspace.complemented_columns) ? -1 : 1) * point[idx]

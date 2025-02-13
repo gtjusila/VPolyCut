@@ -14,7 +14,7 @@ function construct_prlp(
 
     first = true
     for point in get_points(point_ray_collection)
-        PRLPaddPoint(prlp, get_point(point))
+        PRLPaddPoint(prlp, point)
     end
     for ray in get_rays(point_ray_collection)
         PRLPaddRay(prlp, ray)

@@ -122,10 +122,9 @@ function vpolyhedralcut_separation(sepa::VPCSeparator)
 
     # Step 1: Create nonbasic space from current SCIP solution 
     sepa.lp_obj = SCIP.SCIPgetSolOrigObj(scip, C_NULL)
-    #sepa.lp_sol = sepa.nonbasic_space.origin_point
     sepa.tableau = construct_tableau_with_constraint_matrix(scip)
-    sepa.nonbasic_space = NonBasicSpace(sepa.tableau)
-    @info sepa.nonbasic_space.origin_point
+    sepa.nonbasic_space = NonBasicSpace(scip)
+    sepa.lp_sol = sepa.nonbasic_space.origin_point
 
     # Step 2: Get Disjunction
     @debug "Getting Disjunction by Branch and Bound"
@@ -143,8 +142,8 @@ function vpolyhedralcut_separation(sepa::VPCSeparator)
     # Step 4: Test disjunctive_lower_bound
     # This test is always runned! The parameter sepa.parameters.test_disjunctive_lower_bound 
     # only determine whether we can skipped if the test fail 
-    pstar = argmin(x -> get_orig_objective_value(x), get_points(sepa.point_ray_collection))
-    sepa.disjunctive_lower_bound = get_orig_objective_value(pstar)
+    pstar = argmin(x -> get_objective_value(x), get_points(sepa.point_ray_collection))
+    sepa.disjunctive_lower_bound = get_objective_value(pstar)
     if is_LE(sepa.disjunctive_lower_bound, sepa.lp_obj) &&
         sepa.parameters.test_disjunctive_lower_bound
         @debug "Disjunctive Lower Bound is not strictly larger than the current LP"
