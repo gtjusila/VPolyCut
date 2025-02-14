@@ -70,8 +70,8 @@ function project_point_to_nonbasic_space(
     point::Point
 )::Point
     # To project a point we need to remove the basic variables and complement the necessary non-basic columns
-    point = point - nbspace.origin_point
-    new_point = Point(dimension(nbspace))
+    point = substract(point, nbspace.origin_point)
+    new_point = Point(dimension(nbspace), get_objective_value(point))
     for i in 1:dimension(nbspace)
         idx = nbspace.nonbasic_indices[i]
         new_point[i] = ((idx in nbspace.complemented_columns) ? -1 : 1) * point[idx]

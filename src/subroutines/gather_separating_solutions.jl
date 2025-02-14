@@ -22,7 +22,7 @@ function gather_separating_solutions(
     # 6.3 Pstar 
     @info "Trying Pstar"
     pstar_index = argmin(1:length(get_points(point_ray_collection))) do i
-        return get_orig_objective_value(get_points(point_ray_collection)[i])
+        return get_objective_value(get_points(point_ray_collection)[i])
     end
     pstar = get_points(point_ray_collection)[pstar_index]
     pstar_separating_solution = PRLPtryObjective(
