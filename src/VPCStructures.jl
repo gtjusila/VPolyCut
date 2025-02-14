@@ -88,6 +88,8 @@ Constructors:
     point_ray_collection::Union{Nothing,PointRayCollection} = nothing
     "Cut Pool"
     cutpool::Union{Nothing,CutPool} = nothing
+    "Constraint Matrix"
+    constraint_matrix::Union{Nothing,ConstraintMatrix} = nothing
 
     # Return message
     "Termination Message"

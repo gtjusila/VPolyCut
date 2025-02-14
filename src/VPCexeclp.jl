@@ -125,6 +125,7 @@ function vpolyhedralcut_separation(sepa::VPCSeparator)
     sepa.tableau = construct_tableau_with_constraint_matrix(scip)
     sepa.lp_sol = get_solution_vector(sepa.tableau)
     sepa.nonbasic_space = NonBasicSpace(sepa.tableau)
+    sepa.constraint_matrix = ConstraintMatrix(scip)
 
     # Step 2: Get Disjunction
     @debug "Getting Disjunction by Branch and Bound"
@@ -175,7 +176,7 @@ function vpolyhedralcut_separation(sepa::VPCSeparator)
     sepa.cutpool = CutPool(; tableau = sepa.tableau)
     for solution in separating_solutions
         cut = get_cut_from_separating_solution(
-            sepa.tableau, sepa.nonbasic_space, solution
+            solution, sepa.constraint_matrix, sepa.nonbasic_space
         )
         push!(sepa.cutpool, cut)
     end

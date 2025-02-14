@@ -88,7 +88,7 @@ end
 function revert_cut_vector_to_original_space(
     nbspace::NonBasicSpace,
     cut_vector::Vector{SCIP.SCIP_Real}
-)
+)::Vector{SCIP.SCIP_Real}
     # To revert a cut vector we need to add the basic variables and complement the necessary non-basic columns
     new_cut_vector = zeros(SCIP.SCIP_Real, length(nbspace.origin_point))
 
