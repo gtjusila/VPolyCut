@@ -21,6 +21,7 @@ struct ConstructCornerPolyhedronContext
     dim::Int64
     nb_space::NonBasicSpace
     nb_space_dim::Int64
+    complement::Vector{Int64}
     relevant_indices::Vector{Int64}
     to_put::Vector{Int64}
 end
@@ -42,13 +43,18 @@ function construct_corner_polyhedron(
         return searchsortedfirst(nb_space.nonbasic_indices, id)
     end
 
+    complement = map(relevant_indices) do i
+        id = basic_indices[i]
+        return ((id in nb_space.complemented_columns) ? -1 : 1)
+    end
+
     n_rows::Int64 = SCIP.SCIPgetNLPRows(scip)
     n_cols::Int64 = SCIP.SCIPgetNLPCols(scip)
     dim = n_rows + n_cols
     context = ConstructCornerPolyhedronContext(
         scip, basis_status, n_rows, n_cols, dim, nb_space,
         length(nb_space.nonbasic_indices),
-        relevant_indices, to_put
+        complement, relevant_indices, to_put
     )
 
     rays = Vector{Ray}(undef, 0)
@@ -105,12 +111,13 @@ function construct_non_basic_ray_from_column(
     buffer_values = zeros(SCIP.SCIP_Real, context.n_rows)
     SCIP.@SCIP_CALL SCIP.SCIPgetLPBInvACol(
         context.scip, Cint(idx - 1), buffer_values, C_NULL, C_NULL)
-    for (i, j) in zip(context.relevant_indices, context.to_put)
+    for (i, c, j) in zip(context.relevant_indices, context.complement, context.to_put)
         value = -direction * buffer_values[i]
         if !is_zero(value)
-            ray[j] = value
+            ray[j] = c * value
         end
     end
+    return ray
 end
 
 function construct_non_basic_ray_from_row(
@@ -132,10 +139,10 @@ function construct_non_basic_ray_from_row(
     SCIP.@SCIP_CALL SCIP.SCIPgetLPBInvCol(
         context.scip, Cint(idx - context.n_cols - 1), buffer_values, C_NULL, C_NULL)
 
-    for (i, j) in zip(context.relevant_indices, context.to_put)
+    for (i, c, j) in zip(context.relevant_indices, context.complement, context.to_put)
         value = -direction * buffer_values[i]
         if !is_zero(value)
-            ray[j] = value
+            ray[j] = c * value
         end
     end
     return ray

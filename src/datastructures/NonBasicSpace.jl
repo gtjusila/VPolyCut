@@ -67,6 +67,10 @@ function project_ray_to_nonbasic_space(
     return new_ray
 end
 
+function complement_ray!(nbspace::NonBasicSpace, ray::Ray)
+    ray.coefficients[nbspace.complement_nonbasic_mask] .=
+        -ray.coefficients[nbspace.complement_nonbasic_mask]
+end
 function revert_point_to_original_space(
     nbspace::NonBasicSpace,
     point::Point
