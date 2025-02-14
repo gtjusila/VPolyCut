@@ -90,6 +90,9 @@ function _exec_lp(sepa::VPCSeparator)
         elseif error isa AssumptionViolated
             @debug "Assumption Violated"
             sepa.termination_status = ASSUMPTION_VIOLATED
+        elseif error isa BasestatZeroEncountered
+            @debug "Basestat Zero Encountered"
+            sepa.termination_status = BASESTAT_ZERO_ENCOUNTERED
         else
             rethrow(error)
         end

@@ -5,3 +5,4 @@ struct FailedDisjunctiveLowerBoundTest <: Exception end
 struct FailedToProvePRLPFeasibility <: Exception end
 struct PStarNotTight <: Exception end
 struct AssumptionViolated <: Exception end
+struct BasestatZeroEncountered <: Exception end
