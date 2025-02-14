@@ -8,17 +8,20 @@ include("scipjlutils/SCIPJLUtils.jl")
 # Tableau Object
 # Handles All low level interaction with SCIP
 # Also contains some abstract data structure which act as wrappers around SCIP data structures
+#=
 include("tableauhandlers/Variable.jl")
 include("tableauhandlers/LPRow.jl")
 include("tableauhandlers/LPColumn.jl")
-include("tableauhandlers/ConstraintMatrix.jl")
 include("tableauhandlers/Tableau.jl")
 include("tableauhandlers/scip_connector.jl")
+=#
 
 include("tableauhelpers/lp_solution_methods.jl")
 include("tableauhelpers/basis_methods.jl")
+include("tableauhelpers/constraint_matrix_methods.jl")
 
 # Common Data Structures
+include("datastructures/ConstraintMatrix.jl")
 include("datastructures/Exceptions.jl")
 include("datastructures/Point.jl")
 include("datastructures/Ray.jl")
@@ -59,8 +62,8 @@ include("subroutines/gather_separating_solutions.jl")
 include("subroutines/get_cut_from_separating_solution.jl")
 
 # Separators
-include("IndicatorSeparator.jl")
-include("IntersectionSeparator.jl")
+#include("IndicatorSeparator.jl")
+#include("IntersectionSeparator.jl")
 include("VPCexeclp.jl")
 
 end

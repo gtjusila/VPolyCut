@@ -47,7 +47,7 @@ function gather_separating_solutions(
     r_bar = filter(get_rays(point_ray_collection)) do ray
         return !is_zero(dot(a_bar, Vector(ray.coefficients))) # Use ray.coefficients instead of Ray to avoid type decution to AbstractArray
     end
-    sort!(r_bar; by = ray -> abs(get_obj(get_generating_variable(ray))))
+    sort!(r_bar; by = ray -> abs(get_objective(ray)))
     objective_tried = 0
 
     for ray in r_bar

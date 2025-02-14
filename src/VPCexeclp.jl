@@ -125,9 +125,10 @@ function vpolyhedralcut_separation(sepa::VPCSeparator)
 
     # Step 1: Create nonbasic space from current SCIP solution 
     sepa.lp_obj = SCIP.SCIPgetSolOrigObj(scip, C_NULL)
-    sepa.tableau = construct_tableau_with_constraint_matrix(scip)
     sepa.nonbasic_space = NonBasicSpace(scip)
     sepa.lp_sol = sepa.nonbasic_space.origin_point
+    sepa.constraint_matrix = get_constraint_matrix(scip)
+    sepa.problem_var_pointers = get_problem_variables_pointers(scip)
 
     # Step 2: Get Disjunction
     @debug "Getting Disjunction by Branch and Bound"
@@ -175,10 +176,10 @@ function vpolyhedralcut_separation(sepa::VPCSeparator)
     sepa.statistics.prlp_solves_data = prlp.solve_statistics
 
     # Step 7: Process Cuts and Add to SCIP
-    sepa.cutpool = CutPool(; tableau = sepa.tableau)
+    sepa.cutpool = CutPool(; problem_var_pointers = sepa.problem_var_pointers)
     for solution in separating_solutions
         cut = get_cut_from_separating_solution(
-            sepa.tableau, sepa.nonbasic_space, solution
+            sepa.lp_sol, sepa.nonbasic_space, solution, sepa.constraint_matrix
         )
         push!(sepa.cutpool, cut)
     end

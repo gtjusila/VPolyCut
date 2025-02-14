@@ -74,13 +74,11 @@ Constructors:
     "Start Time"
     start_time::Float64 = 0.0
     "LP Solution"
-    lp_sol::Union{Nothing,Vector{SCIP.SCIP_Real}} = nothing
+    lp_sol::Union{Nothing,Point} = nothing
     "LP Objective"
     lp_obj::SCIP.SCIP_Real = 0.0
     "Disjunctive Lower bound"
     disjunctive_lower_bound::SCIP.SCIP_Real = 0.0
-    "LP Tableau"
-    tableau::Union{Nothing,Tableau} = nothing
     "NonBasicSpace"
     nonbasic_space::Union{Nothing,NonBasicSpace} = nothing
     "Disjunction"
@@ -89,6 +87,10 @@ Constructors:
     point_ray_collection::Union{Nothing,PointRayCollection} = nothing
     "Cut Pool"
     cutpool::Union{Nothing,CutPool} = nothing
+    "ConstraintMatrix"
+    constraint_matrix::Union{Nothing,ConstraintMatrix} = nothing
+    "Problem Variable pointer"
+    problem_var_pointers::Vector{Ptr{SCIP.SCIP_VAR}} = []
 
     # Return message
     "Termination Message"

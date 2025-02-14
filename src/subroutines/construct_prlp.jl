@@ -21,7 +21,6 @@ function construct_prlp(
     end
 
     PRLPconstructLP(prlp)
-    SCIP.@SCIP_CALL SCIP.SCIPlpiWriteLP(prlp.lpi, "prlpold.lp")
     @debug "PRLP Constructed"
 
     return prlp

@@ -1,5 +1,5 @@
 using SCIP
-
+using Lazy
 """
 A Cut of the form `coefficients * x <= rhs`
 """
@@ -17,7 +17,7 @@ function get_rhs(cut::Cut)
 end
 
 @kwdef mutable struct CutPool <: AbstractVector{Cut}
-    tableau::Tableau
+    problem_var_pointers::Vector{Ptr{SCIP.SCIP_Var}} = []
     cuts::Vector{Cut} = []
 end
 
@@ -31,7 +31,7 @@ function add_all_cuts!(
             scip,
             sepa,
             get_coefficients(cut),
-            get_problem_variables_pointers(cutpool.tableau),
+            cutpool.problem_var_pointers,
             get_rhs(cut)
         )
         SCIP.@SCIP_CALL SCIP.SCIPreleaseRow(scip, row)
