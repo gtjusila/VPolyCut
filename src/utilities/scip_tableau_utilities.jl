@@ -76,7 +76,7 @@ function get_solution_vector(scip::SCIP.SCIPData)::Point
     n_rows::Int64 = SCIP.SCIPgetNLPRows(scip)
     n_cols::Int64 = SCIP.SCIPgetNLPCols(scip)
     dim = n_rows + n_cols
-    sol = Point(dim)
+    sol = Point(dim, SCIP.SCIPgetSolOrigObj(scip, C_NULL))
     idx = 1
 
     cols = SCIP.SCIPgetLPCols(scip)

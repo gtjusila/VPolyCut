@@ -32,7 +32,7 @@ function get_solution_vector(tableau::Tableau)::Point
         solution[i] = get_sol(var)
     end
 
-    return Point(solution)
+    return Point(solution, 0.0)
 end
 
 function get_non_basic_rays(tableau::Tableau)::Vector{Ray}
@@ -204,7 +204,7 @@ function construct_non_basic_ray_from_column(
     direction = context.basis_status[idx] == SCIP.SCIP_BASESTAT_UPPER ? -1.0 : 1.0
     # Construct the ray
     nb_space_dim = length(context.nb_space.nonbasic_indices)
-    ray = Ray(nb_space_dim)
+    ray = Ray(nb_space_dim, SCIP.SCIPgetColRedcost(context.scip, col))
 
     # First, the nonbasic column that is being considered should have entry `direction` in the ray.
     # We only care about is however if the column will be projected
@@ -247,7 +247,7 @@ function construct_non_basic_ray_from_row(
     direction = context.basis_status[idx] == SCIP.SCIP_BASESTAT_UPPER ? -1.0 : 1.0
     # Construct the ray
     nb_space_dim = length(context.nb_space.nonbasic_indices)
-    ray = Ray(nb_space_dim)
+    ray = Ray(nb_space_dim, -SCIP.SCIProwGetDualsol(row))
 
     if insorted(idx, context.nb_space.nonbasic_indices)
         # get the index of idx under the projection

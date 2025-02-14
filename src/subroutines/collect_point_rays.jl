@@ -40,8 +40,9 @@ function get_point_ray_collection(
             corner_polyhedron = CornerPolyhedron(scip, nb_space)
 
             # Add point to point ray collection
-            corner_point = get_solution_vector(tableau)
-            corner_point = project_point_to_nonbasic_space(nb_space, corner_point)
+            corner_point = project_point_to_nonbasic_space(
+                nb_space, corner_polyhedron.lp_sol
+            )
             add_point(
                 point_ray_collection,
                 corner_point

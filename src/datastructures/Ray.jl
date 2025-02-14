@@ -4,33 +4,15 @@ using SparseArrays
 
 struct Ray <: AbstractVector{SCIP.SCIP_Real}
     coefficients::SparseVector{SCIP.SCIP_Real}
-    generating_variable::Union{Variable,Nothing}
+    objective_coefficient::SCIP.SCIP_Real
 end
 
-function Ray(dimension::Int, generating_variable::Union{Variable,Nothing})
-    return Ray(spzeros(dimension), generating_variable)
-end
-
-function Ray(dimension::Int)
-    return Ray(dimension, nothing)
-end
-
-function Ray(coefficients::Vector{SCIP.SCIP_Real}, generating_variable::Variable)
-    ray = Ray(length(coefficients), generating_variable)
-    for i in 1:length(coefficients)
-        if !is_zero(coefficients[i])
-            ray[i] = coefficients[i]
-        end
-    end
-    return ray
+function Ray(dimension::Int, objective_coefficient::SCIP.SCIP_Real)::Ray
+    return Ray(spzeros(dimension), objective_coefficient)
 end
 
 function SparseArrays.nnz(ray::Ray)
     return nnz(ray.coefficients)
-end
-
-function Ray(coefficients::Vector{SCIP.SCIP_Real})
-    return Ray(coefficients, Variable())
 end
 
 function as_dense_vector(ray::Ray)

@@ -11,20 +11,6 @@ function Point(dimension::Int, orig_objective_value::SCIP.SCIP_Real)
     return Point(spzeros(dimension), orig_objective_value)
 end
 
-function Point(dimension::Int)
-    return Point(dimension, 0.0)
-end
-
-function Point(coordinates::Vector{SCIP.SCIP_Real}, orig_objective_value::SCIP.SCIP_Real)
-    point = Point(length(coordinates), orig_objective_value::SCIP.SCIP_Real)
-    for i in 1:length(coordinates)
-        if !is_zero(coordinates[i])
-            point[i] = coordinates[i]
-        end
-    end
-    return point
-end
-
 function Point(coordinates::Vector{SCIP.SCIP_Real})
     return Point(coordinates, 0.0)
 end

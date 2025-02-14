@@ -45,10 +45,10 @@ function gather_separating_solutions(
     @info "Generating cuts from rays"
     a_bar = PRLPgetSolution(prlp)
     r_bar = get_rays(point_ray_collection)
-    #r_bar = filter(get_rays(point_ray_collection)) do ray
-    #    return !is_zero(dot(a_bar, Vector(ray.coefficients))) # Use ray.coefficients instead of Ray to avoid type decution to AbstractArray
-    #end
-    #sort!(r_bar; by = ray -> abs(get_obj(get_generating_variable(ray))))
+    r_bar = filter(get_rays(point_ray_collection)) do ray
+        return !is_zero(dot(a_bar, Vector(ray.coefficients))) # Use ray.coefficients instead of Ray to avoid type decution to AbstractArray
+    end
+    sort!(r_bar; by = ray -> abs(ray.objective_coefficient))
     objective_tried = 0
 
     for ray in r_bar
@@ -64,7 +64,7 @@ function gather_separating_solutions(
         if objective_tried >= 2 * cut_limit
             break
         end
-        if length(separating_solutions) >= 0
+        if length(separating_solutions) >= cut_limit
             break
         end
         elapsed_time = time() - start_time
