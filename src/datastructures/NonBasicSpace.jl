@@ -1,11 +1,13 @@
-#
-# A NonBasicSpace object represent the non-basic space associated with an LP tableau.
-# It stores information about the non-basic variables, the origin point of the non basic space and which columns are complemented
-# It also supports conversion of points and rays between the original space and the non-basic space
-#
+
+"""
+    NonBasicSpace
+
+A NonBasicSpace object represent the non-basic space associated with an LP tableau.
+It stores information about the non-basic variables, the origin point of the non basic space and which columns are complemented
+"""
+
 struct NonBasicSpace
     nonbasic_indices::Vector{Int64}
-    complement_nonbasic_mask::Vector{Int64}
     complemented_columns::Set{Int64}
     origin_point::Point
 end
@@ -40,9 +42,29 @@ function NonBasicSpace(tableau::Tableau)
             push!(complemented_columns, i)
         end
     end
-    return NonBasicSpace(nonbasic_indices, mask, complemented_columns, origin_point)
+    return NonBasicSpace(nonbasic_indices, complemented_columns, origin_point)
 end
 
+"""
+    NonBasicSpace(scip::SCIP.SCIPData)
+
+Create a NonBasicSpace object from a given SCIP object
+"""
+function NonBasicSpace(scip::SCIP.SCIPData)::NonBasicSpace
+    basis_status = get_basis_status(scip)
+    nonbasic_indices = findall(
+        x -> (x == SCIP.SCIP_BASESTAT_LOWER || x == SCIP.SCIP_BASESTAT_UPPER), basis_status
+    )
+    complemented_columns = findall(x -> x == SCIP.SCIP_BASESTAT_UPPER, basis_status)
+    origin_point = get_solution_vector(scip)
+    return NonBasicSpace(nonbasic_indices, Set(complemented_columns), origin_point)
+end
+
+"""
+    project_point_to_nonbasic_space(nbspace::NonBasicSpace, point::Point)
+
+Project a point to the non-basic space
+"""
 function project_point_to_nonbasic_space(
     nbspace::NonBasicSpace,
     point::Point
@@ -57,45 +79,23 @@ function project_point_to_nonbasic_space(
     return new_point
 end
 
-function project_ray_to_nonbasic_space(
-    nbspace::NonBasicSpace,
-    ray::Ray
-)::Ray
-    # To project a ray we need to remove the basic variables and complement the necessary non-basic columns
-    new_ray = Ray(ray.coefficients[nbspace.nonbasic_indices], get_generating_variable(ray))
-    new_ray[nbspace.complement_nonbasic_mask] .= -new_ray[nbspace.complement_nonbasic_mask]
-    return new_ray
-end
+"""
+    revert_cut_vector_to_nonbasic_space(nbspace::NonBasicSpace, cut_vector::Vector{SCIP.SCIP_Real})
 
-function revert_point_to_original_space(
-    nbspace::NonBasicSpace,
-    point::Point
-)
-    # To revert a point we need to add the basic variables and complement the necessary non-basic columns
-    new_point = zeros(SCIP.SCIP_Real, length(nbspace.origin_point))
-
-    for (idx, val) in enumerate(point)
-        new_point[nbspace.nonbasic_indices[idx]] = val
-    end
-
-    for idx in nbspace.complemented_columns
-        new_point[idx] = -new_point[idx]
-    end
-
-    return new_point
-end
-
+Revert a cut vector to the original space (i.e. add the basic variables and undo the complementation) 
+"""
 function revert_cut_vector_to_original_space(
     nbspace::NonBasicSpace,
     cut_vector::Vector{SCIP.SCIP_Real}
 )::Vector{SCIP.SCIP_Real}
-    # To revert a cut vector we need to add the basic variables and complement the necessary non-basic columns
     new_cut_vector = zeros(SCIP.SCIP_Real, length(nbspace.origin_point))
 
+    # Add the basic variables
     for (idx, val) in enumerate(cut_vector)
         new_cut_vector[nbspace.nonbasic_indices[idx]] = val
     end
 
+    # Undo the complementation
     for idx in nbspace.complemented_columns
         new_cut_vector[idx] = -new_cut_vector[idx]
     end

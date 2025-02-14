@@ -126,8 +126,8 @@ function vpolyhedralcut_separation(sepa::VPCSeparator)
     # Step 1: Get LP objective Tableau
     sepa.lp_obj = SCIP.SCIPgetSolOrigObj(scip, C_NULL)
     sepa.tableau = construct_tableau_with_constraint_matrix(scip)
-    sepa.lp_sol = get_solution_vector(sepa.tableau)
-    sepa.nonbasic_space = NonBasicSpace(sepa.tableau)
+    sepa.nonbasic_space = NonBasicSpace(scip)
+    sepa.lp_sol = get_solution_vector(scip)
     sepa.constraint_matrix = ConstraintMatrix(scip)
 
     # Step 2: Get Disjunction
