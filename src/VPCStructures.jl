@@ -91,6 +91,8 @@ Constructors:
     cutpool::Union{Nothing,CutPool} = nothing
     "Constraint Matrix"
     constraint_matrix::Union{Nothing,ConstraintMatrix} = nothing
+    "Variable Pointers"
+    variable_pointers::Vector{Ptr{SCIP.SCIP_VAR}} = []
 
     # Return message
     "Termination Message"

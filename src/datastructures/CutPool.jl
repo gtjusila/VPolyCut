@@ -17,8 +17,8 @@ function get_rhs(cut::Cut)
 end
 
 @kwdef mutable struct CutPool <: AbstractVector{Cut}
-    tableau::Tableau
     cuts::Vector{Cut} = []
+    variable_pointers::Vector{Ptr{SCIP.SCIP_Var}} = []
 end
 
 @forward CutPool.cuts Base.push!, Base.size
@@ -31,7 +31,7 @@ function add_all_cuts!(
             scip,
             sepa,
             get_coefficients(cut),
-            get_problem_variables_pointers(cutpool.tableau),
+            cutpool.variable_pointers,
             get_rhs(cut)
         )
         SCIP.@SCIP_CALL SCIP.SCIPreleaseRow(scip, row)

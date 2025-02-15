@@ -129,9 +129,10 @@ function vpolyhedralcut_separation(sepa::VPCSeparator)
     sepa.nonbasic_space = NonBasicSpace(scip)
     sepa.lp_sol = get_solution_vector(scip)
     sepa.constraint_matrix = ConstraintMatrix(scip)
+    sepa.variable_pointers = collect_variable_pointers(scip)
 
     # Step 2: Get Disjunction
-    @debug "Getting Disjunction by Branch and Bound"
+    @debug"Getting Disjunction by Branch and Bound"
     sepa.disjunction = get_disjunction_by_branchandbound(scip, sepa.parameters.n_leaves)
 
     # Step 3: Collect Point Ray
@@ -176,7 +177,7 @@ function vpolyhedralcut_separation(sepa::VPCSeparator)
     sepa.statistics.prlp_solves_data = prlp.solve_statistics
 
     # Step 7: Process Cuts and Add to SCIP
-    sepa.cutpool = CutPool(; tableau = sepa.tableau)
+    sepa.cutpool = CutPool(; variable_pointers = sepa.variable_pointers)
     for solution in separating_solutions
         cut = get_cut_from_separating_solution(
             solution, sepa.constraint_matrix, sepa.nonbasic_space

@@ -101,3 +101,14 @@ function get_solution_vector(scip::SCIP.SCIPData)::Point
 
     return sol
 end
+
+function collect_variable_pointers(scip::SCIP.SCIPData)::Vector{Ptr{SCIP.SCIP_VAR}}
+    n_cols::Int64 = SCIP.SCIPgetNLPCols(scip)
+    cols = SCIP.SCIPgetLPCols(scip)
+    cols = unsafe_wrap(Vector{Ptr{SCIP.SCIP_Col}}, cols, n_cols)
+    vars = Vector{Ptr{SCIP.SCIP_VAR}}(undef, n_cols)
+    for (i, col) in enumerate(cols)
+        vars[i] = SCIP.SCIPcolGetVar(col)
+    end
+    return vars
+end
