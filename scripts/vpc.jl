@@ -50,7 +50,8 @@ function main()
         scip;
         n_leaves = config["n_leaves"],
         log_directory = output_path,
-        time_limit = 900
+        time_limit = 900,
+        prlp_solve_method = config["prlp_solve_method"]
     )
 
     # Read Problem

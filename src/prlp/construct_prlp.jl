@@ -6,10 +6,12 @@ using SCIP
 Construct a PRLP object from a given point ray collection
 """
 function construct_prlp(
-    point_ray_collection::PointRayCollection
+    point_ray_collection::PointRayCollection;
+    prlp_solve_method::PRLPsolveAlgorithm = PRIMAL_SIMPLEX
 )
     problem_dimension = dimension(point_ray_collection)
     prlp = PRLP(problem_dimension)
+    PRLPsetSolvingAlgorithm(prlp, prlp_solve_method)
 
     first = true
     for point in get_points(point_ray_collection)

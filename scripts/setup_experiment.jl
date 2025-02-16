@@ -7,24 +7,24 @@ include("utils.jl")
 println("Setup experiment")
 
 instance_list = prompt_user(;
-    message="Instance List",
-    validation=(x) -> isfile(abspath(x)),
-    error_message="Invalid Path.",
-    default="experiment_data/instances/instances_list.txt"
+    message = "Instance List",
+    validation = (x) -> isfile(abspath(x)),
+    error_message = "Invalid Path.",
+    default = "experiment_data/instances/instances_list.txt"
 )
 
 instance_dir = prompt_user(;
-    message="Instance List",
-    validation=(x) -> isdir(abspath(x)),
-    error_message="Invalid Path.",
-    default="experiment_data/instances"
+    message = "Instance List",
+    validation = (x) -> isdir(abspath(x)),
+    error_message = "Invalid Path.",
+    default = "experiment_data/instances"
 )
 
 mode = prompt_user(;
-    message="Mode",
-    validation=(x) -> x in ["vpc", "gomory"],
-    error_message="Invalid Mode.",
-    default="vpc"
+    message = "Mode",
+    validation = (x) -> x in ["vpc", "gomory"],
+    error_message = "Invalid Mode.",
+    default = "vpc"
 )
 
 # If experiment_runs is not there create it first.
@@ -35,11 +35,11 @@ if !isdir(runs_path)
 end
 
 experiment_path = prompt_user(;
-    message="Experiment Name:",
-    validation=(x) ->
+    message = "Experiment Name:",
+    validation = (x) ->
         ((x != "") && !isdir(joinpath(runs_path, x))),
-    error_message="Name must not be empty.",
-    default=""
+    error_message = "Name must not be empty.",
+    default = ""
 )
 experiment_path = joinpath(runs_path, experiment_path)
 mkdir(experiment_path)
@@ -55,12 +55,12 @@ if mode == "gomory"
         mkdir(path)
     end
     config_dataframe = DataFrame(;
-        id=1:length(instances),
-        instances_path=instances_path,
-        output_path=output_path
+        id = 1:length(instances),
+        instances_path = instances_path,
+        output_path = output_path
     )
     run_settings_file = joinpath(experiment_path, "experiment_list.tsv")
-    CSV.write(run_settings_file, config_dataframe; delim='\t')
+    CSV.write(run_settings_file, config_dataframe; delim = '\t')
 
     for path in instances_path
         if (!isfile(path))
@@ -90,12 +90,12 @@ elseif mode == "vpc"
         mkdir(path)
     end
     config_dataframe = DataFrame(;
-        id=1:length(instances),
-        instances_path=instances_path,
-        output_path=output_path
+        id = 1:length(instances),
+        instances_path = instances_path,
+        output_path = output_path
     )
     run_settings_file = joinpath(experiment_path, "experiment_list.tsv")
-    CSV.write(run_settings_file, config_dataframe; delim='\t')
+    CSV.write(run_settings_file, config_dataframe; delim = '\t')
 
     for path in instances_path
         if (!isfile(path))
@@ -106,12 +106,18 @@ elseif mode == "vpc"
     # Create config file
     vpc_config = Dict()
     vpc_config["n_leaves"] = prompt_user(;
-        message="Number of Leaves",
-        validation=(x) -> !isnothing(tryparse(Int, x)),
-        error_message="Not an integer.",
-        default="64"
+        message = "Number of Leaves",
+        validation = (x) -> !isnothing(tryparse(Int, x)),
+        error_message = "Not an integer.",
+        default = "64"
     )
     vpc_config["n_leaves"] = parse(Int, vpc_config["n_leaves"])
+    vpc_config["prlp_solve_method"] = prompt_user(;
+        message = "PRLP Solve Method (1: PRIMAL SIMPLEX, 2:DUAL SIMPLEX, 3: BARRIER):",
+        validation = (x) -> !isnothing(tryparse(Int, x)),
+        error_message = "Not an integer.",
+        default = "1"
+    )
     config_file = joinpath(experiment_path, "vpc_config.toml")
     open(config_file, "w") do io
         TOML.print(io, vpc_config)

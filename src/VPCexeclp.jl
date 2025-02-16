@@ -163,29 +163,24 @@ function vpolyhedralcut_separation(sepa::VPCSeparator)
 
     # Step 5: Construct PRLP problem
     @info "Constructing PRLP"
-    prlp_timed = @timed construct_prlp(point_ray_collection)
+    prlp_timed = @timed construct_prlp(
+        point_ray_collection;
+        prlp_solve_method = PRLPsolveAlgorithm(sepa.parameters.prlp_solve_method)
+    )
     prlp = prlp_timed.value
     sepa.statistics.prlp_construction_time = prlp_timed.time
     @info "PRLP Constructed"
 
-    # Determine the method to solve PRLP
-    @info "Checking Feasibility of PRLP"
-    prlp_calibrate_timed = @timed PRLPcalibrate(prlp)
-    calibrated = prlp_calibrate_timed.value
-    sepa.statistics.prlp_feasibility_proving_time = prlp_calibrate_timed.time
-    if !calibrated
-        throw(FailedToProvePRLPFeasibility())
-    end
-    @info "Feasibility of PRLP is proven"
-
     # Step 6: Gather separating solutions
     @info "Gathering Separating Solutions"
-    separating_solutions_timed = @timed gather_separating_solutions(
+    separating_solutions_timed = @profile gather_separating_solutions(
         prlp, point_ray_collection;
         cut_limit = sepa.parameters.cut_limit,
         time_limit = sepa.parameters.time_limit,
         start_time = start_time
     )
+    statprofilehtml()
+    exit(1)
     separating_solutions = separating_solutions_timed.value
     sepa.statistics.number_of_cuts = length(separating_solutions)
     sepa.statistics.prlp_separation_time = separating_solutions_timed.time

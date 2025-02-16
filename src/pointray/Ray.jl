@@ -15,7 +15,7 @@ function SparseArrays.nnz(ray::Ray)
     return nnz(ray.coefficients)
 end
 
-function as_dense_vector(ray::Ray)
+function as_dense_vector(ray::Ray)::Vector{SCIP.SCIP_Real}
     return Vector(ray.coefficients)
 end
 
