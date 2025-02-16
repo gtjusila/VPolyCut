@@ -31,7 +31,5 @@ function gather_separating_solutions(
             break
         end
     end
-    @info "Total time spent in solving: $total_time"
-    @info "Total time spent in cleaning: $(objective_pool.cleaning)"
     return separating_solutions
 end
