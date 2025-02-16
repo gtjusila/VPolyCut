@@ -113,11 +113,12 @@ elseif mode == "vpc"
     )
     vpc_config["n_leaves"] = parse(Int, vpc_config["n_leaves"])
     vpc_config["prlp_solve_method"] = prompt_user(;
-        message = "PRLP Solve Method (1: PRIMAL SIMPLEX, 2:DUAL SIMPLEX, 3: BARRIER):",
+        message = "PRLP Solve Method (1: PRIMAL SIMPLEX, 2:DUAL SIMPLEX, 3: BARRIER)",
         validation = (x) -> !isnothing(tryparse(Int, x)),
         error_message = "Not an integer.",
         default = "1"
     )
+    vpc_config["prlp_solve_method"] = parse(Int, vpc_config["prlp_solve_method"])
     config_file = joinpath(experiment_path, "vpc_config.toml")
     open(config_file, "w") do io
         TOML.print(io, vpc_config)
