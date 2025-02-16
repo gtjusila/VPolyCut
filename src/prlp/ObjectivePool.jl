@@ -125,24 +125,29 @@ function Base.iterate(op::ObjectivePool, state = 1)
     end
     if state >= 5
         clean_indices(op)
+        if (isempty(op.remaining_indices))
+            return nothing
+        end
         next_objective = popfirst!(op.remaining_indices)
         is_point = next_objective <= length(op.prlp.points)
         if is_point
-            return ObjectiveFunction(
-                as_dense_vector(op.prlp.points[next_objective]),
-                10,
-                nothing,
-                "point_$(next_objective)"
-            ),
-            (!isempty(op.remaining_indices)) ? state + 1 : nothing
+            return (
+                ObjectiveFunction(
+                    as_dense_vector(op.prlp.points[next_objective]),
+                    10,
+                    nothing,
+                    "point_$(next_objective)"
+                ),
+                state + 1)
         else
-            return ObjectiveFunction(
-                as_dense_vector(op.prlp.rays[next_objective - length(op.prlp.points)]),
-                10,
-                nothing,
-                "ray_$(next_objective - length(op.prlp.points))"
-            ),
-            (!isempty(op.remaining_indices)) ? state + 1 : nothing
+            return (
+                ObjectiveFunction(
+                    as_dense_vector(op.prlp.rays[next_objective - length(op.prlp.points)]),
+                    10,
+                    nothing,
+                    "ray_$(next_objective - length(op.prlp.points))"
+                ),
+                state + 1)
         end
     end
 end
