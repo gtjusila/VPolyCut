@@ -14,7 +14,6 @@ function get_point_ray_collection(
     nb_space::NonBasicSpace
 )
     point_ray_collection = PointRayCollection()
-    @debug "Collecting Points and Rays from disjunction"
     SCIP.SCIPstartProbing(scip)
     for (i, term) in enumerate(disjunction)
         @debug "Collecting Point and Ray from term $i"

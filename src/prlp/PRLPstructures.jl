@@ -141,7 +141,6 @@ function PRLPconstructLP(prlp::PRLP)
         index .-= Cint(1)
         if first
             first = false
-            @info typeof(index)
         end
         append!(ind, index)
         append!(val, value)

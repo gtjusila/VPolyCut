@@ -7,9 +7,10 @@ using SCIP
 Given a separating solution in the nonbasic space, return the corresponding cut in the original space
 """
 function get_cut_from_separating_solution(
-    separating_solution::Vector{SCIP.SCIP_Real}, constraint_matrix::ConstraintMatrix,
+    separating_solution::Vector{SCIP.SCIP_Real},
     nonbasicspace::NonBasicSpace)::Cut
     origin_point = nonbasicspace.origin_point
+    constraint_matrix = nonbasicspace.constraint_matrix
 
     separating_solution = revert_cut_vector_to_original_space(
         nonbasicspace, separating_solution

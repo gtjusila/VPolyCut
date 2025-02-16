@@ -35,9 +35,8 @@ function _exec_lp(sepa::VPCSeparator)
     scip = sepa.scipd
 
     # Initialization: start timer, set separated to false, and increment call count 
-    @debug "VPC Separator Called"
+    @info "VPC Separator Called"
     sepa.statistics.called += 1
-    sepa.start_time = time()
 
     # Check Preconditions and handle accordingly
     if sepa.should_be_skipped
@@ -57,10 +56,10 @@ function _exec_lp(sepa::VPCSeparator)
         # LP Solution is not optimal 
         return SCIP.SCIP_DELAYED
     end
-    @debug "Finished checking necessary Preconditions"
+    @info "Finished checking necessary Preconditions"
 
     # Do everything in a try block to ensure time limit requirement
-    @debug "Starting separation subroutine"
+    @info "Starting separation subroutine"
     try
         # Call Separation Subroutine
         vpolyhedralcut_separation(sepa)
@@ -112,6 +111,7 @@ end
 function vpolyhedralcut_separation(sepa::VPCSeparator)
     # Aliasing for easier call
     scip = sepa.scipd
+    start_time = time()
 
     # If cut limit is -1 or -2 convert them to the actual limit 
     # We do the conversion here because for option -2 we need the number of fractional variables
@@ -120,73 +120,90 @@ function vpolyhedralcut_separation(sepa::VPCSeparator)
     elseif sepa.parameters.cut_limit == -2
         sepa.parameters.cut_limit = SCIP.SCIPgetNLPBranchCands(scip)
     end
+
     # Capture fractional variables statistic
     sepa.statistics.n_fractional_variables = SCIP.SCIPgetNLPBranchCands(scip)
 
-    # Step 1: Get LP objective Tableau
-    sepa.lp_obj = SCIP.SCIPgetSolOrigObj(scip, C_NULL)
-    sepa.tableau = construct_tableau_with_constraint_matrix(scip)
-    sepa.nonbasic_space = NonBasicSpace(scip)
-    sepa.lp_sol = get_solution_vector(scip)
-    sepa.constraint_matrix = ConstraintMatrix(scip)
-    sepa.variable_pointers = collect_variable_pointers(scip)
+    # Step 1: Construct NonBasicSpace and get LP Objective 
+    lp_obj = SCIP.SCIPgetSolOrigObj(scip, C_NULL)
+    nonbasic_space = NonBasicSpace(scip)
+    # Capture LP Objective statistic
+    sepa.statistics.lp_objective = lp_obj
 
     # Step 2: Get Disjunction
-    @debug"Getting Disjunction by Branch and Bound"
-    sepa.disjunction = get_disjunction_by_branchandbound(scip, sepa.parameters.n_leaves)
+    @info "Getting Disjunction by Branch and Bound"
+    disjunction = get_disjunction_by_branchandbound(
+        scip, sepa.parameters.n_leaves
+    )
+    @info "Disjunction Obtained"
 
     # Step 3: Collect Point Ray
-    point_ray_time = time()
-    sepa.point_ray_collection = get_point_ray_collection(
-        scip, sepa.disjunction, sepa.nonbasic_space
+    @info "Collecting Points and Rays"
+    point_ray_collection_timed = @timed get_point_ray_collection(
+        scip, disjunction, nonbasic_space
     )
-    @info "Point Ray Collection Time: $(time() - point_ray_time)"
-    @debug "Number of points: $(num_points(sepa.point_ray_collection))"
-    @debug "Number of rays: $(num_rays(sepa.point_ray_collection))"
+    point_ray_collection = point_ray_collection_timed.value
+    sepa.statistics.point_ray_collection_time = point_ray_collection_timed.time
+    sepa.statistics.n_points = length(get_points(point_ray_collection))
+    sepa.statistics.n_rays = length(get_rays(point_ray_collection))
+    @info "Finished Collecting Points and Rays"
 
     # Step 4: Test disjunctive_lower_bound
     # This test is always runned! The parameter sepa.parameters.test_disjunctive_lower_bound 
     # only determine whether we can skipped if the test fail 
-    pstar = argmin(x -> get_objective_value(x), get_points(sepa.point_ray_collection))
-    sepa.disjunctive_lower_bound = get_objective_value(pstar)
-    if is_LE(sepa.disjunctive_lower_bound, sepa.lp_obj) &&
+    pstar = argmin(x -> get_objective_value(x), get_points(point_ray_collection))
+
+    disjunctive_lower_bound = get_objective_value(pstar)
+    sepa.statistics.disjunctive_lower_bound = disjunctive_lower_bound
+    if is_LE(disjunctive_lower_bound, lp_obj) &&
         sepa.parameters.test_disjunctive_lower_bound
         @debug "Disjunctive Lower Bound is not strictly larger than the current LP"
         throw(FailedDisjunctiveLowerBoundTest())
     end
 
     # Step 5: Construct PRLP problem
-    prlp = construct_prlp(sepa.point_ray_collection)
+    @info "Constructing PRLP"
+    prlp_timed = @timed construct_prlp(point_ray_collection)
+    prlp = prlp_timed.value
+    sepa.statistics.prlp_construction_time = prlp_timed.time
+    @info "PRLP Constructed"
+
     # Determine the method to solve PRLP
-    @info "Checking Feasibility"
-    if !PRLPcalibrate(prlp)
+    @info "Checking Feasibility of PRLP"
+    prlp_calibrate_timed = @timed PRLPcalibrate(prlp)
+    calibrated = prlp_calibrate_timed.value
+    sepa.statistics.prlp_feasibility_proving_time = prlp_calibrate_timed.time
+    if !calibrated
         throw(FailedToProvePRLPFeasibility())
     end
+    @info "Feasibility of PRLP is proven"
 
     # Step 6: Gather separating solutions
-    separating_solution_time = time()
-    separating_solutions = gather_separating_solutions(
-        prlp, sepa.point_ray_collection;
+    @info "Gathering Separating Solutions"
+    separating_solutions_timed = @timed gather_separating_solutions(
+        prlp, point_ray_collection;
         cut_limit = sepa.parameters.cut_limit,
         time_limit = sepa.parameters.time_limit,
-        start_time = sepa.start_time
+        start_time = start_time
     )
-    @info "Separating Solution Time: $(time() - separating_solution_time)"
+    separating_solutions = separating_solutions_timed.value
+    sepa.statistics.number_of_cuts = length(separating_solutions)
+    sepa.statistics.prlp_separation_time = separating_solutions_timed.time
 
     # Capture statistics from PRLP
     sepa.statistics.prlp_solves_data = prlp.solve_statistics
 
     # Step 7: Process Cuts and Add to SCIP
-    sepa.cutpool = CutPool(; variable_pointers = sepa.variable_pointers)
+    cutpool = CutPool(; variable_pointers = nonbasic_space.variable_pointers)
     for solution in separating_solutions
         cut = get_cut_from_separating_solution(
-            solution, sepa.constraint_matrix, sepa.nonbasic_space
+            solution, nonbasic_space
         )
-        push!(sepa.cutpool, cut)
+        push!(cutpool, cut)
     end
-    add_all_cuts!(scip, sepa.cutpool, sepa)
+    add_all_cuts!(scip, cutpool, sepa)
 
-    if length(sepa.cutpool) > 0
+    if length(cutpool) > 0
         sepa.termination_status = FOUND_CUTS
     else
         sepa.termination_status = NO_CUTS_FOUND

@@ -8,7 +8,6 @@ Construct a PRLP object from a given point ray collection
 function construct_prlp(
     point_ray_collection::PointRayCollection
 )
-    @debug "Constructing PRLP"
     problem_dimension = dimension(point_ray_collection)
     prlp = PRLP(problem_dimension)
 
@@ -21,7 +20,6 @@ function construct_prlp(
     end
 
     PRLPconstructLP(prlp)
-    SCIP.@SCIP_CALL SCIP.SCIPlpiWriteLP(prlp.lpi, "prlpold.lp")
     @debug "PRLP Constructed"
 
     return prlp

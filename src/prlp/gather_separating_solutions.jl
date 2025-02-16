@@ -11,7 +11,7 @@ function gather_separating_solutions(
     push!(separating_solutions, feasiblility)
 
     # 6.2 all ones
-    @info "Trying all ones"
+    @debug "Trying all ones"
     all_ones = PRLPtryObjective(
         prlp, ones(SCIP.SCIP_Real, prlp.dimension); label = "all_ones"
     )
@@ -20,7 +20,7 @@ function gather_separating_solutions(
     end
 
     # 6.3 Pstar 
-    @info "Trying Pstar"
+    @debug "Trying Pstar"
     pstar_index = argmin(1:length(get_points(point_ray_collection))) do i
         return get_objective_value(get_points(point_ray_collection)[i])
     end
@@ -33,16 +33,16 @@ function gather_separating_solutions(
     end
 
     # 6.4 Tighten Pstar and recalibrate PRLP
-    @info "Tightening Pstar"
+    @debug "Tightening Pstar"
     PRLPtighten(prlp, pstar_index)
-    @info "Recalibrating"
+    @debug "Recalibrating"
     if !PRLPcalibrate(prlp)
         throw(PStarNotTight())
     end
     push!(separating_solutions, PRLPgetSolution(prlp))
 
     # Now iterate over the rays 
-    @info "Generating cuts from rays"
+    @debug "Generating cuts from rays"
     a_bar = PRLPgetSolution(prlp)
     r_bar = get_rays(point_ray_collection)
     r_bar = filter(get_rays(point_ray_collection)) do ray

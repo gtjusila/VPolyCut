@@ -3,46 +3,23 @@
     NonBasicSpace
 
 A NonBasicSpace object represent the non-basic space associated with an LP tableau.
-It stores information about the non-basic variables, the origin point of the non basic space and which columns are complemented
+It stores information about the constraint matrix, the non-basic variables, the origin point of the non basic space and which columns are complemented
 """
-
 struct NonBasicSpace
     nonbasic_indices::Vector{Int64}
     complemented_columns::Set{Int64}
     origin_point::Point
+    constraint_matrix::ConstraintMatrix
+    variable_pointers::Vector{Ptr{SCIP.SCIP_VAR}}
 end
 
+"""
+    dimension(nbspace::NonBasicSpace)
+
+Return the dimension of the non-basic space
+"""
 function dimension(nbspace::NonBasicSpace)
     return length(nbspace.nonbasic_indices)
-end
-
-"""
-    NonBasicSpace(tableau::Tableau)
-
-Create a NonBasicSpace object from a given tableau
-"""
-function NonBasicSpace(tableau::Tableau)
-    nonbasic_indices = Vector{Int64}()
-    complemented_columns = Set{Int64}()
-    mask = Vector{Int64}()
-    n_tableau_vars = get_nvars(tableau)
-    origin_point = get_solution_vector(tableau)
-    for i in 1:n_tableau_vars
-        var = get_var_from_column(tableau, i)
-        if !is_basic(var)
-            # Mark that the var is non-basic
-            push!(nonbasic_indices, i)
-            # Mark non-basic indices that must be complemented
-            if is_at_upper_bound(var)
-                push!(mask, length(nonbasic_indices))
-            end
-        end
-        if is_at_upper_bound(var)
-            # Mark that the var is complemented
-            push!(complemented_columns, i)
-        end
-    end
-    return NonBasicSpace(nonbasic_indices, complemented_columns, origin_point)
 end
 
 """
@@ -57,7 +34,15 @@ function NonBasicSpace(scip::SCIP.SCIPData)::NonBasicSpace
     )
     complemented_columns = findall(x -> x == SCIP.SCIP_BASESTAT_UPPER, basis_status)
     origin_point = get_solution_vector(scip)
-    return NonBasicSpace(nonbasic_indices, Set(complemented_columns), origin_point)
+    constraint_matrix = ConstraintMatrix(scip)
+    variable_pointers = collect_variable_pointers(scip)
+    return NonBasicSpace(
+        nonbasic_indices,
+        Set(complemented_columns),
+        origin_point,
+        constraint_matrix,
+        variable_pointers
+    )
 end
 
 """
