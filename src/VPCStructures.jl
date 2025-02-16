@@ -36,13 +36,23 @@ end
     prlp_solves_data::Vector{Any} = []
     n_fractional_variables::Int = 0
     cbar_test::Bool = true
+    point_ray_collection_time::Float64 = 0.0
+    n_points::Int = 0
+    n_rays::Int = 0
     prlp_solve_method::String = "PRIMAL_SIMPLEX"
+    disjunctive_lower_bound::Float64 = 0.0
+    lp_objective::Float64 = 0.0
+    prlp_separation_time::Float64 = 0.0
+    prlp_construction_time::Float64 = 0.0
+    prlp_feasibility_proving_time::Float64 = 0.0
+    number_of_cuts::Int = 0
 end
 
 @enum VPCTerminationStatus begin
     TIME_LIMIT_EXCEEDED
     FAILED_TO_PROVE_PRLP_FEASIBILITY
     FAILED_DISJUNCTIVE_LOWER_BOUND_TEST
+    BASESTAT_ZERO_ENCOUNTERED
     FAILED_TO_TIGHTEN_PSTAR
     ASSUMPTION_VIOLATED
     FOUND_CUTS
@@ -60,36 +70,14 @@ Constructors:
 """
 @kwdef mutable struct VPCSeparator <: SCIP.AbstractSeparator
     # Shared Data among the functions
-    "Pointer to SCIP"
+    "SCIP Data"
     scipd::SCIP.SCIPData
-
     "SEPA Parameters"
     parameters::VPCParameters
     "SEPA statistics"
     statistics::VPCStatistics = VPCStatistics()
     "should be skipped?"
     should_be_skipped::Bool = false
-
-    "Start Time"
-    start_time::Float64 = 0.0
-    "LP Solution"
-    lp_sol::Union{Nothing,Vector{SCIP.SCIP_Real}} = nothing
-    "LP Objective"
-    lp_obj::SCIP.SCIP_Real = 0.0
-    "Disjunctive Lower bound"
-    disjunctive_lower_bound::SCIP.SCIP_Real = 0.0
-    "LP Tableau"
-    tableau::Union{Nothing,Tableau} = nothing
-    "NonBasicSpace"
-    nonbasic_space::Union{Nothing,NonBasicSpace} = nothing
-    "Disjunction"
-    disjunction::Union{Nothing,Disjunction} = nothing
-    "PointRayCollection"
-    point_ray_collection::Union{Nothing,PointRayCollection} = nothing
-    "Cut Pool"
-    cutpool::Union{Nothing,CutPool} = nothing
-    "Constraint Matrix"
-    constraint_matrix::Union{Nothing,ConstraintMatrix} = nothing
 
     # Return message
     "Termination Message"

@@ -3,37 +3,18 @@ module VPolyhedralCut
 # SCIPJLUtils
 include("scipjlutils/SCIPJLUtils.jl")
 
-# Main VPolyhedralCut Module
+# Common Utilities
+include("commons/CPointer.jl")
+include("commons/numerical_methods.jl")
+include("commons/scip_tableau_utilities.jl")
+include("commons/log_helpers.jl")
+include("commons/Exceptions.jl")
 
-# Tableau Object
-# Handles All low level interaction with SCIP
-# Also contains some abstract data structure which act as wrappers around SCIP data structures
-include("tableauhandlers/Variable.jl")
-include("tableauhandlers/LPRow.jl")
-include("tableauhandlers/LPColumn.jl")
-include("tableauhandlers/ConstraintMatrix.jl")
-include("tableauhandlers/Tableau.jl")
-include("tableauhandlers/scip_connector.jl")
-
-# Common Data Structures
-include("datastructures/Exceptions.jl")
-include("datastructures/Point.jl")
-include("datastructures/Ray.jl")
-include("datastructures/CutPool.jl")
-include("datastructures/PointRayCollection.jl")
-include("datastructures/CornerPolyhedron.jl")
-include("datastructures/NonBasicSpace.jl")
-
-# Utilities
-include("utilities/CPointer.jl")
-include("utilities/sepa_row_helpers.jl")
-include("utilities/log_helpers.jl")
-include("utilities/numerical_methods.jl")
-include("utilities/eliminate_duplicate_rows.jl")
-include("utilities/indicator_connector.jl")
-
-# PRLP
-include("prlp/PRLPstructures.jl")
+# Nonbasicspace (Point and Ray type is needed by Nonbasicspace)
+include("pointray/Point.jl")
+include("pointray/Ray.jl")
+include("nonbasicspace/ConstraintMatrix.jl")
+include("nonbasicspace/NonBasicSpace.jl")
 
 # Branch and Bound
 include("branchandbound/Node.jl")
@@ -47,18 +28,30 @@ include("branchandbound/execute.jl")
 include("disjunction/structures.jl")
 include("disjunction/branch_and_bound_adaptor.jl")
 
+# Point Ray Collection
+include("pointray/CornerPolyhedron.jl")
+include("pointray/PointRayCollection.jl")
+include("pointray/collect_point_rays.jl")
+
+# Utilities
+include("utilities/indicator_connector.jl")
+
+# PRLP
+include("prlp/PRLPstructures.jl")
+include("prlp/gather_separating_solutions.jl")
+include("prlp/construct_prlp.jl")
+
+# CutPool
+include("cutpool/CutPool.jl")
+include("cutpool/get_cut_from_separating_solution.jl")
+include("cutpool/sepa_row_helpers.jl")
+
 # Datastructures for VPolyhedralCut
 include("VPCStructures.jl")
 
-# Parts 
-include("subroutines/collect_point_rays.jl")
-include("subroutines/construct_prlp.jl")
-include("subroutines/gather_separating_solutions.jl")
-include("subroutines/get_cut_from_separating_solution.jl")
-
 # Separators
-include("IndicatorSeparator.jl")
-include("IntersectionSeparator.jl")
+#include("IndicatorSeparator.jl")
+#include("IntersectionSeparator.jl")
 include("VPCexeclp.jl")
 
 end
