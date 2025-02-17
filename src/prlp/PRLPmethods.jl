@@ -168,11 +168,11 @@ function PRLPconstructLP(prlp::PRLP)
         SCIP.SCIP_LPPAR_PRESOLVING,
         1
     )
-    #SCIP.@SCIP_CALL SCIP.SCIPlpiSetIntpar(
-    #    prlp.lpi,
-    #    SCIP.SCIP_LPPAR_LPINFO,
-    #    1
-    #)
+    SCIP.@SCIP_CALL SCIP.SCIPlpiSetIntpar(
+        prlp.lpi,
+        SCIP.SCIP_LPPAR_LPINFO,
+        1
+    )
 end
 
 """
