@@ -119,13 +119,13 @@ elseif mode == "vpc"
         default = "1"
     )
     vpc_config["prlp_solve_method"] = parse(Int, vpc_config["prlp_solve_method"])
-    vpc_config["prlp_allow_warm_star"] = prompt_user(;
+    vpc_config["prlp_allow_warm_start"] = prompt_user(;
         message = "Allow PRLP warm start (true/false)",
         validation = (x) -> x == "true" || x == "false",
         error_message = "Neither true nor false.",
         default = "true"
     )
-    vpc_config["prlp_allow_warm_star"] = (vpc_config["prlp_allow_warm_star"] == "true")
+    vpc_config["prlp_allow_warm_start"] = (vpc_config["prlp_allow_warm_start"] == "true")
     config_file = joinpath(experiment_path, "vpc_config.toml")
     open(config_file, "w") do io
         TOML.print(io, vpc_config)
