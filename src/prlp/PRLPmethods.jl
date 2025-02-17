@@ -1,16 +1,6 @@
-
+using SCIP
 Base.show(io::IO, prlp::PRLP) = print(io, "PRLP with dimension $(prlp.dimension)")
 Base.show(io::IO, scip::SCIP.SCIPData) = print(io, "SCIPData")
-"""
-    PRLP(dimension::Int)
-
-Constructor for the PRLP struct. The `dimension` is the dimension of the space in which the points and rays live. 
-"""
-function PRLP(dimension::Int)
-    return PRLP(;
-        dimension = dimension
-    )
-end
 
 """
     PRLPsetOutputStream(prlp::PRLP, stream::IO)
@@ -61,6 +51,19 @@ function PRLPaddPoint(prlp::PRLP, point::Point)
         @warn "Trying to add zero point. Point is ignored."
     end
     PRLPinvalidate(prlp)
+end
+
+"""
+    PRLPsetObjectiveLimit(prlp::PRLP, limit::SCIP.SCIP_Real)
+
+Set the objective limit for the PRLP. This is useful if we want to stop the solve early if the objective value is greater than the limit.
+"""
+function PRLPsetObjectiveLimit(prlp::PRLP, limit::SCIP.SCIP_Real)
+    SCIP.@SCIP_CALL SCIP.SCIPlpiSetRealpar(
+        prlp.lpi,
+        SCIP.SCIP_LPPAR_OBJLIM,
+        limit
+    )
 end
 
 """
@@ -165,6 +168,11 @@ function PRLPconstructLP(prlp::PRLP)
         SCIP.SCIP_LPPAR_PRESOLVING,
         1
     )
+    #SCIP.@SCIP_CALL SCIP.SCIPlpiSetIntpar(
+    #    prlp.lpi,
+    #    SCIP.SCIP_LPPAR_LPINFO,
+    #    1
+    #)
 end
 
 """
@@ -430,31 +438,6 @@ function lpi_termination_status(lpi::CPtr{SCIP.SCIP_LPI})::TerminationStatus
 end
 
 """
-    PRLPcalibrate(prlp::PRLP)
-
-Determine the algorithm used to solve PRLP. Return true if a method is found, otherwise return false.
-"""
-function PRLPcalibrate(prlp::PRLP)
-    feasibility_check = false
-    # We iterate over the algorithms to check which one find a feasible solution
-    for algorithm in [PRIMAL_SIMPLEX, DUAL_SIMPLEX, BARRIER]
-        PRLPsetSolvingAlgorithm(prlp, algorithm)
-        @debug "Trying Algorithm $(algorithm)"
-        feasibility_check = PRLPtryObjective(
-            prlp,
-            zeros(SCIP.SCIP_Real, prlp.dimension);
-            time_limit = 180.0,
-            label = "feasibility"
-        )
-        if !isnothing(feasibility_check)
-            @debug "Success with $(algorithm)"
-            return true
-        end
-    end
-    return false
-end
-
-"""
     PRLPtryObjective(prlp::PRLP, objective::RealVector; time_limit = 30.0, label::String = "")
 
 Try to optimize the given objective. If the solution is found, return the solution vector, otherwise return nothing.
@@ -462,19 +445,47 @@ Try to optimize the given objective. If the solution is found, return the soluti
 function PRLPtryObjective(
     prlp::PRLP, objective::ObjectiveFunction
 )::Union{Vector{SCIP.SCIP_Real},Nothing}
+    # Warm start if 1. last solve is not good (otherwise LP solver could warmstart on its own)
+    # 2. Objective is savable and 3. Warm start is allowed
+    if !prlp.last_solve_good && objective.savable && prlp.allow_warm_start
+        @debug "Last solve was not good. Trying to restore basis"
+        PRLPrestoreBasis(prlp)
+    end
+
+    # Set time limit, objective and try the solve
     PRLPsetTimeLimit(prlp, objective.time_limit)
     PRLPsetObjective(prlp, objective.direction)
+    prlp.last_solve_good = false
     PRLPsolve(prlp)
     PRLPrecordSolveStats(prlp, objective.label)
+
+    # If lpi is optimal then solve is good, save the basis
+    if is_true(SCIP.SCIPlpiIsOptimal(prlp.lpi))
+        prlp.last_solve_good = true
+        # if warmstart is allowed and basis is savable, save the basis
+        if objective.savable && prlp.allow_warm_start
+            PRLPstoreBasis(prlp)
+        end
+    end
+
+    # Return the solution if available
     if PRLPisSolutionAvailable(prlp)
         return PRLPgetSolution(prlp)
     end
+
+    # If solution is not available, check if on_fail is set
     if !isnothing(objective.on_fail)
         throw(objective.on_fail)
     end
+
     return nothing
 end
 
+"""
+    PRLPrecordSolveStats(prlp::PRLP, label::String)
+
+Record the solve statistics of the PRLP. This will record the solve algorithm, solve time, simplex iterations, primal status and termination status.
+"""
 function PRLPrecordSolveStats(prlp::PRLP, label::String)
     stats = Dict(
         "solve_algorithm" => PRLPgetSolvingAlgorithm(prlp),
@@ -485,4 +496,41 @@ function PRLPrecordSolveStats(prlp::PRLP, label::String)
         "objective_name" => label
     )
     push!(prlp.solve_statistics, stats)
+end
+
+"""
+    PRLPstoreBasis(prlp::PRLP)
+
+Store the basis of the PRLP. This is useful if we want to warm start the LP solver.
+"""
+function PRLPstoreBasis(prlp::PRLP)
+    blkmem = SCIP.SCIPblkmem(prlp.scip)
+    PRLPfreeBasis(prlp)
+    SCIP.@SCIP_CALL SCIP.SCIPlpiGetState(prlp.lpi, blkmem, prlp.last_good_state)
+    @assert !(prlp.last_good_state[] == C_NULL) "Failed to store basis"
+end
+
+"""
+    PRLPrestoreBasis(prlp::PRLP)
+
+Restore the last known optimal basis of the PRLP.
+"""
+function PRLPrestoreBasis(prlp::PRLP)
+    if prlp.last_good_state[] != C_NULL
+        blkmem = SCIP.SCIPblkmem(prlp.scip)
+        prlp.n_basis_restart += 1
+        SCIP.@SCIP_CALL SCIP.SCIPlpiSetState(prlp.lpi, blkmem, prlp.last_good_state[])
+    end
+end
+
+"""
+    PRLPfreeBasis(prlp::PRLP)
+
+Free the basis of the PRLP. This is useful if we want to free the memory.
+"""
+function PRLPfreeBasis(prlp::PRLP)
+    blkmem = SCIP.SCIPblkmem(prlp.scip)
+    if prlp.last_good_state[] != C_NULL
+        SCIP.SCIPlpiFreeState(prlp.lpi, blkmem, prlp.last_good_state)
+    end
 end

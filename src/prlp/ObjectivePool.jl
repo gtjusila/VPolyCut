@@ -21,6 +21,10 @@ struct ObjectiveFunction
     label
     """
     label::String
+    """
+    Optimal Basis can be saved and reused
+    """
+    savable::Bool
 end
 
 # Constructor methods for different objective functions
@@ -30,7 +34,8 @@ function feasibility_objective(prlp::PRLP)::ObjectiveFunction
         zeros(SCIP.SCIP_Real, prlp.dimension),
         120,
         FailedToProvePRLPFeasibility(),
-        "feasibility"
+        "feasibility",
+        false
     )
 end
 
@@ -39,9 +44,18 @@ function all_ones_objective(prlp::PRLP)::ObjectiveFunction
         ones(SCIP.SCIP_Real, prlp.dimension),
         10,
         nothing,
-        "all_ones"
+        "all_ones",
+        false
     )
 end
+
+"""
+    pstar_objective(
+    p_star::Point
+)::ObjectiveFunction
+
+Construct an objective function from a point
+"""
 
 function pstar_objective(
     p_star::Point
@@ -50,7 +64,8 @@ function pstar_objective(
         as_dense_vector(p_star),
         10,
         nothing,
-        "pstar"
+        "pstar",
+        false
     )
 end
 
@@ -61,10 +76,52 @@ function pstar_feasibility_objective(
         zeros(SCIP.SCIP_Real, prlp.dimension),
         120,
         PStarNotTight(),
-        "pstar_feasibility"
+        "pstar_feasibility",
+        true
     )
 end
 
+"""
+    point_objective(
+    point::Point,
+    index::Int64
+)::ObjectiveFunction
+
+Construct an objective function from a point
+"""
+function point_objective(
+    point::Point,
+    index::Int64
+)::ObjectiveFunction
+    return ObjectiveFunction(
+        as_dense_vector(point),
+        10,
+        nothing,
+        "point$(index)",
+        true
+    )
+end
+
+"""
+    ray_objective(
+    ray::Ray,
+    index::Int64
+)::ObjectiveFunction
+
+Construct an objective function from a ray
+"""
+function ray_objective(
+    ray::Ray,
+    index::Int64
+)::ObjectiveFunction
+    return ObjectiveFunction(
+        as_dense_vector(ray),
+        10,
+        nothing,
+        "ray$(index)",
+        true
+    )
+end
 """
     ObjectivePool
 
@@ -128,26 +185,14 @@ function Base.iterate(op::ObjectivePool, state = 1)
         if (isempty(op.remaining_indices))
             return nothing
         end
-        next_objective = popfirst!(op.remaining_indices)
-        is_point = next_objective <= length(op.prlp.points)
-        if is_point
-            return (
-                ObjectiveFunction(
-                    as_dense_vector(op.prlp.points[next_objective]),
-                    10,
-                    nothing,
-                    "point_$(next_objective)"
-                ),
-                state + 1)
+        next_objective_index = popfirst!(op.remaining_indices)
+        if next_objective_index <= length(op.prlp.points)
+            point = op.prlp.points[next_objective_index]
+            return (point_objective(point, next_objective_index), state + 1)
         else
-            return (
-                ObjectiveFunction(
-                    as_dense_vector(op.prlp.rays[next_objective - length(op.prlp.points)]),
-                    10,
-                    nothing,
-                    "ray_$(next_objective - length(op.prlp.points))"
-                ),
-                state + 1)
+            next_objective_index = next_objective_index - length(op.prlp.points)
+            ray = op.prlp.rays[next_objective_index]
+            return (ray_objective(ray, next_objective_index), state + 1)
         end
     end
 end

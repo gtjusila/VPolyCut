@@ -15,16 +15,27 @@ end
 @enum TerminationStatus LPI_OPTIMAL LPI_TIME_LIMIT_EXCEEDED LPI_NOT_SOLVED LPI_UNBOUNDED
 
 @kwdef mutable struct PRLP
+    solve_algorithm::PRLPsolveAlgorithm = PRIMAL_SIMPLEX
+
+    # Permanent Data
+    scip::SCIP.SCIPData
     dimension::Int = 0
     points::Vector{Point} = []
     rays::Vector{Ray} = []
-    lp_constructed::Bool = false
     lpi::CPtr{SCIP.SCIP_LPI} = CPtr(SCIP.SCIP_LPI)
+    allow_warm_start::Bool = true
+
+    # State
+    lp_constructed::Bool = false
     last_solve_time::SCIP.SCIP_Real = 0.0
     last_simplex_iterations::Int = 0.0
     solution_available::Bool = false
     solution_vector::RealVector = []
     solution_objective::SCIP.SCIP_Real = 0.0
-    solve_algorithm::PRLPsolveAlgorithm = PRIMAL_SIMPLEX
+    last_solve_good::Bool = false
+    last_good_state::Ref{Ptr{SCIP.SCIP_LPISTATE}} = Ref(C_NULL)
+
+    # Statistic
     solve_statistics::Vector{Any} = []
+    n_basis_restart::Int = 0
 end

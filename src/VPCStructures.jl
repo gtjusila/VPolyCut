@@ -31,6 +31,8 @@ is passed during the creation of the VPCSeparator.
     test_disjunctive_lower_bound::Bool = true
     "PRLP solve method"
     prlp_solve_method::Int = 1
+    "PRLP allow warm start"
+    prlp_allow_warm_start::Bool = true
 end
 
 @kwdef mutable struct VPCStatistics
@@ -47,6 +49,7 @@ end
     prlp_separation_time::Float64 = 0.0
     prlp_construction_time::Float64 = 0.0
     number_of_cuts::Int = 0
+    objective_tried::Int = 0
 end
 
 @enum VPCTerminationStatus begin
@@ -98,14 +101,16 @@ function include_vpolyhedral_sepa(
     cut_limit = -2,
     log_directory = "",
     time_limit = typemax(Float64),
-    prlp_solve_method = 1
+    prlp_solve_method = 1,
+    prlp_allow_warm_start = true
 )
     parameters = VPCParameters(;
         n_leaves = n_leaves,
         cut_limit = cut_limit,
         log_directory = log_directory,
         time_limit = time_limit,
-        prlp_solve_method = prlp_solve_method
+        prlp_solve_method = prlp_solve_method,
+        prlp_allow_warm_start = prlp_allow_warm_start
     )
 
     sepa = VPCSeparator(scipd, parameters)

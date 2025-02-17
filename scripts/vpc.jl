@@ -51,7 +51,8 @@ function main()
         n_leaves = config["n_leaves"],
         log_directory = output_path,
         time_limit = 900,
-        prlp_solve_method = config["prlp_solve_method"]
+        prlp_solve_method = config["prlp_solve_method"],
+        prlp_allow_warm_start = config["prlp_allow_warm_start"]
     )
 
     # Read Problem

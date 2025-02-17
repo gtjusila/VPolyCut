@@ -15,12 +15,12 @@ function gather_separating_solutions(
         objective_solution = objective_solution_timed.value
         total_time += objective_solution_timed.time
         if !isnothing(objective_solution)
-            @debug "Found cut. Total cut found so far: $(length(separating_solutions)). Cut limit is $(cut_limit)"
             push!(separating_solutions, objective_solution)
+            @debug "Found cut. Total cut found so far: $(length(separating_solutions)). Cut limit is $(cut_limit)"
         end
         # Time limit exceeded
         if time_limit < time() - start_time
-            throw(TIME_LIMIT_EXCEEDED())
+            break
         end
         # Cut limit reached
         if length(separating_solutions) >= cut_limit
@@ -31,5 +31,6 @@ function gather_separating_solutions(
             break
         end
     end
+    PRLPfreeBasis(prlp)
     return separating_solutions
 end
