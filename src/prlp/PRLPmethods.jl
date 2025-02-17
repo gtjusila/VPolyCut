@@ -464,8 +464,8 @@ function PRLPtryObjective(
         prlp.last_solve_good = true
         # if warmstart is allowed and basis is savable, save the basis
         # test only store first basis
-        if objective.savable && prlp.allow_warm_start &&
-            objective.label == "pstar_feasibility"
+        if objective.savable && prlp.allow_warm_start
+            #objective.label == "pstar_feasibility"
             PRLPstoreBasis(prlp)
         end
     end
