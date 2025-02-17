@@ -506,6 +506,7 @@ end
 Store the basis of the PRLP. This is useful if we want to warm start the LP solver.
 """
 function PRLPstoreBasis(prlp::PRLP)
+    @debug "Storing Basis"
     blkmem = SCIP.SCIPblkmem(prlp.scip)
     PRLPfreeBasis(prlp)
     SCIP.@SCIP_CALL SCIP.SCIPlpiGetState(prlp.lpi, blkmem, prlp.last_good_state)
