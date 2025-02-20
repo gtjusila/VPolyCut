@@ -134,7 +134,8 @@ function vpolyhedralcut_separation(sepa::VPCSeparator)
     # Step 2: Get Disjunction
     @info "Getting Disjunction by Branch and Bound"
     disjunction = get_disjunction_by_branchandbound(
-        scip, sepa.parameters.n_leaves
+        scip, sepa.parameters.n_leaves;
+        log_path = joinpath(sepa.parameters.log_directory, "branch_and_bound.log")
     )
     @info "Disjunction Obtained"
 

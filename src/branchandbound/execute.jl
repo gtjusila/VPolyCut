@@ -2,8 +2,9 @@ using SCIP
 using DataStructures
 using Dates
 
-function execute_branchandbound(branchandbound::BranchAndBound)::Bool
-    with_logger(NullLogger()) do
+function execute_branchandbound(branchandbound::BranchAndBound; log_path = nothing)::Bool
+    logger = isnothing(log_path) ? NullLogger() : setup_file_logger(log_path)
+    with_logger(logger) do
         _execute_branchandbound(branchandbound)
     end
 end

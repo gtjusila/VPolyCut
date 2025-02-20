@@ -2,8 +2,9 @@ abstract type BranchingRule end
 
 function get_branching_variable(
     branching::T, scip::SCIP.SCIPData
-) where {T<:BranchingRule}
+)::Ptr{SCIP.SCIP_VAR} where {T<:BranchingRule}
     error("BranchingRule not implemented for type $(T)")
+    return C_NULL
 end
 
 struct PseudoCostBranching <: BranchingRule end;

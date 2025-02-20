@@ -3,12 +3,14 @@ using SCIP
 """
 create a partial branch and bound tree and return a disjunction where each term is a leaf node of the tree
 """
-function get_disjunction_by_branchandbound(scipd::SCIP.SCIPData, n_leaves::Int)
+function get_disjunction_by_branchandbound(
+    scipd::SCIP.SCIPData, n_leaves::Int; log_path = nothing
+)
     # First we generate a branch and bound tree with n_leaves
     branchandbound = BranchAndBound(
         scipd; max_leaves = n_leaves
     )
-    execute_branchandbound(branchandbound)
+    execute_branchandbound(branchandbound; log_path = log_path)
 
     # Collect the leaves
     leaves = get_leaves(branchandbound)
