@@ -38,6 +38,8 @@ include("utilities/indicator_connector.jl")
 
 # PRLP
 include("prlp/PRLPstructures.jl")
+include("prlp/ObjectivePool.jl")
+include("prlp/PRLPmethods.jl")
 include("prlp/gather_separating_solutions.jl")
 include("prlp/construct_prlp.jl")
 
