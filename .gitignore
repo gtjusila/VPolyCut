@@ -2,6 +2,7 @@ Manifest.toml
 results
 logs
 experiment_runs
+experiment_data/miplibbench
 temp
 .DS_Store
 statprof
