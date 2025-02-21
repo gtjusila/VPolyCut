@@ -1,6 +1,13 @@
+@enum GSSeturnCode begin
+    GSS_OKAY = 0
+    GSS_TIME_LIMIT = 1
+    GSS_CONSECUTIVE_FAIL = 2
+end
+
 function gather_separating_solutions(
     prlp::PRLP,
-    point_ray_collection::PointRayCollection;
+    point_ray_collection::PointRayCollection,
+    status::Ref{GSSeturnCode};
     cut_limit::Int = typemax(Int),
     time_limit::Float64 = typemax(Float64),
     start_time::Float64 = time()
@@ -24,7 +31,8 @@ function gather_separating_solutions(
         end
         # Time limit exceeded
         if time_limit < time() - start_time
-            sepa.termination_status = TIME_LIMIT_EXCEEDED
+            # Mark as time limit reached but we still fail softly to allow cuts to be added 
+            status[] = GSS_TIME_LIMIT
             break
         end
         # Cut limit reached
@@ -36,7 +44,8 @@ function gather_separating_solutions(
             break
         end
         if consecutive_fail >= 10
-            sepa.termination_status = CONSECUTIVE_FAIL_LIMIT_REACHED
+            # Mark but still fail softly
+            status[] = GSS_CONSECUTIVE_FAIL
             break
         end
     end

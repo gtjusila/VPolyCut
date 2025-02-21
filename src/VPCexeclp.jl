@@ -77,7 +77,7 @@ function _exec_lp(sepa::VPCSeparator)
         # Handle different types of errors
         if error isa TimeLimitExceeded
             @debug "Time Limit Exceeded"
-            sepa.termination_status = TIME_LIMIT_EXCEEDED
+            sepa.termination_status = TIME_LIMIT_EXCEEDED_COLLECTION
         elseif error isa FailedToProvePRLPFeasibility
             @debug "Failed to prove PRLP Feasibility"
             sepa.termination_status = FAILED_TO_PROVE_PRLP_FEASIBILITY
@@ -144,7 +144,8 @@ function vpolyhedralcut_separation(sepa::VPCSeparator)
     # Step 3: Collect Point Ray
     @info "Collecting Points and Rays"
     point_ray_collection_timed = @timed get_point_ray_collection(
-        scip, disjunction, nonbasic_space
+        scip, disjunction, nonbasic_space;
+        time_limit = sepa.parameters.time_limit, start_time = start_time
     )
     point_ray_collection = point_ray_collection_timed.value
     sepa.statistics.point_ray_collection_time = point_ray_collection_timed.time
@@ -181,12 +182,19 @@ function vpolyhedralcut_separation(sepa::VPCSeparator)
 
     # Step 6: Gather separating solutions
     @info "Gathering Separating Solutions"
+    status = Ref{GSSeturnCode}(GSS_OKAY)
     separating_solutions_timed = @timed gather_separating_solutions(
-        prlp, point_ray_collection;
+        prlp, point_ray_collection, status;
         cut_limit = sepa.parameters.cut_limit,
         time_limit = sepa.parameters.time_limit,
         start_time = start_time
     )
+    if status[] == GSS_TIME_LIMIT
+        sepa.termination_status = TIME_LIMIT_EXCEEDED_PRLP
+    elseif status[] == GSS_CONSECUTIVE_FAIL
+        sepa.termination_status = CONSECUTIVE_FAIL_LIMIT_REACHED
+    end
+
     separating_solutions = separating_solutions_timed.value
     sepa.statistics.number_of_cuts = length(separating_solutions)
     sepa.statistics.prlp_separation_time = separating_solutions_timed.time

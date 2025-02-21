@@ -11,7 +11,9 @@ Point ray collection will run in probing mode
 function get_point_ray_collection(
     scip::SCIP.SCIPData,
     disjunction::Disjunction,
-    nb_space::NonBasicSpace
+    nb_space::NonBasicSpace;
+    time_limit::Float64 = typemax(Float64),
+    start_time = time()
 )
     point_ray_collection = PointRayCollection()
     SCIP.SCIPstartProbing(scip)
@@ -53,6 +55,9 @@ function get_point_ray_collection(
                 add_ray(point_ray_collection, ray)
             end
 
+            if time_limit < time() - start_time
+                throw(TimeLimitExceeded())
+            end
         catch error
             if !(error isa NodeInfeasible)
                 rethrow(error)
