@@ -10,14 +10,14 @@ instance_list = prompt_user(;
     message = "Instance List",
     validation = (x) -> isfile(abspath(x)),
     error_message = "Invalid Path.",
-    default = "experiment_data/instances/instances_list.txt"
+    default = "experiment_data/miplibbench/instances_list.txt"
 )
 
 instance_dir = prompt_user(;
     message = "Instance List",
     validation = (x) -> isdir(abspath(x)),
     error_message = "Invalid Path.",
-    default = "experiment_data/instances"
+    default = "experiment_data/miplibbench"
 )
 
 mode = prompt_user(;
