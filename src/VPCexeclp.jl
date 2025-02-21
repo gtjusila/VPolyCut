@@ -130,6 +130,8 @@ function vpolyhedralcut_separation(sepa::VPCSeparator)
     nonbasic_space = NonBasicSpace(scip)
     # Capture LP Objective statistic
     sepa.statistics.lp_objective = lp_obj
+    sepa.statistics.num_lp_rows = Int64(SCIP.SCIPgetNLPRows(scip))
+    sepa.statistics.num_lp_columns = Int64(SCIP.SCIPgetNLPCols(scip))
 
     # Step 2: Get Disjunction
     @info "Getting Disjunction by Branch and Bound"
@@ -173,6 +175,8 @@ function vpolyhedralcut_separation(sepa::VPCSeparator)
     )
     prlp = prlp_timed.value
     sepa.statistics.prlp_construction_time = prlp_timed.time
+    sepa.statistics.num_prlp_columns = prlp.dimension
+    sepa.statistics.num_lp_rows = length(prlp.rays) + length(prlp.points)
     @info "PRLP Constructed"
 
     # Step 6: Gather separating solutions
@@ -187,6 +191,7 @@ function vpolyhedralcut_separation(sepa::VPCSeparator)
     sepa.statistics.number_of_cuts = length(separating_solutions)
     sepa.statistics.prlp_separation_time = separating_solutions_timed.time
     sepa.statistics.objective_tried = length(prlp.solve_statistics)
+    sepa.statistics.num_basis_restart = prlp.n_basis_restart
     @info "Basis Restart Count $(prlp.n_basis_restart)"
     # Capture statistics from PRLP
     sepa.statistics.prlp_solves_data = prlp.solve_statistics
@@ -200,6 +205,11 @@ function vpolyhedralcut_separation(sepa::VPCSeparator)
         push!(cutpool, cut)
     end
     add_all_cuts!(scip, cutpool, sepa)
+
+    # Sepa termination status have been modified due to Timelimit/ consecutive_fail
+    if sepa.termination_status != NOT_RUN
+        return nothing
+    end
 
     if length(cutpool) > 0
         sepa.termination_status = FOUND_CUTS

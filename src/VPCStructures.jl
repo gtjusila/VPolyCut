@@ -44,11 +44,16 @@ end
     n_points::Int = 0
     n_rays::Int = 0
     prlp_solve_method::String = "PRIMAL_SIMPLEX"
+    num_prlp_rows::Int = 0
+    num_prlp_columns::Int = 0
+    num_basis_restart::Int = 0
     disjunctive_lower_bound::Float64 = 0.0
     lp_objective::Float64 = 0.0
     prlp_separation_time::Float64 = 0.0
     prlp_construction_time::Float64 = 0.0
     number_of_cuts::Int = 0
+    num_lp_rows::Int = 0
+    num_lp_columns::Int = 0
     objective_tried::Int = 0
 end
 
@@ -56,6 +61,7 @@ end
     TIME_LIMIT_EXCEEDED
     FAILED_TO_PROVE_PRLP_FEASIBILITY
     FAILED_DISJUNCTIVE_LOWER_BOUND_TEST
+    CONSECUTIVE_FAIL_LIMIT_REACHED
     BASESTAT_ZERO_ENCOUNTERED
     FAILED_TO_TIGHTEN_PSTAR
     ASSUMPTION_VIOLATED
