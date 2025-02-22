@@ -13,6 +13,7 @@ function get_lp_rays(corner::CornerPolyhedron)::Vector{Ray}
     return corner.lp_rays
 end
 
+const global buffer = Ref{Vector{SCIP.SCIP_Real}}(Vector{SCIP.SCIP_Real}());
 """
     ConstructCornerPolyhedronContext
 
@@ -44,11 +45,18 @@ function CornerPolyhedron(scip::SCIP.SCIPData, nb_space::NonBasicSpace)::CornerP
     basic_indices = get_basis_indices(scip; sorted = false)
     n_cols = SCIP.SCIPgetNLPCols(scip)
     n_rows = SCIP.SCIPgetNLPRows(scip)
+
+    # The origin vector contains all of the indices in our original space which will contain
+    # relevant information for us to generate rays
+    # The key insight here is these are exactly the nonbasic_indices in the original tbaleau that
+    # have become basic in the current disjunction
     origin = findall(x -> insorted(x, nb_space.nonbasic_indices), basic_indices)
+    # The target is which indices each of the indices in origin will be mapped to in the nonbasic space 
     target = map(origin) do i
         id = basic_indices[i]
         return searchsortedfirst(nb_space.nonbasic_indices, id)
     end
+    # The complement vector contains information on whether or not the relevant indices have to be complemented or not
     complement = map(origin) do i
         id = basic_indices[i]
         return id in nb_space.complemented_columns ? -1.0 : 1.0
@@ -56,6 +64,10 @@ function CornerPolyhedron(scip::SCIP.SCIPData, nb_space::NonBasicSpace)::CornerP
     context = ConstructCornerPolyhedronContext(
         scip, basis_status, nb_space, n_rows, n_cols, origin, complement, target
     )
+    if length(buffer[]) == 0
+        # Global buffer is not set so set it
+        buffer[] = zeros(SCIP.SCIP_Real, context.n_rows)
+    end
 
     # Generate rays from nonbasic columns
     cols = SCIP.SCIPgetLPCols(scip)
@@ -113,11 +125,30 @@ function construct_non_basic_ray_from_column(
 
     # the direction which we can move in
     direction = context.basis_status[idx] == SCIP.SCIP_BASESTAT_UPPER ? -1.0 : 1.0
-    # Construct the ray
-    nb_space_dim = length(context.nb_space.nonbasic_indices)
-    ray = Ray(nb_space_dim, SCIP.SCIPgetColRedcost(context.scip, col))
 
-    # First, the nonbasic column that is being considered should have entry `direction` in the ray.
+    # Get the actual data from the tableau column
+    global buffer
+    SCIP.@SCIP_CALL SCIP.SCIPgetLPBInvACol(
+        context.scip, Cint(idx - 1), buffer[], C_NULL, C_NULL)
+
+    # To make things efficient we must first determine which entry of the rays will be nonzero 
+    non_zero = findall(i -> !is_zero(buffer[][i]), context.origin)
+    indices = context.origin[non_zero]
+    comp = context.complement[non_zero]
+    target = context.target[non_zero]
+
+    # Now we construct the ray
+    nb_space_dim = length(context.nb_space.nonbasic_indices)
+    ray = Ray(
+        sparsevec(
+            target,
+            -direction * (comp .* buffer[][indices]),
+            nb_space_dim
+        ),
+        SCIP.SCIPgetColRedcost(context.scip, col)
+    )
+
+    # Finally, the nonbasic column that is being considered should have entry `direction` in the ray.
     # We only care about is however if the column will be projected
     if insorted(idx, context.nb_space.nonbasic_indices)
         # get the index of idx under the projection
@@ -127,21 +158,6 @@ function construct_non_basic_ray_from_column(
         ray[i] = c * direction
     end
 
-    # Get the actual data from the tableau column
-    buffer_values = zeros(SCIP.SCIP_Real, context.n_rows)
-    SCIP.@SCIP_CALL SCIP.SCIPgetLPBInvACol(
-        context.scip, Cint(idx - 1), buffer_values, C_NULL, C_NULL)
-
-    for (i, c, j) in zip(context.origin, context.complement, context.target)
-        # we are looping through the rows i.e. through each basic variable
-        # i is the indice of the row in the tableau, buffer[i] is the indice of the basic variable
-        # c is either -1 or 1 depending on whether the column is complemented or not
-        # j is the indice of the basic variable in the projection
-        value = -direction * buffer_values[i]
-        if !is_zero(value)
-            ray[j] = c * value
-        end
-    end
     return ray
 end
 
@@ -156,9 +172,28 @@ function construct_non_basic_ray_from_row(
 
     # the direction which we can move in
     direction = context.basis_status[idx] == SCIP.SCIP_BASESTAT_UPPER ? -1.0 : 1.0
+
+    # Get the actual data from the tableau column
+    global buffer
+    SCIP.@SCIP_CALL SCIP.SCIPgetLPBInvCol(
+        context.scip, Cint(idx - context.n_cols - 1), buffer[], C_NULL, C_NULL)
+
+    # Same as above
+    non_zero = findall(i -> !is_zero(buffer[][i]), context.origin)
+    indices = context.origin[non_zero]
+    comp = context.complement[non_zero]
+    target = context.target[non_zero]
+
     # Construct the ray
     nb_space_dim = length(context.nb_space.nonbasic_indices)
-    ray = Ray(nb_space_dim, -SCIP.SCIProwGetDualsol(row))
+    ray = Ray(
+        sparsevec(
+            target,
+            -direction * (comp .* buffer[][indices]),
+            nb_space_dim
+        ),
+        -SCIP.SCIProwGetDualsol(row)
+    )
 
     if insorted(idx, context.nb_space.nonbasic_indices)
         # get the index of idx under the projection
@@ -166,18 +201,6 @@ function construct_non_basic_ray_from_row(
         # if the entry should be complemented then assign appropriate coefficient
         c = (idx in context.nb_space.complemented_columns) ? -1 : 1
         ray[i] = c * direction
-    end
-
-    buffer_values = zeros(SCIP.SCIP_Real, context.n_rows)
-    SCIP.@SCIP_CALL SCIP.SCIPgetLPBInvCol(
-        context.scip, Cint(idx - context.n_cols - 1), buffer_values, C_NULL, C_NULL)
-
-    for (i, c, j) in zip(context.origin, context.complement, context.target)
-        # Same as in the column case
-        value = -direction * buffer_values[i]
-        if !is_zero(value)
-            ray[j] = c * value
-        end
     end
 
     return ray

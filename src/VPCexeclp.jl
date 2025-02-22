@@ -5,8 +5,6 @@ using SCIP
 using JuMP
 using LinearAlgebra
 import MathOptInterface as MOI
-using Profile
-using StatProfilerHTML
 
 """
 VPolyhedral Cut Separator

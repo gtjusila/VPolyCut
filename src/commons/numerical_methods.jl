@@ -2,6 +2,7 @@
 using SCIP
 
 const global numeric_scip = Ref{Union{SCIP.SCIPData,Nothing}}(nothing)
+const global scip_epsilon = Ref{SCIP.SCIP_Real}(0.0)
 function is_numeric_scip_set()
     return !isnothing(numeric_scip[])
 end
@@ -15,6 +16,8 @@ end
 
 function set_numeric_scip(scip::SCIP.SCIPData)
     global numeric_scip[] = scip
+    global scip_epsilon
+    scip_epsilon[] = SCIP.SCIPepsilon(scip)
 end
 
 function is_infinity(x::SCIP.SCIP_Real)
@@ -22,7 +25,8 @@ function is_infinity(x::SCIP.SCIP_Real)
 end
 
 function is_zero(x::SCIP.SCIP_Real)
-    return SCIP.SCIPisZero(numeric_scip[], x) == 1
+    global scip_epsilon
+    return abs(x) <= scip_epsilon[]
 end
 
 function is_non_zero(x::SCIP.SCIP_Real)
