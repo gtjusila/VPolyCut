@@ -7,6 +7,7 @@ using LinearAlgebra
 import MathOptInterface as MOI
 using Profile
 using StatProfilerHTML
+
 """
 VPolyhedral Cut Separator
 
@@ -75,9 +76,12 @@ function _exec_lp(sepa::VPCSeparator)
         sepa.should_be_skipped = true
 
         # Handle different types of errors
-        if error isa TimeLimitExceeded
-            @debug "Time Limit Exceeded"
+        if error isa TimeLimitExceededCollection
+            @debug "Time Limit Exceeded Collection"
             sepa.termination_status = TIME_LIMIT_EXCEEDED_COLLECTION
+        elseif error isa TimeLimitExceededBranchAndBound
+            @debug "Time Limit Exceeded Branch and Bound"
+            sepa.termination_status = TIME_LIMIT_EXCEEDED_BRANCHANDBOUND
         elseif error isa FailedToProvePRLPFeasibility
             @debug "Failed to prove PRLP Feasibility"
             sepa.termination_status = FAILED_TO_PROVE_PRLP_FEASIBILITY
@@ -87,9 +91,6 @@ function _exec_lp(sepa::VPCSeparator)
         elseif error isa PStarNotTight
             @debug "PStar Not Tight"
             sepa.termination_status = FAILED_TO_TIGHTEN_PSTAR
-        elseif error isa AssumptionViolated
-            @debug "Assumption Violated"
-            sepa.termination_status = ASSUMPTION_VIOLATED
         elseif error isa BasestatZeroEncountered
             @debug "Basestat Zero Encountered"
             sepa.termination_status = BASESTAT_ZERO_ENCOUNTERED
@@ -123,7 +124,7 @@ function vpolyhedralcut_separation(sepa::VPCSeparator)
     end
 
     # Capture fractional variables statistic
-    sepa.statistics.n_fractional_variables = SCIP.SCIPgetNLPBranchCands(scip)
+    sepa.statistics.num_fractional_variables = SCIP.SCIPgetNLPBranchCands(scip)
 
     # Step 1: Construct NonBasicSpace and get LP Objective 
     lp_obj = SCIP.SCIPgetSolOrigObj(scip, C_NULL)
@@ -135,10 +136,13 @@ function vpolyhedralcut_separation(sepa::VPCSeparator)
 
     # Step 2: Get Disjunction
     @info "Getting Disjunction by Branch and Bound"
-    disjunction = get_disjunction_by_branchandbound(
+    disjunction_timed = @timed get_disjunction_by_branchandbound(
         scip, sepa.parameters.n_leaves;
-        log_path = joinpath(sepa.parameters.log_directory, "branch_and_bound.log")
+        log_path = joinpath(sepa.parameters.log_directory, "branch_and_bound.log"),
+        time_limit = 0.5 * sepa.parameters.time_limit
     )
+    disjunction = disjunction_timed.value
+    sepa.statistics.disjunction_time = disjunction_timed.time
     @info "Disjunction Obtained"
 
     # Step 3: Collect Point Ray
@@ -149,8 +153,8 @@ function vpolyhedralcut_separation(sepa::VPCSeparator)
     )
     point_ray_collection = point_ray_collection_timed.value
     sepa.statistics.point_ray_collection_time = point_ray_collection_timed.time
-    sepa.statistics.n_points = length(get_points(point_ray_collection))
-    sepa.statistics.n_rays = length(get_rays(point_ray_collection))
+    sepa.statistics.num_points = length(get_points(point_ray_collection))
+    sepa.statistics.num_rays = length(get_rays(point_ray_collection))
     @info "Finished Collecting Points and Rays"
 
     # Step 4: Test disjunctive_lower_bound
@@ -176,8 +180,8 @@ function vpolyhedralcut_separation(sepa::VPCSeparator)
     )
     prlp = prlp_timed.value
     sepa.statistics.prlp_construction_time = prlp_timed.time
-    sepa.statistics.num_prlp_columns = prlp.dimension
-    sepa.statistics.num_lp_rows = length(prlp.rays) + length(prlp.points)
+    sepa.statistics.prlp_num_columns = prlp.dimension
+    sepa.statistics.prlp_num_rows = length(prlp.rays) + length(prlp.points)
     @info "PRLP Constructed"
 
     # Step 6: Gather separating solutions
@@ -196,7 +200,7 @@ function vpolyhedralcut_separation(sepa::VPCSeparator)
     end
 
     separating_solutions = separating_solutions_timed.value
-    sepa.statistics.number_of_cuts = length(separating_solutions)
+    sepa.statistics.num_cuts = length(separating_solutions)
     sepa.statistics.prlp_separation_time = separating_solutions_timed.time
     sepa.statistics.objective_tried = length(prlp.solve_statistics)
     sepa.statistics.num_basis_restart = prlp.n_basis_restart

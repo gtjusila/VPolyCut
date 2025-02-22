@@ -11,18 +11,21 @@ using DataStructures
     _max_leaves::Int
     _leaf_nodes::Vector{Node} = Node[]
     _branching_rule::BranchingRule = PseudoCostBranching()
+    _time_limit::Float64 = typemax(Float64)
 end
 
 function BranchAndBound(
     scip::SCIP.SCIPData;
     max_leaves = -1,
-    branching_rule::BranchingRule = PseudoCostBranching()
+    branching_rule::BranchingRule = PseudoCostBranching(),
+    time_limit = typemax(Float64)
 )::BranchAndBound
     return BranchAndBound(
         scip,
         BestFirstQueue(; scip = scip);
         max_leaves = max_leaves,
-        branching_rule = branching_rule
+        branching_rule = branching_rule,
+        time_limit = time_limit
     )
 end
 
@@ -30,13 +33,13 @@ function BranchAndBound(
     scip::SCIP.SCIPData,
     node_queue::NodeQueue;
     max_leaves = -1,
-    branching_rule::BranchingRule = PseudoCostBranching()
+    branching_rule::BranchingRule = PseudoCostBranching(),
+    time_limit = typemax(Float64)
 )::BranchAndBound
     # Initialize
     n = SCIP.SCIPgetNLPCols(scip)
     original_cols = SCIP.SCIPgetLPCols(scip)
     original_cols = unsafe_wrap(Vector{Ptr{SCIP.SCIP_COL}}, original_cols, n)
-
     return BranchAndBound(;
         _scip = scip,
         _primal_bound = SCIP.SCIPinfinity(scip),
@@ -44,7 +47,8 @@ function BranchAndBound(
         _best_solution = nothing,
         _node_queue = node_queue,
         _max_leaves = max_leaves,
-        _branching_rule = branching_rule
+        _branching_rule = branching_rule,
+        _time_limit = time_limit
     )
 end
 

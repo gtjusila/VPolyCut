@@ -43,17 +43,17 @@ function main()
     JuMP.set_attribute(model, "limits/nodes", 1)
     JuMP.set_attribute(model, "limits/time", 3600)
     JuMP.set_attribute(model, "separating/maxroundsroot", 1)
-    JuMP.set_attribute(model, "display/verblevel", 0)
+    #JuMP.set_attribute(model, "display/verblevel", 0)
 
     # Turn on vpc cut
-    vpcsepa = VPolyhedralCut.include_vpolyhedral_sepa(
-        scip;
+    vpcparam = VPolyhedralCut.VPCParameters(;
         n_leaves = config["n_leaves"],
         log_directory = output_path,
         time_limit = 900,
         prlp_solve_method = config["prlp_solve_method"],
         prlp_allow_warm_start = config["prlp_allow_warm_start"]
     )
+    vpcsepa = VPolyhedralCut.include_vpolyhedral_sepa(scip; parameters = vpcparam)
 
     # Read Problem
     instance_path = abspath(parameter["instance"])
@@ -73,7 +73,7 @@ function main()
     result["initial_lp_obj"] = SCIP.SCIPgetFirstLPDualboundRoot(scip)
     result["final_lp_obj"] = SCIP.SCIPgetDualboundRoot(scip)
     result["sepa_termination_message"] = vpcsepa.termination_status
-    result["parameters"] = vpcsepa.parameters
+    result["parameters"] = vpcparam
     result["statistics"] = vpcsepa.statistics
     result_path = joinpath(output_path, "results.json")
     open(result_path, "w") do io

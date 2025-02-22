@@ -56,7 +56,7 @@ function get_point_ray_collection(
             end
 
             if time_limit < time() - start_time
-                throw(TimeLimitExceeded())
+                throw(TimeLimitExceededCollection())
             end
         catch error
             if !(error isa NodeInfeasible)

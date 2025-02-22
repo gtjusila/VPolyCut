@@ -28,6 +28,8 @@ end
 Create a NonBasicSpace object from a given SCIP object
 """
 function NonBasicSpace(scip::SCIP.SCIPData)::NonBasicSpace
+    @info "Constructing NonBasicSpace"
+
     basis_status = get_basis_status(scip)
     nonbasic_indices = findall(
         x -> (x == SCIP.SCIP_BASESTAT_LOWER || x == SCIP.SCIP_BASESTAT_UPPER), basis_status
@@ -36,6 +38,8 @@ function NonBasicSpace(scip::SCIP.SCIPData)::NonBasicSpace
     origin_point = get_solution_vector(scip)
     constraint_matrix = ConstraintMatrix(scip)
     variable_pointers = collect_variable_pointers(scip)
+
+    @info "Finished Constructing NonBasicSpace"
     return NonBasicSpace(
         nonbasic_indices,
         Set(complemented_columns),

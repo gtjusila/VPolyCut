@@ -24,30 +24,42 @@ Create a constraint matrix based on the LP currently loaded in SCIP.
 function ConstraintMatrix(scip::SCIP.SCIPData)::ConstraintMatrix
     n_rows = SCIP.SCIPgetNLPRows(scip)
     n_cols = SCIP.SCIPgetNLPCols(scip)
-    data = spzeros(n_rows, n_cols)
     constants = zeros(n_rows)
 
     # We loop row by row
     rows = SCIP.SCIPgetLPRows(scip)
     rows = unsafe_wrap(Vector{Ptr{SCIP.SCIP_Row}}, rows, n_rows)
+    total = 0
+
     for (idx, row) in enumerate(rows)
-        # Determine non zero column in row and push them to the matrix
+        nnonz = SCIP.SCIProwGetNNonz(row)
+        total += nnonz
+    end
+
+    sparse_row = Int64[]
+    sparse_col = Int64[]
+    sparse_val = SCIP.SCIP_Real[]
+    sizehint!(sparse_row, total)
+    sizehint!(sparse_col, total)
+    sizehint!(sparse_val, total)
+
+    for (idx, row) in enumerate(rows)
         nnonz = SCIP.SCIProwGetNNonz(row)
 
         nonzero_columns = SCIP.SCIProwGetCols(row)
         nonzero_columns = unsafe_wrap(Vector{Ptr{SCIP.SCIP_COL}}, nonzero_columns, nnonz)
+        nonzero_columns = map(x -> Int64(SCIP.SCIPcolGetLPPos(x)) + 1, nonzero_columns)
+
         values = SCIP.SCIProwGetVals(row)
         values = unsafe_wrap(Vector{SCIP.SCIP_Real}, values, nnonz)
-
-        for (col, val) in zip(nonzero_columns, values)
-            col_index = Int64(SCIP.SCIPcolGetLPPos(col)) + 1
-            data[idx, col_index] = val
-        end
-
+        append!(sparse_row, ones(Int64, nnonz) * idx)
+        append!(sparse_col, nonzero_columns)
+        append!(sparse_val, values)
         # Set the constant term for the row 
         cons = SCIP.SCIProwGetConstant(row)
         constants[idx] = cons
     end
+    data = sparse(sparse_row, sparse_col, sparse_val, n_rows, n_cols)
     return ConstraintMatrix(data, constants)
 end
 

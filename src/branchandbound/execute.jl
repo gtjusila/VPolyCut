@@ -10,6 +10,7 @@ function execute_branchandbound(branchandbound::BranchAndBound; log_path = nothi
 end
 
 function _execute_branchandbound(branchandbound::BranchAndBound)::Bool
+    start_time = time()
     scip = get_scip(branchandbound)
 
     # Step 1: Initialization
@@ -27,6 +28,9 @@ function _execute_branchandbound(branchandbound::BranchAndBound)::Bool
 
     # Main Branch and Bound Loop
     while !node_queue_empty(branchandbound)
+        if branchandbound._time_limit < time() - start_time
+            throw(TimeLimitExceededBranchAndBound())
+        end
         # Increment iteration count
         iteration_count += 1
 
