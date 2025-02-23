@@ -4,13 +4,19 @@ using SCIP
 create a partial branch and bound tree and return a disjunction where each term is a leaf node of the tree
 """
 function get_disjunction_by_branchandbound(
-    scipd::SCIP.SCIPData, n_leaves::Int; log_path = nothing, time_limit = typemax(Float64)
+    scipd::SCIP.SCIPData, n_leaves::Int; log_path = nothing, time_limit = typemax(Float64),
+    lp_iter::Union{Ref{Int64},Nothing} = nothing
 )
     # First we generate a branch and bound tree with n_leaves
     branchandbound = BranchAndBound(
         scipd; max_leaves = n_leaves, time_limit = time_limit
     )
+    starting_lp_iter_count = SCIP.SCIPgetNLPIterations(scipd)
     execute_branchandbound(branchandbound; log_path = log_path)
+    end_lp_iter_count = SCIP.SCIPgetNLPIterations(scipd)
+    if !isnothing(lp_iter)
+        lp_iter[] = end_lp_iter_count - starting_lp_iter_count
+    end
 
     # Collect the leaves
     leaves = get_leaves(branchandbound)

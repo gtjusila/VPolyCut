@@ -13,8 +13,10 @@ function get_point_ray_collection(
     disjunction::Disjunction,
     nb_space::NonBasicSpace;
     time_limit::Float64 = typemax(Float64),
-    start_time = time()
+    start_time = time(),
+    lp_iter::Union{Ref{Int64},Nothing} = nothing
 )
+    starting_lp_iter_count = SCIP.SCIPgetNLPIterations(scip)
     point_ray_collection = PointRayCollection()
     SCIP.SCIPstartProbing(scip)
     for (i, term) in enumerate(disjunction)
@@ -67,5 +69,9 @@ function get_point_ray_collection(
         SCIP.SCIPbacktrackProbing(scip, 0)
     end
     SCIP.SCIPendProbing(scip)
+    end_lp_iter_count = SCIP.SCIPgetNLPIterations(scip)
+    if !isnothing(lp_iter)
+        lp_iter[] = end_lp_iter_count - starting_lp_iter_count
+    end
     return point_ray_collection
 end

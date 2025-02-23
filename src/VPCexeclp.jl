@@ -137,23 +137,28 @@ function vpolyhedralcut_separation(sepa::VPCSeparator)
 
     # Step 2: Get Disjunction
     @info "Getting Disjunction by Branch and Bound"
+    lp_iter = Ref{Int64}()
     disjunction_timed = @timed get_disjunction_by_branchandbound(
         scip, sepa.parameters.n_leaves;
         log_path = joinpath(sepa.parameters.log_directory, "branch_and_bound.log"),
-        time_limit = 0.5 * sepa.parameters.time_limit
+        time_limit = 0.5 * sepa.parameters.time_limit,
+        lp_iter
     )
     disjunction = disjunction_timed.value
-    sepa.statistics.disjunction_time = disjunction_timed.time
+    sepa.statistics.branch_and_bound_lp_iteration = lp_iter[]
+    sepa.statistics.branch_and_bound_time = disjunction_timed.time
     @info "Disjunction Obtained"
 
     # Step 3: Collect Point Ray
     @info "Collecting Points and Rays"
     point_ray_collection_timed = @timed get_point_ray_collection(
         scip, disjunction, nonbasic_space;
-        time_limit = sepa.parameters.time_limit, start_time = start_time
+        time_limit = sepa.parameters.time_limit, start_time = start_time,
+        lp_iter = lp_iter
     )
     point_ray_collection = point_ray_collection_timed.value
     sepa.statistics.point_ray_collection_time = point_ray_collection_timed.time
+    sepa.statistics.point_ray_collection_lp_iterations = lp_iter[]
     sepa.statistics.num_points = length(get_points(point_ray_collection))
     sepa.statistics.num_rays = length(get_rays(point_ray_collection))
     @info "Finished Collecting Points and Rays"

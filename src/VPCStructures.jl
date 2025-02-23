@@ -36,10 +36,13 @@ is passed during the creation of the VPCSeparator.
 end
 
 @kwdef mutable struct VPCStatistics
+    branch_and_bound_lp_iteration::Int64 = 0.0
+    branch_and_bound_time::Float64 = 0.0
+
     called::Int = 0
     cbar_test::Bool = true
     disjunctive_lower_bound::Float64 = 0.0
-    disjunction_time::Float64 = 0.0
+
     lp_objective::Float64 = 0.0
 
     num_basis_restart::Int = 0
@@ -51,6 +54,7 @@ end
     num_rays::Int = 0
 
     point_ray_collection_time::Float64 = 0.0
+    point_ray_collection_lp_iterations::Int64 = 0
 
     prlp_construction_time::Float64 = 0.0
     prlp_num_columns::Int = 0
