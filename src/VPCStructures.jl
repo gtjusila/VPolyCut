@@ -63,6 +63,7 @@ end
     prlp_solves_data::Vector{Any} = []
     prlp_solve_method::String = "PRIMAL_SIMPLEX"
 
+    root_lp_iterations::Int64 = 0
     objective_tried::Int = 0
 end
 

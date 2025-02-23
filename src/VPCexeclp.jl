@@ -37,7 +37,6 @@ function _exec_lp(sepa::VPCSeparator)
     @info "VPC Separator Called"
     sepa.statistics.called += 1
 
-    @info "Root node LP took $(SCIP.SCIPgetNRootFirstLPIterations(scip)) iterations"
     # Check Preconditions and handle accordingly
     if sepa.should_be_skipped
         return SCIP.SCIP_DIDNOTRUN
@@ -124,8 +123,9 @@ function vpolyhedralcut_separation(sepa::VPCSeparator)
         sepa.parameters.cut_limit = SCIP.SCIPgetNLPBranchCands(scip)
     end
 
-    # Capture fractional variables statistic
+    # Capture fractional variables statistic and root node lp iterations
     sepa.statistics.num_fractional_variables = SCIP.SCIPgetNLPBranchCands(scip)
+    sepa.statistics.root_lp_iterations = SCIP.SCIPgetNRootFirstLPIterations(scip)
 
     # Step 1: Construct NonBasicSpace and get LP Objective 
     lp_obj = SCIP.SCIPgetSolOrigObj(scip, C_NULL)
