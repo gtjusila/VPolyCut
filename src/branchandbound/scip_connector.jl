@@ -28,13 +28,16 @@ function solve_lp_relaxation(scip::SCIP.SCIPData)::Bool
     # Solve LP
     lp_infeasible = Ref{SCIP.SCIP_Bool}(0)
     lperror = Ref{SCIP.SCIP_Bool}(0)
+    if !isfile(abspath(joinpath(pwd(), "output.txt")))
+        rm(abspath(joinpath(pwd(), "output.txt")))
+        sleep(3)
+    end
     SCIP.@SCIP_CALL SCIP.SCIPsolveProbingLP(scip, -1, lperror, lp_infeasible)
     lp_infeasible = Bool(lp_infeasible[])
     lperror = Bool(lperror[])
 
     if lperror
-        error("Error in solving LP. You need to take a look at this")
-        exit(1)
+        throw(LPError())
     end
 
     if lp_infeasible

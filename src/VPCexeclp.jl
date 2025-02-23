@@ -77,6 +77,9 @@ function _exec_lp(sepa::VPCSeparator)
         if error isa TimeLimitExceededCollection
             @debug "Time Limit Exceeded Collection"
             sepa.termination_status = TIME_LIMIT_EXCEEDED_COLLECTION
+        elseif error isa LPError
+            @debug "LP error"
+            sepa.termination_status = LP_ERROR
         elseif error isa TimeLimitExceededBranchAndBound
             @debug "Time Limit Exceeded Branch and Bound"
             sepa.termination_status = TIME_LIMIT_EXCEEDED_BRANCHANDBOUND

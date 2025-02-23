@@ -74,6 +74,7 @@ An enum for possible termination status of the VPCSeparator
     FAILED_TO_PROVE_PRLP_FEASIBILITY
     FAILED_TO_TIGHTEN_PSTAR
     FOUND_CUTS
+    LP_ERROR
     NO_CUTS_FOUND
     NOT_RUN
     TIME_LIMIT_EXCEEDED_BRANCHANDBOUND
