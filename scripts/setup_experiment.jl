@@ -126,6 +126,35 @@ elseif mode == "vpc"
         default = "true"
     )
     vpc_config["prlp_allow_warm_start"] = (vpc_config["prlp_allow_warm_start"] == "true")
+    vpc_config["disable_scip_cuts"] = prompt_user(;
+        message = "Disable SCIP Cuts (true/false)",
+        validation = (x) -> x == "true" || x == "false",
+        error_message = "Neither true nor false.",
+        default = "true"
+    )
+    vpc_config["disable_scip_cuts"] = (vpc_config["disable_scip_cuts"] == "true")
+
+    vpc_config["vpolycut_frequency"] = prompt_user(;
+        message = "VPolycut Frequency",
+        validation = (x) -> !isnothing(tryparse(Int, x)),
+        error_message = "Not an integer.",
+        default = "0"
+    )
+    vpc_config["vpolycut_frequency"] = parse(Int, vpc_config["vpolycut_frequency"])
+    vpc_config["vpolycut_priority"] = prompt_user(;
+        message = "VPolycut Priority",
+        validation = (x) -> !isnothing(tryparse(Int, x)),
+        error_message = "Not an integer.",
+        default = "99999"
+    )
+    vpc_config["vpolycut_priority"] = parse(Int, vpc_config["vpolycut_priority"])
+    vpc_config["vpolycut_delay"] = prompt_user(;
+        message = "Delay VPolycut (true/false)",
+        validation = (x) -> x == "true" || x == "false",
+        error_message = "Neither true nor false.",
+        default = "false"
+    )
+    vpc_config["vpolycut_delay"] = (vpc_config["vpolycut_delay"] == "true")
     config_file = joinpath(experiment_path, "vpc_config.toml")
     open(config_file, "w") do io
         TOML.print(io, vpc_config)

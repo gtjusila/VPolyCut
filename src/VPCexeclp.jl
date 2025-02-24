@@ -130,6 +130,7 @@ function vpolyhedralcut_separation(sepa::VPCSeparator)
     # Step 1: Construct NonBasicSpace and get LP Objective 
     lp_obj = SCIP.SCIPgetSolOrigObj(scip, C_NULL)
     nonbasic_space = NonBasicSpace(scip)
+
     # Capture LP Objective statistic
     sepa.statistics.lp_objective = lp_obj
     sepa.statistics.num_lp_rows = Int64(SCIP.SCIPgetNLPRows(scip))

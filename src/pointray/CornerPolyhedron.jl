@@ -64,7 +64,8 @@ function CornerPolyhedron(scip::SCIP.SCIPData, nb_space::NonBasicSpace)::CornerP
     context = ConstructCornerPolyhedronContext(
         scip, basis_status, nb_space, n_rows, n_cols, origin, complement, target
     )
-    if length(buffer[]) == 0
+    if length(buffer[]) != context.n_rows
+        println("Reset buffer")
         # Global buffer is not set so set it
         buffer[] = zeros(SCIP.SCIP_Real, context.n_rows)
     end

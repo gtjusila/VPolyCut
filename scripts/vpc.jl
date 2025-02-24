@@ -35,14 +35,16 @@ function main()
 
     # Setup SCIP object parameter
     set_heuristics_emphasis_off(model)
-    set_separators_emphasis_off(model)
-    set_cut_selection_off(model)
+    if (config["disable_scip_cuts"])
+        set_separators_emphasis_off(model)
+    end
+    #set_cut_selection_off(model)
     set_strong_branching_lookahead_off(model)
 
-    JuMP.set_attribute(model, "limits/restarts", 0)
+    #JuMP.set_attribute(model, "limits/restarts", 0)
     JuMP.set_attribute(model, "limits/nodes", 1)
     JuMP.set_attribute(model, "limits/time", 3600)
-    JuMP.set_attribute(model, "separating/maxroundsroot", 1)
+    #JuMP.set_attribute(model, "separating/maxroundsroot", 1)
     #JuMP.set_attribute(model, "display/verblevel", 0)
 
     # Turn on vpc cut
@@ -53,7 +55,11 @@ function main()
         prlp_solve_method = config["prlp_solve_method"],
         prlp_allow_warm_start = config["prlp_allow_warm_start"]
     )
-    vpcsepa = VPolyhedralCut.include_vpolyhedral_sepa(scip; parameters = vpcparam)
+
+    vpcsepa = VPolyhedralCut.include_vpolyhedral_sepa(
+        scip; parameters = vpcparam,
+        delay = config["vpolycut_delay"], priority = config["vpolycut_priority"],
+        freq = config["vpolycut_frequency"])
 
     # Read Problem
     instance_path = abspath(parameter["instance"])
@@ -61,6 +67,7 @@ function main()
     SCIP.@SCIP_CALL SCIP.SCIPreadProb(scip, instance_path, C_NULL)
 
     # Solve
+
     @info "Starting solve"
     SCIP.@SCIP_CALL SCIP.SCIPsolve(scip)
 
