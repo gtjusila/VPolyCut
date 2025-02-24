@@ -36,7 +36,7 @@ is passed during the creation of the VPCSeparator.
 end
 
 @kwdef mutable struct VPCStatistics
-    branch_and_bound_lp_iteration::Int64 = 0.0
+    branch_and_bound_lp_iterations::Int64 = 0.0
     branch_and_bound_time::Float64 = 0.0
 
     called::Int = 0

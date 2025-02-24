@@ -145,7 +145,7 @@ function vpolyhedralcut_separation(sepa::VPCSeparator)
         lp_iter
     )
     disjunction = disjunction_timed.value
-    sepa.statistics.branch_and_bound_lp_iteration = lp_iter[]
+    sepa.statistics.branch_and_bound_lp_iterations = lp_iter[]
     sepa.statistics.branch_and_bound_time = disjunction_timed.time
     @info "Disjunction Obtained"
 
