@@ -35,11 +35,11 @@ function gather_separating_solutions(
             break
         end
         # Cut limit reached
-        if length(separating_solutions) >= 2 * cut_limit
+        if length(separating_solutions) >= cut_limit
             break
         end
         # Objective limit reached
-        if counter >= 4 * cut_limit
+        if counter >= 2 * cut_limit
             break
         end
         if consecutive_fail >= 10
