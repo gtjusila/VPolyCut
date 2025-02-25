@@ -2,9 +2,7 @@
 # This file contains the exec_lp function for VPC separation
 #
 using SCIP
-using JuMP
 using LinearAlgebra
-import MathOptInterface as MOI
 
 """
 VPolyhedral Cut Separator
@@ -38,11 +36,9 @@ function _exec_lp(sepa::VPCSeparator)
     sepa.statistics.called += 1
 
     # Check Preconditions and handle accordingly
+    @info "Checking Precondition"
     if sepa.should_be_skipped
         return SCIP.SCIP_DIDNOTRUN
-    end
-    if !is_numeric_scip_set()
-        set_numeric_scip(scip)
     end
     if SCIP.SCIPgetStage(scip) != SCIP.SCIP_STAGE_SOLVING
         return SCIP.SCIP_DIDNOTRUN
@@ -57,7 +53,22 @@ function _exec_lp(sepa::VPCSeparator)
     end
     @info "Finished checking necessary Preconditions"
 
-    # Do everything in a try block to ensure time limit requirement
+    # Setup and capture necessary statistic
+    if !is_numeric_scip_set()
+        set_numeric_scip(scip)
+    end
+    # If cut limit is -1 or -2 convert them to the actual limit 
+    # We do the conversion here because for option -2 we need the number of fractional variables
+    if sepa.parameters.cut_limit == -1
+        sepa.parameters.cut_limit = typemax(Int)
+    elseif sepa.parameters.cut_limit == -2
+        sepa.parameters.cut_limit = SCIP.SCIPgetNLPBranchCands(scip)
+    end
+    # Capture fractional variables statistic and root node lp iterations
+    sepa.statistics.num_fractional_variables = SCIP.SCIPgetNLPBranchCands(scip)
+    sepa.statistics.root_lp_iterations = SCIP.SCIPgetNRootFirstLPIterations(scip)
+
+    # Do everything in a try block 
     @info "Starting separation subroutine"
     try
         # Call Separation Subroutine
@@ -70,7 +81,7 @@ function _exec_lp(sepa::VPCSeparator)
 
         # Mark sepa to be skipped on next call
         # Any errors happening means sepa is not good for the current problem
-        sepa.should_be_skipped = true
+        #sepa.should_be_skipped = true
 
         # Handle different types of errors
         if error isa TimeLimitExceededCollection
@@ -94,6 +105,7 @@ function _exec_lp(sepa::VPCSeparator)
         elseif error isa BasestatZeroEncountered
             @debug "Basestat Zero Encountered"
             sepa.termination_status = BASESTAT_ZERO_ENCOUNTERED
+            sepa.should_be_skipped = true
         else
             rethrow(error)
         end
@@ -115,18 +127,6 @@ function vpolyhedralcut_separation(sepa::VPCSeparator)
     scip = sepa.scipd
     start_time = time()
 
-    # If cut limit is -1 or -2 convert them to the actual limit 
-    # We do the conversion here because for option -2 we need the number of fractional variables
-    if sepa.parameters.cut_limit == -1
-        sepa.parameters.cut_limit = typemax(Int)
-    elseif sepa.parameters.cut_limit == -2
-        sepa.parameters.cut_limit = SCIP.SCIPgetNLPBranchCands(scip)
-    end
-
-    # Capture fractional variables statistic and root node lp iterations
-    sepa.statistics.num_fractional_variables = SCIP.SCIPgetNLPBranchCands(scip)
-    sepa.statistics.root_lp_iterations = SCIP.SCIPgetNRootFirstLPIterations(scip)
-
     # Step 1: Construct NonBasicSpace and get LP Objective 
     lp_obj = SCIP.SCIPgetSolOrigObj(scip, C_NULL)
     nonbasic_space = NonBasicSpace(scip)
@@ -143,7 +143,7 @@ function vpolyhedralcut_separation(sepa::VPCSeparator)
         scip, sepa.parameters.n_leaves;
         log_path = joinpath(sepa.parameters.log_directory, "branch_and_bound.log"),
         time_limit = 0.5 * sepa.parameters.time_limit,
-        lp_iter
+        lp_iter = lp_iter
     )
     disjunction = disjunction_timed.value
     sepa.statistics.branch_and_bound_lp_iterations = lp_iter[]
@@ -168,9 +168,9 @@ function vpolyhedralcut_separation(sepa::VPCSeparator)
     # This test is always runned! The parameter sepa.parameters.test_disjunctive_lower_bound 
     # only determine whether we can skipped if the test fail 
     pstar = argmin(x -> get_objective_value(x), get_points(point_ray_collection))
-
     disjunctive_lower_bound = get_objective_value(pstar)
     sepa.statistics.disjunctive_lower_bound = disjunctive_lower_bound
+    @info "Disjunctive Lower bound $(disjunctive_lower_bound)"
     if is_LE(disjunctive_lower_bound, lp_obj) &&
         sepa.parameters.test_disjunctive_lower_bound
         @debug "Disjunctive Lower Bound is not strictly larger than the current LP"

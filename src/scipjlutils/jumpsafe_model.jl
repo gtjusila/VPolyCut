@@ -9,7 +9,7 @@ function setup_scip_safe_jump_model()
     setter = get_parameter_setter_function(model)
 
     # For stability
-    setter("limits/restarts", 0)
+    #setter("limits/restarts", 0)
 
     return model
 end
