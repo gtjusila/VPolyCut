@@ -9,13 +9,14 @@ Get the point ray collection for a given disjunction from the scip object.
 Point ray collection will run in probing mode 
 """
 function get_point_ray_collection(
-    scip::SCIP.SCIPData,
-    disjunction::Disjunction,
-    nb_space::NonBasicSpace;
-    time_limit::Float64 = typemax(Float64),
-    start_time = time(),
-    lp_iter::Union{Ref{Int64},Nothing} = nothing
+    sepa::VPCSeparator
 )
+    scip = sepa.shared_data.scipd
+    disjunction = sepa.shared_data.disjunction
+    nb_space = sepa.shared_data.nonbasic_space
+    time_limit = sepa.parameters.time_limit
+    start_time = sepa.shared_data.start_time
+
     starting_lp_iter_count = SCIP.SCIPgetNLPIterations(scip)
     point_ray_collection = PointRayCollection()
     SCIP.SCIPstartProbing(scip)
@@ -70,8 +71,7 @@ function get_point_ray_collection(
     end
     SCIP.SCIPendProbing(scip)
     end_lp_iter_count = SCIP.SCIPgetNLPIterations(scip)
-    if !isnothing(lp_iter)
-        lp_iter[] = end_lp_iter_count - starting_lp_iter_count
-    end
+    sepa.statistics.point_ray_collection_lp_iterations =
+        end_lp_iter_count - starting_lp_iter_count
     return point_ray_collection
 end

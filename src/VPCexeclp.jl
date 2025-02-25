@@ -29,7 +29,7 @@ end
 # The second layer is a try block to catch potential error arising during cut generation
 function _exec_lp(sepa::VPCSeparator)
     # Aliasing for easier call
-    scip = sepa.scipd
+    scip = sepa.shared_data.scipd
 
     # Initialization: start timer, set separated to false, and increment call count 
     @info "VPC Separator Called"
@@ -124,54 +124,44 @@ end
 
 function vpolyhedralcut_separation(sepa::VPCSeparator)
     # Aliasing for easier call
-    scip = sepa.scipd
-    start_time = time()
+    scip = sepa.shared_data.scipd
+    sepa.shared_data.start_time = time()
 
     # Step 1: Construct NonBasicSpace and get LP Objective 
-    lp_obj = SCIP.SCIPgetSolOrigObj(scip, C_NULL)
-    nonbasic_space = NonBasicSpace(scip)
+    sepa.shared_data.lp_obj = SCIP.SCIPgetSolOrigObj(scip, C_NULL)
+    sepa.shared_data.nonbasic_space = NonBasicSpace(scip)
 
     # Capture LP Objective statistic
-    sepa.statistics.lp_objective = lp_obj
+    sepa.statistics.lp_objective = sepa.shared_data.lp_obj
     sepa.statistics.num_lp_rows = Int64(SCIP.SCIPgetNLPRows(scip))
     sepa.statistics.num_lp_columns = Int64(SCIP.SCIPgetNLPCols(scip))
 
     # Step 2: Get Disjunction
     @info "Getting Disjunction by Branch and Bound"
-    lp_iter = Ref{Int64}()
-    disjunction_timed = @timed get_disjunction_by_branchandbound(
-        scip, sepa.parameters.n_leaves;
-        log_path = joinpath(sepa.parameters.log_directory, "branch_and_bound.log"),
-        time_limit = 0.5 * sepa.parameters.time_limit,
-        lp_iter = lp_iter
-    )
-    disjunction = disjunction_timed.value
-    sepa.statistics.branch_and_bound_lp_iterations = lp_iter[]
+    disjunction_timed = @timed get_disjunction_by_branchandbound(sepa)
+    sepa.shared_data.disjunction = disjunction_timed.value
     sepa.statistics.branch_and_bound_time = disjunction_timed.time
     @info "Disjunction Obtained"
 
     # Step 3: Collect Point Ray
     @info "Collecting Points and Rays"
-    point_ray_collection_timed = @timed get_point_ray_collection(
-        scip, disjunction, nonbasic_space;
-        time_limit = sepa.parameters.time_limit, start_time = start_time,
-        lp_iter = lp_iter
-    )
-    point_ray_collection = point_ray_collection_timed.value
+    point_ray_collection_timed = @timed get_point_ray_collection(sepa)
+    sepa.shared_data.point_ray_collection = point_ray_collection_timed.value
     sepa.statistics.point_ray_collection_time = point_ray_collection_timed.time
-    sepa.statistics.point_ray_collection_lp_iterations = lp_iter[]
-    sepa.statistics.num_points = length(get_points(point_ray_collection))
-    sepa.statistics.num_rays = length(get_rays(point_ray_collection))
+    sepa.statistics.num_points = length(get_points(sepa.shared_data.point_ray_collection))
+    sepa.statistics.num_rays = length(get_rays(sepa.shared_data.point_ray_collection))
     @info "Finished Collecting Points and Rays"
 
     # Step 4: Test disjunctive_lower_bound
     # This test is always runned! The parameter sepa.parameters.test_disjunctive_lower_bound 
     # only determine whether we can skipped if the test fail 
-    pstar = argmin(x -> get_objective_value(x), get_points(point_ray_collection))
+    pstar = argmin(
+        x -> get_objective_value(x), get_points(sepa.shared_data.point_ray_collection)
+    )
     disjunctive_lower_bound = get_objective_value(pstar)
     sepa.statistics.disjunctive_lower_bound = disjunctive_lower_bound
     @info "Disjunctive Lower bound $(disjunctive_lower_bound)"
-    if is_LE(disjunctive_lower_bound, lp_obj) &&
+    if is_LE(disjunctive_lower_bound, sepa.shared_data.lp_obj) &&
         sepa.parameters.test_disjunctive_lower_bound
         @debug "Disjunctive Lower Bound is not strictly larger than the current LP"
         throw(FailedDisjunctiveLowerBoundTest())
@@ -179,58 +169,45 @@ function vpolyhedralcut_separation(sepa::VPCSeparator)
 
     # Step 5: Construct PRLP problem
     @info "Constructing PRLP"
-    prlp_timed = @timed construct_prlp(
-        scip,
-        point_ray_collection;
-        prlp_solve_method = PRLPsolveAlgorithm(sepa.parameters.prlp_solve_method),
-        prlp_allow_warm_start = sepa.parameters.prlp_allow_warm_start
-    )
-    prlp = prlp_timed.value
+    prlp_timed = @timed construct_prlp(sepa)
+    sepa.shared_data.prlp = prlp_timed.value
     sepa.statistics.prlp_construction_time = prlp_timed.time
-    sepa.statistics.prlp_num_columns = prlp.dimension
-    sepa.statistics.prlp_num_rows = length(prlp.rays) + length(prlp.points)
+    sepa.statistics.prlp_num_columns = sepa.shared_data.prlp.dimension
+    sepa.statistics.prlp_num_rows =
+        length(sepa.shared_data.prlp.rays) + length(sepa.shared_data.prlp.points)
     @info "PRLP Constructed"
 
     # Step 6: Gather separating solutions
     @info "Gathering Separating Solutions"
-    status = Ref{GSSeturnCode}(GSS_OKAY)
-    separating_solutions_timed = @timed gather_separating_solutions(
-        prlp, point_ray_collection, status;
-        cut_limit = sepa.parameters.cut_limit,
-        time_limit = sepa.parameters.time_limit,
-        start_time = start_time
-    )
-    if status[] == GSS_TIME_LIMIT
-        sepa.termination_status = TIME_LIMIT_EXCEEDED_PRLP
-    elseif status[] == GSS_CONSECUTIVE_FAIL
-        sepa.termination_status = CONSECUTIVE_FAIL_LIMIT_REACHED
-    end
+    separating_solutions_timed = @timed gather_separating_solutions(sepa)
 
-    separating_solutions = separating_solutions_timed.value
-    sepa.statistics.num_cuts = length(separating_solutions)
+    sepa.shared_data.separating_solutions = separating_solutions_timed.value
+    sepa.statistics.num_cuts = length(sepa.shared_data.separating_solutions)
     sepa.statistics.prlp_separation_time = separating_solutions_timed.time
-    sepa.statistics.objective_tried = length(prlp.solve_statistics)
-    sepa.statistics.num_basis_restart = prlp.n_basis_restart
-    @info "Basis Restart Count $(prlp.n_basis_restart)"
+    sepa.statistics.objective_tried = length(sepa.shared_data.prlp.solve_statistics)
+    sepa.statistics.num_basis_restart = sepa.shared_data.prlp.n_basis_restart
+    @info "Basis Restart Count $(sepa.shared_data.prlp.n_basis_restart)"
     # Capture statistics from PRLP
-    sepa.statistics.prlp_solves_data = prlp.solve_statistics
+    sepa.statistics.prlp_solves_data = sepa.shared_data.prlp.solve_statistics
 
     # Step 7: Process Cuts and Add to SCIP
-    cutpool = CutPool(; variable_pointers = nonbasic_space.variable_pointers)
-    for solution in separating_solutions
+    sepa.shared_data.cutpool = CutPool(;
+        variable_pointers = sepa.shared_data.nonbasic_space.variable_pointers
+    )
+    for solution in sepa.shared_data.separating_solutions
         cut = get_cut_from_separating_solution(
-            solution, nonbasic_space
+            solution, sepa.shared_data.nonbasic_space
         )
-        push!(cutpool, cut)
+        push!(sepa.shared_data.cutpool, cut)
     end
-    add_all_cuts!(scip, cutpool, sepa)
+    add_all_cuts!(scip, sepa.shared_data.cutpool, sepa)
 
     # Sepa termination status have been modified due to Timelimit/ consecutive_fail
     if sepa.termination_status != NOT_RUN
         return nothing
     end
 
-    if length(cutpool) > 0
+    if length(sepa.shared_data.cutpool) > 0
         sepa.termination_status = FOUND_CUTS
     else
         sepa.termination_status = NO_CUTS_FOUND

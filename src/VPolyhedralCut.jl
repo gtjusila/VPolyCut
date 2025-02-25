@@ -26,12 +26,10 @@ include("branchandbound/execute.jl")
 
 # Disjunction
 include("disjunction/structures.jl")
-include("disjunction/branch_and_bound_adaptor.jl")
 
 # Point Ray Collection
 include("pointray/CornerPolyhedron.jl")
 include("pointray/PointRayCollection.jl")
-include("pointray/collect_point_rays.jl")
 
 # Utilities
 include("utilities/indicator_connector.jl")
@@ -40,8 +38,6 @@ include("utilities/indicator_connector.jl")
 include("prlp/PRLPstructures.jl")
 include("prlp/ObjectivePool.jl")
 include("prlp/PRLPmethods.jl")
-include("prlp/gather_separating_solutions.jl")
-include("prlp/construct_prlp.jl")
 
 # CutPool
 include("cutpool/CutPool.jl")
@@ -49,7 +45,12 @@ include("cutpool/get_cut_from_separating_solution.jl")
 include("cutpool/sepa_row_helpers.jl")
 
 # Datastructures for VPolyhedralCut
+# and stuff that rely on VPC structures
 include("VPCStructures.jl")
+include("disjunction/branch_and_bound_adaptor.jl")
+include("pointray/collect_point_rays.jl")
+include("prlp/construct_prlp.jl")
+include("prlp/gather_separating_solutions.jl")
 
 # Separators
 #include("IndicatorSeparator.jl")

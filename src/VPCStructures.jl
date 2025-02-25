@@ -87,6 +87,18 @@ An enum for possible termination status of the VPCSeparator
     TIME_LIMIT_EXCEEDED_PRLP
 end
 
+@kwdef mutable struct VPCSharedData
+    cutpool::Union{Nothing,CutPool} = nothing
+    disjunction::Union{Nothing,Disjunction} = nothing
+    lp_obj::Float64 = 0.0
+    nonbasic_space::Union{Nothing,NonBasicSpace} = nothing
+    point_ray_collection::Union{Nothing,PointRayCollection} = nothing
+    prlp::Union{Nothing,PRLP} = nothing
+    scipd::SCIP.SCIPData
+    separating_solutions::Union{Nothing,Vector{Vector{SCIP.SCIP_Real}}} = nothing
+    start_time::Float64 = 0.0
+end
+
 """
 VPCSeparator
 
@@ -97,12 +109,13 @@ Constructors:
 """
 @kwdef mutable struct VPCSeparator <: SCIP.AbstractSeparator
     # Shared Data among the functions
-    "SCIP Data"
-    scipd::SCIP.SCIPData
+    "Shared VPC Data"
+    shared_data::VPCSharedData
     "SEPA Parameters"
     parameters::VPCParameters
     "SEPA statistics"
     statistics::VPCStatistics = VPCStatistics()
+
     "should be skipped?"
     should_be_skipped::Bool = false
 
@@ -112,8 +125,8 @@ Constructors:
 end
 
 # Constructor
-function VPCSeparator(scipd::SCIP.SCIPData, params::VPCParameters)
-    obj = VPCSeparator(; scipd = scipd, parameters = params)
+function VPCSeparator(params::VPCParameters)
+    obj = VPCSeparator(; parameters = params)
     return obj
 end
 
@@ -126,7 +139,10 @@ function include_vpolyhedral_sepa(
     maxbounddist::Real = 0.0,
     delay::Bool = false
 )
-    sepa = VPCSeparator(scipd, parameters)
+    sepa = VPCSeparator(;
+        shared_data = VPCSharedData(; scipd = scipd),
+        parameters
+    )
     SCIP.include_sepa(
         scipd.scip[], scipd.sepas, sepa; priority = priority,
         freq = freq, maxbounddist = maxbounddist,
