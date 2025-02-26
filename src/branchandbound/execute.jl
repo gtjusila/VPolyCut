@@ -12,6 +12,7 @@ end
 function _execute_branchandbound(branchandbound::BranchAndBound)::Bool
     start_time = time()
     scip = get_scip(branchandbound)
+    starting_lp_iter_count = SCIP.SCIPgetNLPIterations(scip)
 
     # Step 1: Initialization
     # We do everything in probing mode
@@ -98,19 +99,10 @@ function _execute_branchandbound(branchandbound::BranchAndBound)::Bool
         name = unsafe_string(SCIP.SCIPvarGetName(var))
         # Warning! Some Node Queuing Procedure may alter the SCIP Internal State (e.g. if you use BestFirst) so store LP Solution before hand   
         @debug "Branching on $(name) with LP Solution: $(lpsol)"
-        left_child = branch(branchandbound, var, UP, ceil(lpsol), current_node)
+        branch(branchandbound, var, UP, ceil(lpsol), current_node)
         @debug "Created Node $(name)>=$(ceil(lpsol))"
-        right_child = branch(branchandbound, var, DOWN, floor(lpsol), current_node)
+        branch(branchandbound, var, DOWN, floor(lpsol), current_node)
         @debug "Created Node $(name)<=$(floor(lpsol))"
-
-        #If supported compute new disjunctive lower bound
-        if support_disjunctive_lower_bound_tracking(branchandbound._node_queue)
-            disjunctive_lower_bound = get_disjunctive_lower_bound(
-                branchandbound._node_queue
-            )
-            push!(branchandbound._disjunctive_lower_bound_history, disjunctive_lower_bound)
-            @debug "Disjunctive Lower Bound is $(disjunctive_lower_bound)"
-        end
     end
 
     # Collect Leaves
@@ -120,6 +112,7 @@ function _execute_branchandbound(branchandbound::BranchAndBound)::Bool
     end
 
     SCIP.SCIPendProbing(scip)
+    end_lp_iter_count = SCIP.SCIPgetNLPIterations(scip)
 
     # Step 6: Terminate
     # If x is void then ILP is infeasible
@@ -184,9 +177,8 @@ end
 function branch(
     branchandbound::BranchAndBound, var::Ptr{SCIP.SCIP_VAR}, direction::Direction,
     bound::SCIP.SCIP_Real, current_node::Node
-)::Node
+)
     action = Action(var, direction, bound)
     new_node = Node(current_node, action, get_depth(current_node) + 1)
     node_queue_push!(branchandbound, new_node)
-    return new_node
 end

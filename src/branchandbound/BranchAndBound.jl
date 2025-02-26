@@ -12,7 +12,6 @@ using DataStructures
     _leaf_nodes::Vector{Node} = Node[]
     _branching_rule::BranchingRule = PseudoCostBranching()
     _time_limit::Float64 = typemax(Float64)
-    _disjunctive_lower_bound_history::Vector{SCIP.SCIP_Real} = []
 end
 
 function BranchAndBound(

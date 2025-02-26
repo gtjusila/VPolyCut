@@ -73,14 +73,10 @@ mutable struct Node
     Extra Information To Fasten Backtracking
     """
     _depth::Int
-    """
-    Dual bound
-    """
-    _dual_bound::SCIP.SCIP_Real
 end
 
 function Node(parent::Union{Node,Nothing}, action::Union{Action,Nothing}, depth::Int)
-    return Node(false, action, parent, depth, typemax(SCIP.SCIP_Real))
+    return Node(false, action, parent, depth)
 end
 
 function isactive(node::Node)
