@@ -99,7 +99,7 @@ function get_dual_bound(scip::SCIP.SCIPData, action::Action)::SCIP.SCIP_Real
         return SCIP.SCIPinfinity(scip)
     end
 
-    lpobj = SCIP.SCIPgetSolOrigObj(scip, C_NULL)
+    lpobj = SCIP.SCIPgetLPObjval(scip)
     SCIP.SCIPbacktrackProbing(scip, depth)
     return lpobj
 end
