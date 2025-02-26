@@ -216,11 +216,13 @@ function test_disjunctive_lower_bound(sepa::VPCSeparator)
     # This test is always runned! The parameter sepa.parameters.test_disjunctive_lower_bound 
     # only determine whether we can skipped if the test fail 
     shared = sepa.shared_data
+    statistics = sepa.statistics
 
     pstar = argmin(
         x -> get_objective_value(x), get_points(shared.point_ray_collection)
     )
     disjunctive_lower_bound = get_objective_value(pstar)
+    statistics.disjunctive_lower_bound = disjunctive_lower_bound
     @info "Disjunctive Lower bound $(disjunctive_lower_bound)"
     if is_LE(disjunctive_lower_bound, shared.lp_obj) &&
         sepa.parameters.test_disjunctive_lower_bound
