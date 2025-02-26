@@ -41,9 +41,10 @@ end
 
     called::Int = 0
     cbar_test::Bool = true
-    disjunctive_lower_bound::Float64 = 0.0
+    disjunctive_lower_bound::SCIP.SCIP_Real = 0.0
+    disjunctive_lower_bound_history::Vector{SCIP.SCIP_Real} = []
 
-    lp_objective::Float64 = 0.0
+    lp_objective::SCIP.SCIP_Real = 0.0
 
     num_basis_restart::Int = 0
     num_cuts::Int = 0

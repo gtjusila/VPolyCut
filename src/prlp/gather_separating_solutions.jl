@@ -8,7 +8,7 @@ function gather_separating_solutions(
     time_limit = sepa.parameters.time_limit
     start_time = sepa.shared_data.start_time
 
-    @debug"Remaining Time for Separation: $(time_limit - (time() - start_time))"
+    @debug "Remaining Time for Separation: $(time_limit - (time() - start_time))"
 
     separating_solutions = []
     objective_pool = ObjectivePool(prlp, point_ray_collection)

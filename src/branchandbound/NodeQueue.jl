@@ -18,6 +18,10 @@ function Base.length(node_queue::T)::Int where {T<:NodeQueue}
     error("Method length not implemented for type $(T)")
 end
 
+function support_disjunctive_lower_bound_tracking(node_queue::T)::Bool where {T<:NodeQueue}
+    return false
+end
+
 @kwdef mutable struct RandomNodeQueue <: NodeQueue
     _queue::PriorityQueue{Node,Float64} = PriorityQueue()
 end
@@ -102,8 +106,22 @@ function node_queue_push!(node_queue::BestFirstQueue, node::Node)
     bound = get_dual_bound(scip, get_action(node))
     @debug "Pushed $(node) to queue with bound $(bound)"
     if !is_infinity(bound)
+        node._dual_bound = bound
         enqueue!(node_queue._queue, node, bound)
     end
+end
+
+function get_disjunctive_lower_bound(node_queue::BestFirstQueue)
+    disjunctive_lower_bound = typemax(SCIP.SCIP_Real)
+    for (value, key) in node_queue._queue
+        disjunctive_lower_bound = min(key, disjunctive_lower_bound)
+    end
+    return disjunctive_lower_bound
+end
+function support_disjunctive_lower_bound_tracking(
+    node_queue::BestFirstQueue
+)::Bool
+    return true
 end
 
 function node_queue_pop!(node_queue::BestFirstQueue)::Node

@@ -19,8 +19,13 @@ function get_disjunction_by_branchandbound(
     execute_branchandbound(branchandbound; log_path = log_path)
     end_lp_iter_count = SCIP.SCIPgetNLPIterations(scipd)
 
+    # Collect statistics
     sepa.statistics.point_ray_collection_lp_iterations =
         end_lp_iter_count - starting_lp_iter_count
+    if support_disjunctive_lower_bound_tracking(branchandbound._node_queue)
+        sepa.statistics.disjunctive_lower_bound_history =
+            branchandbound._disjunctive_lower_bound_history
+    end
 
     # Collect the leaves
     leaves = get_leaves(branchandbound)

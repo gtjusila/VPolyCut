@@ -28,12 +28,14 @@ end
 
 # The second layer is a try block to catch potential error arising during cut generation
 function _exec_lp(sepa::VPCSeparator)
+    shared = sepa.shared_data
+    statistics = sepa.statistics
     # Aliasing for easier call
-    scip = sepa.shared_data.scipd
+    scip = shared.scipd
 
     # Initialization: start timer, set separated to false, and increment call count 
     @info "VPC Separator Called"
-    sepa.statistics.called += 1
+    statistics.called += 1
 
     # Check Preconditions and handle accordingly
     @info "Checking Precondition"
@@ -65,8 +67,8 @@ function _exec_lp(sepa::VPCSeparator)
         sepa.parameters.cut_limit = SCIP.SCIPgetNLPBranchCands(scip)
     end
     # Capture fractional variables statistic and root node lp iterations
-    sepa.statistics.num_fractional_variables = SCIP.SCIPgetNLPBranchCands(scip)
-    sepa.statistics.root_lp_iterations = SCIP.SCIPgetNRootFirstLPIterations(scip)
+    statistics.num_fractional_variables = SCIP.SCIPgetNLPBranchCands(scip)
+    statistics.root_lp_iterations = SCIP.SCIPgetNRootFirstLPIterations(scip)
 
     # Do everything in a try block 
     @info "Starting separation subroutine"
@@ -124,92 +126,105 @@ end
 
 function vpolyhedralcut_separation(sepa::VPCSeparator)
     # Aliasing for easier call
-    scip = sepa.shared_data.scipd
-    sepa.shared_data.start_time = time()
+    shared = sepa.shared_data
+    statistics = sepa.statistics
+    scip = shared.scipd
+
+    # Record starting time
+    shared.start_time = time()
 
     # Step 1: Construct NonBasicSpace and get LP Objective 
-    sepa.shared_data.lp_obj = SCIP.SCIPgetSolOrigObj(scip, C_NULL)
-    sepa.shared_data.nonbasic_space = NonBasicSpace(scip)
+    shared.lp_obj = SCIP.SCIPgetSolOrigObj(scip, C_NULL)
+    shared.nonbasic_space = NonBasicSpace(scip)
 
     # Capture LP Objective statistic
-    sepa.statistics.lp_objective = sepa.shared_data.lp_obj
-    sepa.statistics.num_lp_rows = Int64(SCIP.SCIPgetNLPRows(scip))
-    sepa.statistics.num_lp_columns = Int64(SCIP.SCIPgetNLPCols(scip))
+    statistics.lp_objective = shared.lp_obj
+    statistics.num_lp_rows = Int64(SCIP.SCIPgetNLPRows(scip))
+    statistics.num_lp_columns = Int64(SCIP.SCIPgetNLPCols(scip))
 
     # Step 2: Get Disjunction
     @info "Getting Disjunction by Branch and Bound"
     disjunction_timed = @timed get_disjunction_by_branchandbound(sepa)
-    sepa.shared_data.disjunction = disjunction_timed.value
-    sepa.statistics.branch_and_bound_time = disjunction_timed.time
+    shared.disjunction = disjunction_timed.value
+    statistics.branch_and_bound_time = disjunction_timed.time
     @info "Disjunction Obtained"
 
     # Step 3: Collect Point Ray
     @info "Collecting Points and Rays"
     point_ray_collection_timed = @timed get_point_ray_collection(sepa)
-    sepa.shared_data.point_ray_collection = point_ray_collection_timed.value
-    sepa.statistics.point_ray_collection_time = point_ray_collection_timed.time
-    sepa.statistics.num_points = length(get_points(sepa.shared_data.point_ray_collection))
-    sepa.statistics.num_rays = length(get_rays(sepa.shared_data.point_ray_collection))
+    shared.point_ray_collection = point_ray_collection_timed.value
+
+    # Gather PRLP Statistics
+    statistics.point_ray_collection_time = point_ray_collection_timed.time
+    statistics.num_points = length(get_points(shared.point_ray_collection))
+    statistics.num_rays = length(get_rays(shared.point_ray_collection))
     @info "Finished Collecting Points and Rays"
 
     # Step 4: Test disjunctive_lower_bound
-    # This test is always runned! The parameter sepa.parameters.test_disjunctive_lower_bound 
-    # only determine whether we can skipped if the test fail 
-    pstar = argmin(
-        x -> get_objective_value(x), get_points(sepa.shared_data.point_ray_collection)
-    )
-    disjunctive_lower_bound = get_objective_value(pstar)
-    sepa.statistics.disjunctive_lower_bound = disjunctive_lower_bound
-    @info "Disjunctive Lower bound $(disjunctive_lower_bound)"
-    if is_LE(disjunctive_lower_bound, sepa.shared_data.lp_obj) &&
-        sepa.parameters.test_disjunctive_lower_bound
-        @debug "Disjunctive Lower Bound is not strictly larger than the current LP"
-        throw(FailedDisjunctiveLowerBoundTest())
-    end
+    test_disjunctive_lower_bound(sepa)
 
     # Step 5: Construct PRLP problem
     @info "Constructing PRLP"
     prlp_timed = @timed construct_prlp(sepa)
-    sepa.shared_data.prlp = prlp_timed.value
-    sepa.statistics.prlp_construction_time = prlp_timed.time
-    sepa.statistics.prlp_num_columns = sepa.shared_data.prlp.dimension
-    sepa.statistics.prlp_num_rows =
-        length(sepa.shared_data.prlp.rays) + length(sepa.shared_data.prlp.points)
+    shared.prlp = prlp_timed.value
+
+    # Gather PRLP Statistics
+    statistics.prlp_construction_time = prlp_timed.time
+    statistics.prlp_num_columns = shared.prlp.dimension
+    statistics.prlp_num_rows =
+        length(shared.prlp.rays) + length(shared.prlp.points)
     @info "PRLP Constructed"
 
     # Step 6: Gather separating solutions
     @info "Gathering Separating Solutions"
     separating_solutions_timed = @timed gather_separating_solutions(sepa)
+    shared.separating_solutions = separating_solutions_timed.value
 
-    sepa.shared_data.separating_solutions = separating_solutions_timed.value
-    sepa.statistics.num_cuts = length(sepa.shared_data.separating_solutions)
-    sepa.statistics.prlp_separation_time = separating_solutions_timed.time
-    sepa.statistics.objective_tried = length(sepa.shared_data.prlp.solve_statistics)
-    sepa.statistics.num_basis_restart = sepa.shared_data.prlp.n_basis_restart
-    @info "Basis Restart Count $(sepa.shared_data.prlp.n_basis_restart)"
-    # Capture statistics from PRLP
-    sepa.statistics.prlp_solves_data = sepa.shared_data.prlp.solve_statistics
+    #Gather Separating solutions statistic
+    statistics.num_cuts = length(shared.separating_solutions)
+    statistics.prlp_solves_data = shared.prlp.solve_statistics
+    statistics.prlp_separation_time = separating_solutions_timed.time
+    statistics.objective_tried = length(shared.prlp.solve_statistics)
+    statistics.num_basis_restart = shared.prlp.n_basis_restart
+    @info "Basis Restart Count $(shared.prlp.n_basis_restart)"
 
     # Step 7: Process Cuts and Add to SCIP
-    sepa.shared_data.cutpool = CutPool(;
-        variable_pointers = sepa.shared_data.nonbasic_space.variable_pointers
+    shared.cutpool = CutPool(;
+        variable_pointers = shared.nonbasic_space.variable_pointers
     )
-    for solution in sepa.shared_data.separating_solutions
+    for solution in shared.separating_solutions
         cut = get_cut_from_separating_solution(
-            solution, sepa.shared_data.nonbasic_space
+            solution, shared.nonbasic_space
         )
-        push!(sepa.shared_data.cutpool, cut)
+        push!(shared.cutpool, cut)
     end
-    add_all_cuts!(scip, sepa.shared_data.cutpool, sepa)
+    add_all_cuts!(scip, shared.cutpool, sepa)
 
     # Sepa termination status have been modified due to Timelimit/ consecutive_fail
     if sepa.termination_status != NOT_RUN
         return nothing
     end
 
-    if length(sepa.shared_data.cutpool) > 0
+    if length(shared.cutpool) > 0
         sepa.termination_status = FOUND_CUTS
     else
         sepa.termination_status = NO_CUTS_FOUND
+    end
+end
+
+function test_disjunctive_lower_bound(sepa::VPCSeparator)
+    # This test is always runned! The parameter sepa.parameters.test_disjunctive_lower_bound 
+    # only determine whether we can skipped if the test fail 
+    shared = sepa.shared_data
+
+    pstar = argmin(
+        x -> get_objective_value(x), get_points(shared.point_ray_collection)
+    )
+    disjunctive_lower_bound = get_objective_value(pstar)
+    @info "Disjunctive Lower bound $(disjunctive_lower_bound)"
+    if is_LE(disjunctive_lower_bound, shared.lp_obj) &&
+        sepa.parameters.test_disjunctive_lower_bound
+        @debug "Disjunctive Lower Bound is not strictly larger than the current LP"
+        throw(FailedDisjunctiveLowerBoundTest())
     end
 end
