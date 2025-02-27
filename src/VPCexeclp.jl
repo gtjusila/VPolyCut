@@ -223,6 +223,7 @@ function test_disjunctive_lower_bound(sepa::VPCSeparator)
     )
     disjunctive_lower_bound = get_objective_value(pstar)
     statistics.disjunctive_lower_bound = disjunctive_lower_bound
+    shared.disjunctive_lower_bound = disjunctive_lower_bound
     @info "Disjunctive Lower bound $(disjunctive_lower_bound)"
     if is_LE(disjunctive_lower_bound, shared.lp_obj) &&
         sepa.parameters.test_disjunctive_lower_bound

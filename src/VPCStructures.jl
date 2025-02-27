@@ -63,6 +63,7 @@ end
     prlp_separation_time::Float64 = 0.0
     prlp_solves_data::Vector{Any} = []
     prlp_solve_method::String = "PRIMAL_SIMPLEX"
+    prlp_percent_disjunctive_gap_closed_history::Vector{SCIP.SCIP_Real} = []
 
     root_lp_iterations::Int64 = 0
     objective_tried::Int = 0
@@ -91,6 +92,7 @@ end
 @kwdef mutable struct VPCSharedData
     cutpool::Union{Nothing,CutPool} = nothing
     disjunction::Union{Nothing,Disjunction} = nothing
+    disjunctive_lower_bound::SCIP.SCIP_Real = 0.0
     lp_obj::Float64 = 0.0
     nonbasic_space::Union{Nothing,NonBasicSpace} = nothing
     point_ray_collection::Union{Nothing,PointRayCollection} = nothing
