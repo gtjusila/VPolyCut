@@ -199,6 +199,7 @@ function vpolyhedralcut_separation(sepa::VPCSeparator)
         push!(shared.cutpool, cut)
     end
     add_all_cuts!(scip, shared.cutpool, sepa)
+    statistics.total_time_taken = time() - shared.start_time
 
     # Sepa termination status have been modified due to Timelimit/ consecutive_fail
     if sepa.termination_status != NOT_RUN

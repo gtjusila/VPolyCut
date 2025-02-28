@@ -53,7 +53,11 @@ function main()
         log_directory = output_path,
         time_limit = 900,
         prlp_solve_method = config["prlp_solve_method"],
-        prlp_allow_warm_start = config["prlp_allow_warm_start"]
+        prlp_allow_warm_start = config["prlp_allow_warm_start"],
+        cut_limit = config["vpolycut_max_cut_per_round"],
+        prlp_max_consecutive_fail = config["vpolycut_max_consecutive_fail"],
+        prlp_min_increase_non_stagnating = config["vpolycut_min_gap_closed_increase"],
+        prlp_max_consecutive_stagnation = config["vpolycut_max_consecutive_stagnation"]
     )
 
     vpcsepa = VPolyhedralCut.include_vpolyhedral_sepa(

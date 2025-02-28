@@ -155,6 +155,51 @@ elseif mode == "vpc"
         default = "false"
     )
     vpc_config["vpolycut_delay"] = (vpc_config["vpolycut_delay"] == "true")
+
+    vpc_config["vpolycut_max_cut_per_round"] = prompt_user(;
+        message = "VPolycut Max Cut Per Round",
+        validation = (x) -> !isnothing(tryparse(Int, x)),
+        error_message = "Not an integer.",
+        default = "150"
+    )
+    vpc_config["vpolycut_max_cut_per_round"] = parse(
+        Int, vpc_config["vpolycut_max_cut_per_round"]
+    )
+
+    vpc_config["vpolycut_max_consecutive_fail"] = prompt_user(;
+        message = "VPolycut maximum number of fail in cut generation",
+        validation = (x) -> !isnothing(tryparse(Int, x)),
+        error_message = "Not an integer.",
+        default = "5"
+    )
+    vpc_config["vpolycut_max_consecutive_fail"] = parse(
+        Int, vpc_config["vpolycut_max_consecutive_fail"]
+    )
+
+    vpc_config["vpolycut_min_gap_closed_increase"] = prompt_user(;
+        message = "VPolycut Minimum Increase Of Disjunctive Gap Closed to be counted as not stagnating",
+        validation = (x) ->
+            (
+                !isnothing(tryparse(Float64, x)) && 0 <= parse(Float64, x) &&
+                parse(Float64, x) <= 1
+            ),
+        error_message = "Not a Float between 0 and 1",
+        default = "0.01"
+    )
+    vpc_config["vpolycut_min_gap_closed_increase"] = parse(
+        Float64, vpc_config["vpolycut_min_gap_closed_increase"]
+    )
+
+    vpc_config["vpolycut_max_consecutive_stagnation"] = prompt_user(;
+        message = "VPolycut maximum number of consecutive cut generations without improvement",
+        validation = (x) -> !isnothing(tryparse(Int, x)),
+        error_message = "Not an integer.",
+        default = "10"
+    )
+    vpc_config["vpolycut_max_consecutive_stagnation"] = parse(
+        Int, vpc_config["vpolycut_max_consecutive_stagnation"]
+    )
+
     config_file = joinpath(experiment_path, "vpc_config.toml")
     open(config_file, "w") do io
         TOML.print(io, vpc_config)

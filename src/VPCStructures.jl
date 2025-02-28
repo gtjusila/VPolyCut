@@ -29,6 +29,13 @@ is passed during the creation of the VPCSeparator.
     prlp_allow_warm_start::Bool = true
     "PRLP solve method"
     prlp_solve_method::Int = 1
+    "PRLP maximum consecutive fail"
+    prlp_max_consecutive_fail::Int = 5
+    "PRLP minimum increase to be non stagnating"
+    prlp_min_increase_non_stagnating::Float64 = 0.0
+    "PRLP maximum number of stagnating objective"
+    prlp_max_consecutive_stagnation::Int = 10
+
     "Test if disjunctive_lower_bound is better than LP Objective"
     test_disjunctive_lower_bound::Bool = true
     "Time Limit"
@@ -66,6 +73,7 @@ end
     prlp_percent_disjunctive_gap_closed_history::Vector{SCIP.SCIP_Real} = []
 
     root_lp_iterations::Int64 = 0
+    total_time_taken::Float64 = 0.0
     objective_tried::Int = 0
 end
 
