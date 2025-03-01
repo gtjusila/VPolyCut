@@ -160,7 +160,7 @@ elseif mode == "vpc"
         message = "VPolycut maximum number of cutting plane round to participate in",
         validation = (x) -> !isnothing(tryparse(Int, x)),
         error_message = "Not an integer.",
-        default = "10"
+        default = "1"
     )
     vpc_config["vpolycut_max_round"] = parse(
         Int, vpc_config["vpolycut_max_round"]
