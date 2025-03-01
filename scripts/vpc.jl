@@ -44,7 +44,7 @@ function main()
     JuMP.set_attribute(model, "limits/restarts", 0)
     JuMP.set_attribute(model, "limits/nodes", 1)
     JuMP.set_attribute(model, "limits/time", 3600)
-    JuMP.set_attribute(model, "separating/maxroundsroot", 1)
+    #JuMP.set_attribute(model, "separating/maxroundsroot", 1)
     #JuMP.set_attribute(model, "display/verblevel", 0)
 
     # Turn on vpc cut
@@ -52,6 +52,7 @@ function main()
         n_leaves = config["n_leaves"],
         log_directory = output_path,
         time_limit = 900,
+        max_round = config["vpolycut_max_round"],
         prlp_solve_method = config["prlp_solve_method"],
         prlp_allow_warm_start = config["prlp_allow_warm_start"],
         cut_limit = config["vpolycut_max_cut_per_round"],

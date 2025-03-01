@@ -39,6 +39,9 @@ function _exec_lp(sepa::VPCSeparator)
 
     # Check Preconditions and handle accordingly
     @info "Checking Precondition"
+    if statistics.called >= sepa.parameters.max_round + 1
+        return SCIP.SCIP_DIDNOTRUN
+    end
     if sepa.should_be_skipped
         return SCIP.SCIP_DIDNOTRUN
     end

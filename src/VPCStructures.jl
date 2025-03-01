@@ -23,6 +23,8 @@ is passed during the creation of the VPCSeparator.
     cut_limit::Int = -2
     "Directory to write cut log"
     log_directory::String = ""
+    "Max rounds to participate in"
+    max_round::Int = 1
     "Number of leaves in the disjunction"
     n_leaves::Int = 2
     "PRLP allow warm start"

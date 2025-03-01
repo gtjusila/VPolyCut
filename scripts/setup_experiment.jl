@@ -156,6 +156,16 @@ elseif mode == "vpc"
     )
     vpc_config["vpolycut_delay"] = (vpc_config["vpolycut_delay"] == "true")
 
+    vpc_config["vpolycut_max_round"] = prompt_user(;
+        message = "VPolycut maximum number of cutting plane round to participate in",
+        validation = (x) -> !isnothing(tryparse(Int, x)),
+        error_message = "Not an integer.",
+        default = "10"
+    )
+    vpc_config["vpolycut_max_round"] = parse(
+        Int, vpc_config["vpolycut_max_round"]
+    )
+
     vpc_config["vpolycut_max_cut_per_round"] = prompt_user(;
         message = "VPolycut Max Cut Per Round",
         validation = (x) -> !isnothing(tryparse(Int, x)),
