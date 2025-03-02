@@ -191,7 +191,7 @@ elseif mode == "vpc"
     )
 
     vpc_config["vpolycut_max_consecutive_fail"] = prompt_user(;
-        message = "VPolycut maximum number of fail in cut generation",
+        message = "VPolycut maximum number of consecutive fail in cut generation",
         validation = (x) -> !isnothing(tryparse(Int, x)),
         error_message = "Not an integer.",
         default = "5"

@@ -14,7 +14,7 @@ function construct_prlp(
     prlp_allow_warm_start = sepa.parameters.prlp_allow_warm_start
 
     problem_dimension = dimension(point_ray_collection)
-
+    beta = 1.0
     if sepa.parameters.apply_beta_scaling
         if is_GE(sepa.shared_data.lp_obj_nonbasic, 1.0)
             beta = sepa.shared_data.lp_obj_nonbasic
