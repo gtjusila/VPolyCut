@@ -46,6 +46,7 @@ function main()
 
     JuMP.set_attribute(model, "limits/restarts", 0)
     JuMP.set_attribute(model, "estimation/restarts/restartpolicy", 'n')
+    JuMP.set_attribute(model, "presolving/maxrestarts", 0)
     #JuMP.set_attribute(model, "limits/nodes", 1)
     JuMP.set_attribute(model, "limits/time", 3600)
     #JuMP.set_attribute(model, "separating/maxroundsroot", 1)
