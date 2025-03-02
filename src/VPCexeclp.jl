@@ -84,6 +84,10 @@ function _exec_lp(sepa::VPCSeparator)
             SCIP.SCIPendProbing(scip)
         end
 
+        if is_true(SCIP.SCIPinDive(scip))
+            SCIP.SCIPendDive(scip)
+        end
+
         # Mark sepa to be skipped on next call
         # Any errors happening means sepa is not good for the current problem
         #sepa.should_be_skipped = true
