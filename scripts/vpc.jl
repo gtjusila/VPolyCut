@@ -21,6 +21,9 @@ function main()
         "--config", "-c"
         help = "Parameters for the VPolyhedralCut algorithm"
         required = true
+        "--solution", "-s"
+        help = "Solution"
+        default = ""
     end
     parameter = ArgParse.parse_args(args_setting)
 
@@ -34,15 +37,16 @@ function main()
     scip = get_scip_data_from_model(model)
 
     # Setup SCIP object parameter
-    set_heuristics_emphasis_off(model)
+    #set_heuristics_emphasis_off(model)
     if (config["disable_scip_cuts"])
         set_separators_emphasis_off(model)
     end
-    set_cut_selection_off(model)
-    set_strong_branching_lookahead_off(model)
+    #set_cut_selection_off(model)
+    #set_strong_branching_lookahead_off(model)
 
     JuMP.set_attribute(model, "limits/restarts", 0)
-    JuMP.set_attribute(model, "limits/nodes", 1)
+    JuMP.set_attribute(model, "estimation/restarts/restartpolicy", 'n')
+    #JuMP.set_attribute(model, "limits/nodes", 1)
     JuMP.set_attribute(model, "limits/time", 3600)
     #JuMP.set_attribute(model, "separating/maxroundsroot", 1)
     #JuMP.set_attribute(model, "display/verblevel", 0)
@@ -71,6 +75,10 @@ function main()
     @info "Loading instance from $instance_path"
     SCIP.@SCIP_CALL SCIP.SCIPreadProb(scip, instance_path, C_NULL)
 
+    # If solution is given then read sol
+    if parameter["solution"] != ""
+        SCIP.@SCIP_CALL SCIP.SCIPreadSol(scip, parameter["solution"])
+    end
     # Solve
 
     @info "Starting solve"
@@ -84,6 +92,9 @@ function main()
     result["scip_status"] = SCIP.SCIPgetStatus(scip)
     result["initial_lp_obj"] = SCIP.SCIPgetFirstLPDualboundRoot(scip)
     result["final_lp_obj"] = SCIP.SCIPgetDualboundRoot(scip)
+    result["node_count"] = SCIP.SCIPgetNNodes(scip)
+    result["final_gap"] = SCIP.SCIPgetGap(scip)
+    result["solve_time"] = SCIP.SCIPgetSolvingTime(scip)
     result["sepa_termination_message"] = vpcsepa.termination_status
     result["parameters"] = vpcparam
     result["statistics"] = vpcsepa.statistics

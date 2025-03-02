@@ -1,11 +1,11 @@
-apply_beta_scaling = true
+apply_beta_scaling =  true 
 prlp_allow_warm_start = true
-vpolycut_priority = 99999
-vpolycut_delay = false
+vpolycut_priority = -99999
+vpolycut_delay = true 
 vpolycut_min_gap_closed_increase = 0.01
-prlp_solve_method = 2
+prlp_solve_method = 1
 vpolycut_max_cut_per_round = 150
-disable_scip_cuts = true
+disable_scip_cuts = false 
 vpolycut_max_consecutive_fail = 5
 vpolycut_max_round = 1
 vpolycut_max_consecutive_stagnation = 10

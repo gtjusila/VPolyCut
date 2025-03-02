@@ -14,10 +14,17 @@ instance_list = prompt_user(;
 )
 
 instance_dir = prompt_user(;
-    message = "Instance List",
+    message = "Instance Dir",
     validation = (x) -> isdir(abspath(x)),
     error_message = "Invalid Path.",
     default = "experiment_data/miplibbench"
+)
+
+solution_dir = prompt_user(;
+    message = "Solution Directory",
+    validation = (x) -> isdir(abspath(x)),
+    error_message = "Invalid Path.",
+    default = "experiment_data/miplibbenchsolutions"
 )
 
 mode = prompt_user(;
@@ -86,13 +93,21 @@ elseif mode == "vpc"
     ### Creating Config TSV ###
     instances_path = [joinpath(instance_dir, instance * ".mps") for instance in instances]
     output_path = [joinpath(experiment_path, instance) for instance in instances]
+    solution_path = map(instances) do instance
+        if isfile(joinpath(solution_dir, instance * ".sol"))
+            return joinpath(solution_dir, instance * ".sol")
+        else
+            return ""
+        end
+    end
     for path in output_path
         mkdir(path)
     end
     config_dataframe = DataFrame(;
         id = 1:length(instances),
         instances_path = instances_path,
-        output_path = output_path
+        output_path = output_path,
+        solution_path = solution_path
     )
     run_settings_file = joinpath(experiment_path, "experiment_list.tsv")
     CSV.write(run_settings_file, config_dataframe; delim = '\t')
