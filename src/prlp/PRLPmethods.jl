@@ -127,7 +127,7 @@ function PRLPconstructLP(prlp::PRLP)
     SCIP.SCIPlpiAddRows(
         prlp.lpi,
         length(beg),
-        ones(SCIP.SCIP_Real, length(beg)),
+        ones(SCIP.SCIP_Real, length(beg)) * prlp.beta,
         ones(SCIP.SCIP_Real, length(beg)) * SCIP.SCIPlpiInfinity(prlp.lpi),
         ["p_$(i)" for i in 1:length(beg)],
         length(ind),
@@ -371,7 +371,7 @@ function PRLPtighten(prlp::PRLP, index::Int)
     if prlp.lp_constructed == false
         throw("LP must be constructed before tightening")
     end
-    SCIP.SCIPlpiChgSides(prlp.lpi, 1, [Cint(index - 1)], [1.0], [1.0])
+    SCIP.SCIPlpiChgSides(prlp.lpi, 1, [Cint(index - 1)], [prlp.beta], [prlp.beta])
 end
 
 """

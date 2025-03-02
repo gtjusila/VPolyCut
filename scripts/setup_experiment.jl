@@ -105,6 +105,7 @@ elseif mode == "vpc"
 
     # Create config file
     vpc_config = Dict()
+
     vpc_config["n_leaves"] = prompt_user(;
         message = "Number of Leaves",
         validation = (x) -> !isnothing(tryparse(Int, x)),
@@ -112,6 +113,7 @@ elseif mode == "vpc"
         default = "64"
     )
     vpc_config["n_leaves"] = parse(Int, vpc_config["n_leaves"])
+
     vpc_config["prlp_solve_method"] = prompt_user(;
         message = "PRLP Solve Method (1: PRIMAL SIMPLEX, 2:DUAL SIMPLEX, 3: BARRIER)",
         validation = (x) -> !isnothing(tryparse(Int, x)),
@@ -119,6 +121,7 @@ elseif mode == "vpc"
         default = "1"
     )
     vpc_config["prlp_solve_method"] = parse(Int, vpc_config["prlp_solve_method"])
+
     vpc_config["prlp_allow_warm_start"] = prompt_user(;
         message = "Allow PRLP warm start (true/false)",
         validation = (x) -> x == "true" || x == "false",
@@ -126,6 +129,15 @@ elseif mode == "vpc"
         default = "true"
     )
     vpc_config["prlp_allow_warm_start"] = (vpc_config["prlp_allow_warm_start"] == "true")
+
+    vpc_config["apply_beta_scaling"] = prompt_user(;
+        message = "Allow beta scaling (true/false)",
+        validation = (x) -> x == "true" || x == "false",
+        error_message = "Neither true nor false.",
+        default = "true"
+    )
+    vpc_config["apply_beta_scaling"] = (vpc_config["apply_beta_scaling"] == "true")
+
     vpc_config["disable_scip_cuts"] = prompt_user(;
         message = "Disable SCIP Cuts (true/false)",
         validation = (x) -> x == "true" || x == "false",
@@ -141,6 +153,7 @@ elseif mode == "vpc"
         default = "0"
     )
     vpc_config["vpolycut_frequency"] = parse(Int, vpc_config["vpolycut_frequency"])
+
     vpc_config["vpolycut_priority"] = prompt_user(;
         message = "VPolycut Priority",
         validation = (x) -> !isnothing(tryparse(Int, x)),
@@ -148,6 +161,7 @@ elseif mode == "vpc"
         default = "99999"
     )
     vpc_config["vpolycut_priority"] = parse(Int, vpc_config["vpolycut_priority"])
+
     vpc_config["vpolycut_delay"] = prompt_user(;
         message = "Delay VPolycut (true/false)",
         validation = (x) -> x == "true" || x == "false",

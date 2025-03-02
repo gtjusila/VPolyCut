@@ -42,7 +42,7 @@ function get_point_ray_collection(
             #tableau = construct_tableau(scip)
             #corner_polyhedron = construct_corner_polyhedron(tableau)
             corner_polyhedron = CornerPolyhedron(scip, nb_space)
-
+            push!(sepa.shared_data.original_points, corner_polyhedron.lp_sol)
             # Add point to point ray collection
             corner_point = project_point_to_nonbasic_space(
                 nb_space, corner_polyhedron.lp_sol

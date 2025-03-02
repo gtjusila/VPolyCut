@@ -14,10 +14,18 @@ function construct_prlp(
     prlp_allow_warm_start = sepa.parameters.prlp_allow_warm_start
 
     problem_dimension = dimension(point_ray_collection)
+
+    if sepa.parameters.apply_beta_scaling
+        if is_GE(sepa.shared_data.lp_obj_nonbasic, 1.0)
+            beta = sepa.shared_data.lp_obj_nonbasic
+        end
+    end
+
     prlp = PRLP(;
         dimension = problem_dimension,
         scip = scip,
-        allow_warm_start = prlp_allow_warm_start)
+        allow_warm_start = prlp_allow_warm_start,
+        beta = beta)
 
     PRLPsetSolvingAlgorithm(prlp, prlp_solve_method)
 

@@ -27,6 +27,8 @@ is passed during the creation of the VPCSeparator.
     max_round::Int = 1
     "Number of leaves in the disjunction"
     n_leaves::Int = 2
+    "Apply Beta Scaling"
+    apply_beta_scaling::Bool = true
     "PRLP allow warm start"
     prlp_allow_warm_start::Bool = true
     "PRLP solve method"
@@ -104,6 +106,8 @@ end
     disjunction::Union{Nothing,Disjunction} = nothing
     disjunctive_lower_bound::SCIP.SCIP_Real = 0.0
     lp_obj::Float64 = 0.0
+    lp_obj_nonbasic::Float64 = 0.0
+    original_points::Vector{Point} = []
     nonbasic_space::Union{Nothing,NonBasicSpace} = nothing
     point_ray_collection::Union{Nothing,PointRayCollection} = nothing
     prlp::Union{Nothing,PRLP} = nothing

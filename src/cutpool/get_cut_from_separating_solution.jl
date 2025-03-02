@@ -8,15 +8,15 @@ Given a separating solution in the nonbasic space, return the corresponding cut 
 """
 function get_cut_from_separating_solution(
     separating_solution::Vector{SCIP.SCIP_Real},
-    nonbasicspace::NonBasicSpace)::Cut
+    nonbasicspace::NonBasicSpace,
+    beta::SCIP.SCIP_Real)::Cut
     origin_point = nonbasicspace.origin_point
     constraint_matrix = nonbasicspace.constraint_matrix
 
     separating_solution = revert_cut_vector_to_original_space(
         nonbasicspace, separating_solution
     )
-    b = dot(separating_solution, origin_point) + 1
-
+    b = dot(separating_solution, origin_point) + beta
     n_rows, n_cols = size(constraint_matrix)
 
     for i in 1:n_rows

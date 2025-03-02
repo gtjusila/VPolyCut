@@ -37,7 +37,7 @@ function gather_separating_solutions(
             consecutive_fail = 0
             push!(separating_solutions, objective_solution)
             cut = get_cut_from_separating_solution(
-                objective_solution, sepa.shared_data.nonbasic_space
+                objective_solution, sepa.shared_data.nonbasic_space, prlp.beta
             )
             add_diving_row!(
                 shared_data.scipd,

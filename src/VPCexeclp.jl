@@ -138,6 +138,7 @@ function vpolyhedralcut_separation(sepa::VPCSeparator)
 
     # Step 1: Construct NonBasicSpace and get LP Objective 
     shared.lp_obj = SCIP.SCIPgetSolOrigObj(scip, C_NULL)
+    shared.lp_obj_nonbasic = SCIP.SCIPgetLPObjval(scip)
     shared.nonbasic_space = NonBasicSpace(scip)
 
     # Capture LP Objective statistic
@@ -197,7 +198,7 @@ function vpolyhedralcut_separation(sepa::VPCSeparator)
     )
     for solution in shared.separating_solutions
         cut = get_cut_from_separating_solution(
-            solution, shared.nonbasic_space
+            solution, shared.nonbasic_space, shared.prlp.beta
         )
         push!(shared.cutpool, cut)
     end
