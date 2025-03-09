@@ -41,7 +41,7 @@ function main()
     if (config["disable_scip_cuts"])
         set_separators_emphasis_off(model)
     end
-    #set_cut_selection_off(model)
+    set_cut_selection_off(model)
     #set_strong_branching_lookahead_off(model)
 
     JuMP.set_attribute(model, "limits/restarts", 0)

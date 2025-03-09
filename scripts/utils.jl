@@ -1,8 +1,8 @@
 function prompt_user(;
-    message::String="",
-    validation::Function=(input) -> true,
-    error_message::String="",
-    default::String="")
+    message::String = "",
+    validation::Function = (input) -> true,
+    error_message::String = "",
+    default::String = "")
     input = ""
     while (true)
         print(message * " ($(default))" * ": ")
