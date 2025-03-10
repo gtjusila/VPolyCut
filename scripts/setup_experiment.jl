@@ -46,9 +46,9 @@ experiment_path = prompt_user(;
     validation = (x) ->
         ((x != "") && !isdir(joinpath(runs_path, x))),
     error_message = "Name must not be empty.",
+    parse = (x) -> joinpath(runs_path, x),
     default = ""
 )
-experiment_path = joinpath(runs_path, experiment_path)
 mkdir(experiment_path)
 
 ### Done with basic parameter, start reading input ###
@@ -100,9 +100,12 @@ elseif mode == "vpc"
             return ""
         end
     end
+
+    # Make Path for all instances
     for path in output_path
         mkdir(path)
     end
+
     config_dataframe = DataFrame(;
         id = 1:length(instances),
         instances_path = instances_path,

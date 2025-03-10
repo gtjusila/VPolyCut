@@ -38,7 +38,7 @@ function main()
 
     # Setup SCIP object parameter
     #set_heuristics_emphasis_off(model)
-    if (config["disable_scip_cuts"])
+    if (config["scip_disable_scip_cuts"])
         set_separators_emphasis_off(model)
     end
     set_cut_selection_off(model)
@@ -47,29 +47,35 @@ function main()
     JuMP.set_attribute(model, "limits/restarts", 0)
     JuMP.set_attribute(model, "estimation/restarts/restartpolicy", 'n')
     JuMP.set_attribute(model, "presolving/maxrestarts", 0)
-    #JuMP.set_attribute(model, "limits/nodes", 1)
-    JuMP.set_attribute(model, "limits/time", 3600)
-    #JuMP.set_attribute(model, "separating/maxroundsroot", 1)
+    JuMP.set_attribute(model, "limits/nodes",
+        config["scip_node_limit"]
+    )
+    JuMP.set_attribute(model, "limits/time",
+        config["scip_time_limit"]
+    )
+    JuMP.set_attribute(
+        model, "separating/maxroundsroot", config["scip_max_root_cutting_plane_rounds"]
+    )
     #JuMP.set_attribute(model, "display/verblevel", 0)
 
     # Turn on vpc cut
     vpcparam = VPolyhedralCut.VPCParameters(;
-        n_leaves = config["n_leaves"],
+        n_leaves = config["vpc_n_leaves"],
         log_directory = output_path,
         time_limit = 900,
-        max_round = config["vpolycut_max_round"],
-        prlp_solve_method = config["prlp_solve_method"],
-        prlp_allow_warm_start = config["prlp_allow_warm_start"],
-        cut_limit = config["vpolycut_max_cut_per_round"],
-        prlp_max_consecutive_fail = config["vpolycut_max_consecutive_fail"],
-        prlp_min_increase_non_stagnating = config["vpolycut_min_gap_closed_increase"],
-        prlp_max_consecutive_stagnation = config["vpolycut_max_consecutive_stagnation"]
+        max_round = config["vpc_max_participating_round"],
+        prlp_solve_method = config["vpc_prlp_solve_method"],
+        prlp_allow_warm_start = config["vpc_prlp_allow_warm_start"],
+        cut_limit = config["vpc_max_cut_per_round"],
+        prlp_max_consecutive_fail = config["vpc_max_consecutive_prlp_fail"],
+        prlp_min_increase_non_stagnating = config["vpc_min_gap_closed_increase"],
+        prlp_max_consecutive_stagnation = config["vpc_max_consecutive_stagnation"]
     )
 
     vpcsepa = VPolyhedralCut.include_vpolyhedral_sepa(
         scip; parameters = vpcparam,
-        delay = config["vpolycut_delay"], priority = config["vpolycut_priority"],
-        freq = config["vpolycut_frequency"])
+        delay = config["vpc_delayed"], priority = config["vpc_priority"],
+        freq = config["vpc_frequency"])
 
     # Read Problem
     instance_path = abspath(parameter["instance"])
