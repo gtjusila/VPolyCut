@@ -4,6 +4,7 @@ scip_allow_restart = false
 scip_node_limit = 1
 vpc_frequency = 0
 vpc_delayed = false
+scip_enable_conflict_analysis = false
 vpc_prlp_solve_method = 1
 vpc_max_cut_per_round = 150
 vpc_prlp_apply_beta_scaling = false
