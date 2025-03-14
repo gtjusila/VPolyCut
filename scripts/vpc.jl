@@ -52,7 +52,9 @@ function main()
     if (!config["scip_enable_strong_branching_lookahead"])
         set_strong_branching_lookahead_off(model)
     end
-
+    if (!config["scip_enable_root_node_propagation"])
+        set_root_node_propagation_off(model)
+    end
     if !config["scip_allow_restart"]
         JuMP.set_attribute(model, "limits/restarts", 0)
         JuMP.set_attribute(model, "estimation/restarts/restartpolicy", 'n')

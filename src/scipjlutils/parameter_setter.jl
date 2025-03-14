@@ -128,6 +128,10 @@ end
 function set_strong_branching_lookahead_off(model::JuMP.AbstractModel)
     setter = get_parameter_setter_function(model)
     setter("branching/relpscost/initcand", 0)
+    setter("branching/relpscost/sbiterofs", 0)
+    setter("branching/relpscost/sbiterquot", 0)
+    setter("branching/relpscost/priority", -99999)
+    setter("branching/random/priority", 100000)
 end
 function set_everything_off(model::JuMP.AbstractModel)
     set_heuristics_emphasis_off(model)

@@ -7,6 +7,7 @@ vpc_delayed = false
 scip_enable_conflict_analysis = false
 vpc_prlp_solve_method = 1
 vpc_max_cut_per_round = 150
+scip_enable_root_node_propagation = false
 vpc_prlp_apply_beta_scaling = false
 vpc_prlp_allow_warm_start = true
 scip_max_root_cutting_plane_rounds = 1
