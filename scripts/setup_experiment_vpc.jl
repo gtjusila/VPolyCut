@@ -109,8 +109,33 @@ vpc_config["scip_time_limit"] = prompt_user(;
     parse = (x) -> parse(Int, x),
     default = string(1209600)
 )
+
 vpc_config["scip_disable_scip_cuts"] = prompt_user(;
     message = "Disable SCIP Cuts (true/false)",
+    validation = (x) -> x == "true" || x == "false",
+    error_message = "Neither true nor false.",
+    parse = (x) -> x == "true",
+    default = "true"
+)
+
+vpc_config["scip_enable_cut_selection"] = prompt_user(;
+    message = "SCIP enable cut selection (true/false)",
+    validation = (x) -> x == "true" || x == "false",
+    error_message = "Neither true nor false.",
+    parse = (x) -> x == "true",
+    default = "true"
+)
+
+vpc_config["scip_enable_strong_branching_lookahead"] = prompt_user(;
+    message = "SCIP enable strong branching lookahead (true/false)",
+    validation = (x) -> x == "true" || x == "false",
+    error_message = "Neither true nor false.",
+    parse = (x) -> x == "true",
+    default = "true"
+)
+
+vpc_config["scip_allow_restart"] = prompt_user(;
+    message = "SCIP allow restart (true/false)",
     validation = (x) -> x == "true" || x == "false",
     error_message = "Neither true nor false.",
     parse = (x) -> x == "true",
@@ -121,38 +146,6 @@ println()
 println("------------------")
 println("VPC Settings")
 println("------------------")
-vpc_config["vpc_n_leaves"] = prompt_user(;
-    message = "Number of Leaves in Branch and Bound Tree",
-    validation = (x) -> !isnothing(tryparse(Int, x)),
-    error_message = "Not an integer.",
-    parse = (x) -> parse(Int, x),
-    default = "64"
-)
-
-vpc_config["vpc_prlp_solve_method"] = prompt_user(;
-    message = "PRLP Solve Method (1: PRIMAL SIMPLEX, 2:DUAL SIMPLEX, 3: BARRIER)",
-    validation = (x) -> !isnothing(tryparse(Int, x)),
-    error_message = "Not an integer.",
-    parse = (x) -> parse(Int, x),
-    default = "1"
-)
-
-vpc_config["vpc_prlp_allow_warm_start"] = prompt_user(;
-    message = "Allow PRLP warm start (true/false)",
-    validation = (x) -> x == "true" || x == "false",
-    error_message = "Neither true nor false.",
-    parse = (x) -> x == "true",
-    default = "true"
-)
-
-vpc_config["vpc_apply_beta_scaling"] = prompt_user(;
-    message = "Use beta scaling (true/false)",
-    validation = (x) -> x == "true" || x == "false",
-    error_message = "Neither true nor false.",
-    parse = (x) -> x == "true",
-    default = "false"
-)
-
 vpc_config["vpc_frequency"] = prompt_user(;
     message = "VPolycut Frequency",
     validation = (x) -> !isnothing(tryparse(Int, x)),
@@ -192,7 +185,47 @@ vpc_config["vpc_max_cut_per_round"] = prompt_user(;
     parse = (x) -> parse(Int, x),
     default = "150")
 
-vpc_config["vpc_max_consecutive_prlp_fail"] = prompt_user(;
+vpc_config["vpc_min_restart"] = prompt_user(;
+    message = "Minimum number of restart before VPC participate",
+    validation = (x) -> !isnothing(tryparse(Int, x)),
+    error_message = "Not an integer.",
+    parse = (x) -> parse(Int, x),
+    default = "1"
+)
+
+vpc_config["vpc_n_leaves"] = prompt_user(;
+    message = "Number of Leaves in Branch and Bound Tree",
+    validation = (x) -> !isnothing(tryparse(Int, x)),
+    error_message = "Not an integer.",
+    parse = (x) -> parse(Int, x),
+    default = "64"
+)
+
+vpc_config["vpc_prlp_solve_method"] = prompt_user(;
+    message = "PRLP Solve Method (1: PRIMAL SIMPLEX, 2:DUAL SIMPLEX, 3: BARRIER)",
+    validation = (x) -> !isnothing(tryparse(Int, x)),
+    error_message = "Not an integer.",
+    parse = (x) -> parse(Int, x),
+    default = "1"
+)
+
+vpc_config["vpc_prlp_allow_warm_start"] = prompt_user(;
+    message = "Allow PRLP warm start of basis (true/false)",
+    validation = (x) -> x == "true" || x == "false",
+    error_message = "Neither true nor false.",
+    parse = (x) -> x == "true",
+    default = "true"
+)
+
+vpc_config["vpc_prlp_apply_beta_scaling"] = prompt_user(;
+    message = "Use beta scaling in PRLP (true/false)",
+    validation = (x) -> x == "true" || x == "false",
+    error_message = "Neither true nor false.",
+    parse = (x) -> x == "true",
+    default = "false"
+)
+
+vpc_config["vpc_prlp_max_consecutive_fail"] = prompt_user(;
     message = "Maximum number of consecutive fail in cut generation",
     validation = (x) -> !isnothing(tryparse(Int, x)),
     error_message = "Not an integer.",
@@ -200,7 +233,7 @@ vpc_config["vpc_max_consecutive_prlp_fail"] = prompt_user(;
     default = "5"
 )
 
-vpc_config["vpc_min_gap_closed_increase"] = prompt_user(;
+vpc_config["vpc_prlp_min_gap_closed_increase"] = prompt_user(;
     message = "Minimum Increase Of Disjunctive Gap Closed to be counted as not stagnating",
     validation = (x) ->
         (
@@ -212,7 +245,7 @@ vpc_config["vpc_min_gap_closed_increase"] = prompt_user(;
     default = "0.01"
 )
 
-vpc_config["vpc_max_consecutive_stagnation"] = prompt_user(;
+vpc_config["vpc_prlp_max_consecutive_stagnation"] = prompt_user(;
     message = "Maximum number of consecutive cut generations without improvement",
     validation = (x) -> !isnothing(tryparse(Int, x)),
     error_message = "Not an integer.",

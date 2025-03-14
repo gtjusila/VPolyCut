@@ -7,3 +7,4 @@ struct FailedToProvePRLPFeasibility <: Exception end
 struct PStarNotTight <: Exception end
 struct BasestatZeroEncountered <: Exception end
 struct LPError <: Exception end
+struct TreeHasNoLeaf <: Exception end

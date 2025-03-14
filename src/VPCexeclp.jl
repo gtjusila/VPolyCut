@@ -33,18 +33,12 @@ function _exec_lp(sepa::VPCSeparator)
     # Aliasing for easier call
     scip = shared.scipd
 
-    # Initialization: start timer, set separated to false, and increment call count 
-    @info "VPC Separator Called"
-
     # Check Preconditions and handle accordingly
-    @info "Checking Precondition"
-
+    # Minimum restart have been reached
     if sepa.should_be_skipped
         return SCIP.SCIP_DIDNOTRUN
     end
-    nruns = SCIP.SCIPgetNRuns(scip)
-    if nruns < 2
-        @info nruns
+    if SCIP.SCIPgetNRuns(scip) < 1 + sepa.parameters.min_restart
         return SCIP.SCIP_DIDNOTFIND
     end
     if SCIP.SCIPgetStage(scip) != SCIP.SCIP_STAGE_SOLVING
@@ -58,15 +52,18 @@ function _exec_lp(sepa::VPCSeparator)
         # LP Solution is not optimal 
         return SCIP.SCIP_DELAYED
     end
-    statistics.called += 1
-    if statistics.called > sepa.parameters.max_round
+    if statistics.called >= sepa.parameters.max_round
         return SCIP.SCIP_DIDNOTRUN
     end
     @info "Finished checking necessary Preconditions"
+
+    # Increment Call count
+    statistics.called += 1
     # Setup and capture necessary statistic
     if !is_numeric_scip_set()
         set_numeric_scip(scip)
     end
+
     # If cut limit is -1 or -2 convert them to the actual limit 
     # We do the conversion here because for option -2 we need the number of fractional variables
     if sepa.parameters.cut_limit == -1
@@ -74,6 +71,7 @@ function _exec_lp(sepa::VPCSeparator)
     elseif sepa.parameters.cut_limit == -2
         sepa.parameters.cut_limit = SCIP.SCIPgetNLPBranchCands(scip)
     end
+
     # Capture fractional variables statistic and root node lp iterations
     statistics.num_fractional_variables = SCIP.SCIPgetNLPBranchCands(scip)
     statistics.root_lp_iterations = SCIP.SCIPgetNRootFirstLPIterations(scip)
@@ -119,6 +117,10 @@ function _exec_lp(sepa::VPCSeparator)
         elseif error isa BasestatZeroEncountered
             @debug "Basestat Zero Encountered"
             sepa.termination_status = BASESTAT_ZERO_ENCOUNTERED
+            sepa.should_be_skipped = true
+        elseif error isa TreeHasNoLeaf
+            @debug "Tree has no leaf"
+            sepa.termination_status = TREE_HAS_NO_LEAF
             sepa.should_be_skipped = true
         else
             rethrow(error)

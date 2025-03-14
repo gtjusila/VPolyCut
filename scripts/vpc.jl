@@ -41,12 +41,18 @@ function main()
     if (config["scip_disable_scip_cuts"])
         set_separators_emphasis_off(model)
     end
-    set_cut_selection_off(model)
-    #set_strong_branching_lookahead_off(model)
+    if (!config["scip_enable_cut_selection"])
+        set_cut_selection_off(model)
+    end
+    if (!config["scip_enable_strong_branching_lookahead"])
+        set_strong_branching_lookahead_off(model)
+    end
 
-    JuMP.set_attribute(model, "limits/restarts", 0)
-    JuMP.set_attribute(model, "estimation/restarts/restartpolicy", 'n')
-    JuMP.set_attribute(model, "presolving/maxrestarts", 0)
+    if !config["scip_allow_restart"]
+        JuMP.set_attribute(model, "limits/restarts", 0)
+        JuMP.set_attribute(model, "estimation/restarts/restartpolicy", 'n')
+        JuMP.set_attribute(model, "presolving/maxrestarts", 0)
+    end
     JuMP.set_attribute(model, "limits/nodes",
         config["scip_node_limit"]
     )
@@ -63,13 +69,14 @@ function main()
         n_leaves = config["vpc_n_leaves"],
         log_directory = output_path,
         time_limit = 900,
+        min_restart = config["vpc_min_restart"],
         max_round = config["vpc_max_participating_round"],
         prlp_solve_method = config["vpc_prlp_solve_method"],
         prlp_allow_warm_start = config["vpc_prlp_allow_warm_start"],
         cut_limit = config["vpc_max_cut_per_round"],
-        prlp_max_consecutive_fail = config["vpc_max_consecutive_prlp_fail"],
-        prlp_min_increase_non_stagnating = config["vpc_min_gap_closed_increase"],
-        prlp_max_consecutive_stagnation = config["vpc_max_consecutive_stagnation"]
+        prlp_max_consecutive_fail = config["vpc_prlp_max_consecutive_fail"],
+        prlp_min_increase_non_stagnating = config["vpc_prlp_min_gap_closed_increase"],
+        prlp_max_consecutive_stagnation = config["vpc_prlp_max_consecutive_stagnation"]
     )
 
     vpcsepa = VPolyhedralCut.include_vpolyhedral_sepa(
@@ -105,6 +112,7 @@ function main()
     result["sepa_termination_message"] = vpcsepa.termination_status
     result["parameters"] = vpcparam
     result["statistics"] = vpcsepa.statistics
+    result["num_runs"] = SCIP.SCIPgetNRuns(scip)
     result_path = joinpath(output_path, "results.json")
     open(result_path, "w") do io
         JSON.print(io, result, 4)

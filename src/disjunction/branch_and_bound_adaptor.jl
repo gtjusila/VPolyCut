@@ -25,6 +25,10 @@ function get_disjunction_by_branchandbound(
     # Collect the leaves
     leaves = get_leaves(branchandbound)
 
+    if isempty(leaves)
+        throw(TreeHasNoLeaf())
+    end
+
     # Prepare the disjunction object
     disjunction = Disjunction()
 

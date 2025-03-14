@@ -25,6 +25,8 @@ is passed during the creation of the VPCSeparator.
     log_directory::String = ""
     "Max rounds to participate in"
     max_round::Int = 1
+    "Minimum number of restart before VPC should be included"
+    min_restart::Int = 0
     "Number of leaves in the disjunction"
     n_leaves::Int = 2
     "Apply Beta Scaling"
@@ -99,6 +101,7 @@ An enum for possible termination status of the VPCSeparator
     TIME_LIMIT_EXCEEDED_BRANCHANDBOUND
     TIME_LIMIT_EXCEEDED_COLLECTION
     TIME_LIMIT_EXCEEDED_PRLP
+    TREE_HAS_NO_LEAF
 end
 
 @kwdef mutable struct VPCSharedData
