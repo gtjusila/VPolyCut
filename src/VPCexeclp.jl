@@ -35,15 +35,17 @@ function _exec_lp(sepa::VPCSeparator)
 
     # Initialization: start timer, set separated to false, and increment call count 
     @info "VPC Separator Called"
-    statistics.called += 1
 
     # Check Preconditions and handle accordingly
     @info "Checking Precondition"
-    if statistics.called >= sepa.parameters.max_round + 1
-        return SCIP.SCIP_DIDNOTRUN
-    end
+
     if sepa.should_be_skipped
         return SCIP.SCIP_DIDNOTRUN
+    end
+    nruns = SCIP.SCIPgetNRuns(scip)
+    if nruns < 2
+        @info nruns
+        return SCIP.SCIP_DIDNOTFIND
     end
     if SCIP.SCIPgetStage(scip) != SCIP.SCIP_STAGE_SOLVING
         return SCIP.SCIP_DIDNOTRUN
@@ -56,8 +58,11 @@ function _exec_lp(sepa::VPCSeparator)
         # LP Solution is not optimal 
         return SCIP.SCIP_DELAYED
     end
+    statistics.called += 1
+    if statistics.called > sepa.parameters.max_round
+        return SCIP.SCIP_DIDNOTRUN
+    end
     @info "Finished checking necessary Preconditions"
-
     # Setup and capture necessary statistic
     if !is_numeric_scip_set()
         set_numeric_scip(scip)

@@ -1,6 +1,6 @@
 vpc_max_participating_round = 1
 vpc_max_consecutive_stagnation = 10
-scip_node_limit = 1
+scip_node_limit = -1
 vpc_frequency = 0
 vpc_delayed = false
 vpc_prlp_solve_method = 1
@@ -12,5 +12,5 @@ vpc_apply_beta_scaling = false
 vpc_n_leaves = 64 
 vpc_max_consecutive_prlp_fail = 5
 vpc_priority = 99999
-scip_disable_scip_cuts = true
+scip_disable_scip_cuts = false 
 scip_time_limit = 1209600
