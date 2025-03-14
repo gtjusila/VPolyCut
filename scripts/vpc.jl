@@ -40,6 +40,9 @@ function main()
     if (!config["scip_enable_heuristic"])
         set_heuristics_emphasis_off(model)
     end
+    if (!config["scip_enable_conflict_analysis"])
+        JuMP.set_attribute(model, "conflict/enable", false)
+    end
     if (config["scip_disable_scip_cuts"])
         set_separators_emphasis_off(model)
     end
@@ -55,7 +58,6 @@ function main()
         JuMP.set_attribute(model, "estimation/restarts/restartpolicy", 'n')
         JuMP.set_attribute(model, "presolving/maxrestarts", 0)
     end
-    JuMP.set_attribute(model, "conflict/enable", false)
     JuMP.set_attribute(model, "limits/nodes",
         config["scip_node_limit"]
     )

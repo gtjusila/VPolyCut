@@ -142,6 +142,14 @@ vpc_config["scip_enable_heuristic"] = prompt_user(;
     default = "true"
 )
 
+vpc_config["scip_enable_conflict_analysis"] = prompt_user(;
+    message = "SCIP enable conflict analysis (true/false)",
+    validation = (x) -> x == "true" || x == "false",
+    error_message = "Neither true nor false.",
+    parse = (x) -> x == "true",
+    default = "true"
+)
+
 vpc_config["scip_allow_restart"] = prompt_user(;
     message = "SCIP allow restart (true/false)",
     validation = (x) -> x == "true" || x == "false",
