@@ -25,7 +25,7 @@ instance_dir = prompt_user(;
 )
 
 solution_dir = prompt_user(;
-    message = "Solution Directory (path or empty)",
+    message = "Solution Directory",
     validation = (x) -> isdir(abspath(x)),
     error_message = "Invalid Path.",
     default = "experiment_data/miplibbenchsolutions"
