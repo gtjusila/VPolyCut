@@ -26,9 +26,17 @@ instance_dir = prompt_user(;
 
 solution_dir = prompt_user(;
     message = "Solution Directory (path or empty)",
-    validation = (x) -> isdir(abspath(x)) || isempty(x),
+    validation = (x) -> isdir(abspath(x)),
     error_message = "Invalid Path.",
     default = "experiment_data/miplibbenchsolutions"
+)
+
+use_solution = prompt_user(;
+    message = "Use solution",
+    validation = (x) -> x == "true" || x == "false",
+    error_message = "Neither true nor false.",
+    parse = (x) -> x == "true",
+    default = "true"
 )
 
 # If experiment_runs is not there create it first.
@@ -55,7 +63,7 @@ instances = readlines(instance_list)
 instances_path = [joinpath(instance_dir, instance * ".mps") for instance in instances]
 output_path = [joinpath(experiment_path, instance) for instance in instances]
 solution_path = map(instances) do instance
-    if isfile(joinpath(solution_dir, instance * ".sol"))
+    if isfile(joinpath(solution_dir, instance * ".sol")) && use_solution
         return joinpath(solution_dir, instance * ".sol")
     else
         return ""
