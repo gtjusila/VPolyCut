@@ -26,7 +26,7 @@ if [ -z "$line" ]; then
 fi
 
 # Extract fields from the line (assuming tab-delimited)
-IFS=$'\t' read -r id instance_path output_path <<< "$line"
+IFS=$'\t' read -r id instance_path output_path solution_path<<< "$line"
 
 # Run the Julia script with the extracted parameters
-julia --project /home/htc/gtjusila/Project/VPolyCut/scripts/vpc.jl -i="$instance_path" -o="$output_path" -c="{{{CONFIG_PATH}}}" 
+julia --project /home/htc/gtjusila/Project/VPolyCut/scripts/vpc.jl -i="$instance_path" -o="$output_path" -s="$solution_path" -c="{{{CONFIG_PATH}}}" 

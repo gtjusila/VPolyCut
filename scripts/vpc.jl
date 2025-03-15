@@ -21,6 +21,9 @@ function main()
         "--config", "-c"
         help = "Parameters for the VPolyhedralCut algorithm"
         required = true
+        "--solution", "-s"
+        help = "Solution"
+        default = ""
     end
     parameter = ArgParse.parse_args(args_setting)
 
@@ -34,38 +37,69 @@ function main()
     scip = get_scip_data_from_model(model)
 
     # Setup SCIP object parameter
-    set_heuristics_emphasis_off(model)
-    if (config["disable_scip_cuts"])
+    if (!config["scip_enable_heuristic"])
+        set_heuristics_emphasis_off(model)
+    end
+    if (!config["scip_enable_conflict_analysis"])
+        JuMP.set_attribute(model, "conflict/enable", false)
+    end
+    if (config["scip_disable_scip_cuts"])
         set_separators_emphasis_off(model)
     end
-    set_cut_selection_off(model)
-    set_strong_branching_lookahead_off(model)
-
-    JuMP.set_attribute(model, "limits/restarts", 0)
-    JuMP.set_attribute(model, "limits/nodes", 1)
-    JuMP.set_attribute(model, "limits/time", 3600)
-    JuMP.set_attribute(model, "separating/maxroundsroot", 1)
+    if (!config["scip_enable_cut_selection"])
+        set_cut_selection_off(model)
+    end
+    if (!config["scip_enable_strong_branching_lookahead"])
+        set_strong_branching_lookahead_off(model)
+    end
+    if (!config["scip_enable_root_node_propagation"])
+        set_root_node_propagation_off(model)
+    end
+    if !config["scip_allow_restart"]
+        JuMP.set_attribute(model, "limits/restarts", 0)
+        JuMP.set_attribute(model, "estimation/restarts/restartpolicy", 'n')
+        JuMP.set_attribute(model, "presolving/maxrestarts", 0)
+    end
+    JuMP.set_attribute(model, "limits/nodes",
+        config["scip_node_limit"]
+    )
+    JuMP.set_attribute(model, "limits/time",
+        config["scip_time_limit"]
+    )
+    JuMP.set_attribute(
+        model, "separating/maxroundsroot", config["scip_max_root_cutting_plane_rounds"]
+    )
     #JuMP.set_attribute(model, "display/verblevel", 0)
 
     # Turn on vpc cut
     vpcparam = VPolyhedralCut.VPCParameters(;
-        n_leaves = config["n_leaves"],
+        n_leaves = config["vpc_n_leaves"],
         log_directory = output_path,
         time_limit = 900,
-        prlp_solve_method = config["prlp_solve_method"],
-        prlp_allow_warm_start = config["prlp_allow_warm_start"]
+        min_restart = config["vpc_min_restart"],
+        max_round = config["vpc_max_participating_round"],
+        prlp_solve_method = config["vpc_prlp_solve_method"],
+        prlp_allow_warm_start = config["vpc_prlp_allow_warm_start"],
+        cut_limit = config["vpc_max_cut_per_round"],
+        prlp_max_consecutive_fail = config["vpc_prlp_max_consecutive_fail"],
+        prlp_min_increase_non_stagnating = config["vpc_prlp_min_gap_closed_increase"],
+        prlp_max_consecutive_stagnation = config["vpc_prlp_max_consecutive_stagnation"]
     )
 
     vpcsepa = VPolyhedralCut.include_vpolyhedral_sepa(
         scip; parameters = vpcparam,
-        delay = config["vpolycut_delay"], priority = config["vpolycut_priority"],
-        freq = config["vpolycut_frequency"])
+        delay = config["vpc_delayed"], priority = config["vpc_priority"],
+        freq = config["vpc_frequency"])
 
     # Read Problem
     instance_path = abspath(parameter["instance"])
     @info "Loading instance from $instance_path"
     SCIP.@SCIP_CALL SCIP.SCIPreadProb(scip, instance_path, C_NULL)
 
+    # If solution is given then read sol
+    if parameter["solution"] != ""
+        SCIP.@SCIP_CALL SCIP.SCIPreadSol(scip, parameter["solution"])
+    end
     # Solve
 
     @info "Starting solve"
@@ -79,9 +113,13 @@ function main()
     result["scip_status"] = SCIP.SCIPgetStatus(scip)
     result["initial_lp_obj"] = SCIP.SCIPgetFirstLPDualboundRoot(scip)
     result["final_lp_obj"] = SCIP.SCIPgetDualboundRoot(scip)
+    result["node_count"] = SCIP.SCIPgetNNodes(scip)
+    result["final_gap"] = SCIP.SCIPgetGap(scip)
+    result["solve_time"] = SCIP.SCIPgetSolvingTime(scip)
     result["sepa_termination_message"] = vpcsepa.termination_status
     result["parameters"] = vpcparam
     result["statistics"] = vpcsepa.statistics
+    result["num_runs"] = SCIP.SCIPgetNRuns(scip)
     result_path = joinpath(output_path, "results.json")
     open(result_path, "w") do io
         JSON.print(io, result, 4)

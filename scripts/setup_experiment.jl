@@ -14,10 +14,17 @@ instance_list = prompt_user(;
 )
 
 instance_dir = prompt_user(;
-    message = "Instance List",
+    message = "Instance Dir",
     validation = (x) -> isdir(abspath(x)),
     error_message = "Invalid Path.",
     default = "experiment_data/miplibbench"
+)
+
+solution_dir = prompt_user(;
+    message = "Solution Directory",
+    validation = (x) -> isdir(abspath(x)),
+    error_message = "Invalid Path.",
+    default = "experiment_data/miplibbenchsolutions"
 )
 
 mode = prompt_user(;
@@ -39,9 +46,9 @@ experiment_path = prompt_user(;
     validation = (x) ->
         ((x != "") && !isdir(joinpath(runs_path, x))),
     error_message = "Name must not be empty.",
+    parse = (x) -> joinpath(runs_path, x),
     default = ""
 )
-experiment_path = joinpath(runs_path, experiment_path)
 mkdir(experiment_path)
 
 ### Done with basic parameter, start reading input ###
@@ -86,13 +93,24 @@ elseif mode == "vpc"
     ### Creating Config TSV ###
     instances_path = [joinpath(instance_dir, instance * ".mps") for instance in instances]
     output_path = [joinpath(experiment_path, instance) for instance in instances]
+    solution_path = map(instances) do instance
+        if isfile(joinpath(solution_dir, instance * ".sol"))
+            return joinpath(solution_dir, instance * ".sol")
+        else
+            return ""
+        end
+    end
+
+    # Make Path for all instances
     for path in output_path
         mkdir(path)
     end
+
     config_dataframe = DataFrame(;
         id = 1:length(instances),
         instances_path = instances_path,
-        output_path = output_path
+        output_path = output_path,
+        solution_path = solution_path
     )
     run_settings_file = joinpath(experiment_path, "experiment_list.tsv")
     CSV.write(run_settings_file, config_dataframe; delim = '\t')
@@ -105,6 +123,7 @@ elseif mode == "vpc"
 
     # Create config file
     vpc_config = Dict()
+
     vpc_config["n_leaves"] = prompt_user(;
         message = "Number of Leaves",
         validation = (x) -> !isnothing(tryparse(Int, x)),
@@ -112,6 +131,7 @@ elseif mode == "vpc"
         default = "64"
     )
     vpc_config["n_leaves"] = parse(Int, vpc_config["n_leaves"])
+
     vpc_config["prlp_solve_method"] = prompt_user(;
         message = "PRLP Solve Method (1: PRIMAL SIMPLEX, 2:DUAL SIMPLEX, 3: BARRIER)",
         validation = (x) -> !isnothing(tryparse(Int, x)),
@@ -119,6 +139,7 @@ elseif mode == "vpc"
         default = "1"
     )
     vpc_config["prlp_solve_method"] = parse(Int, vpc_config["prlp_solve_method"])
+
     vpc_config["prlp_allow_warm_start"] = prompt_user(;
         message = "Allow PRLP warm start (true/false)",
         validation = (x) -> x == "true" || x == "false",
@@ -126,6 +147,15 @@ elseif mode == "vpc"
         default = "true"
     )
     vpc_config["prlp_allow_warm_start"] = (vpc_config["prlp_allow_warm_start"] == "true")
+
+    vpc_config["apply_beta_scaling"] = prompt_user(;
+        message = "Allow beta scaling (true/false)",
+        validation = (x) -> x == "true" || x == "false",
+        error_message = "Neither true nor false.",
+        default = "true"
+    )
+    vpc_config["apply_beta_scaling"] = (vpc_config["apply_beta_scaling"] == "true")
+
     vpc_config["disable_scip_cuts"] = prompt_user(;
         message = "Disable SCIP Cuts (true/false)",
         validation = (x) -> x == "true" || x == "false",
@@ -141,6 +171,7 @@ elseif mode == "vpc"
         default = "0"
     )
     vpc_config["vpolycut_frequency"] = parse(Int, vpc_config["vpolycut_frequency"])
+
     vpc_config["vpolycut_priority"] = prompt_user(;
         message = "VPolycut Priority",
         validation = (x) -> !isnothing(tryparse(Int, x)),
@@ -148,6 +179,7 @@ elseif mode == "vpc"
         default = "99999"
     )
     vpc_config["vpolycut_priority"] = parse(Int, vpc_config["vpolycut_priority"])
+
     vpc_config["vpolycut_delay"] = prompt_user(;
         message = "Delay VPolycut (true/false)",
         validation = (x) -> x == "true" || x == "false",
@@ -155,6 +187,61 @@ elseif mode == "vpc"
         default = "false"
     )
     vpc_config["vpolycut_delay"] = (vpc_config["vpolycut_delay"] == "true")
+
+    vpc_config["vpolycut_max_round"] = prompt_user(;
+        message = "VPolycut maximum number of cutting plane round to participate in",
+        validation = (x) -> !isnothing(tryparse(Int, x)),
+        error_message = "Not an integer.",
+        default = "1"
+    )
+    vpc_config["vpolycut_max_round"] = parse(
+        Int, vpc_config["vpolycut_max_round"]
+    )
+
+    vpc_config["vpolycut_max_cut_per_round"] = prompt_user(;
+        message = "VPolycut Max Cut Per Round",
+        validation = (x) -> !isnothing(tryparse(Int, x)),
+        error_message = "Not an integer.",
+        default = "150"
+    )
+    vpc_config["vpolycut_max_cut_per_round"] = parse(
+        Int, vpc_config["vpolycut_max_cut_per_round"]
+    )
+
+    vpc_config["vpolycut_max_consecutive_fail"] = prompt_user(;
+        message = "VPolycut maximum number of consecutive fail in cut generation",
+        validation = (x) -> !isnothing(tryparse(Int, x)),
+        error_message = "Not an integer.",
+        default = "5"
+    )
+    vpc_config["vpolycut_max_consecutive_fail"] = parse(
+        Int, vpc_config["vpolycut_max_consecutive_fail"]
+    )
+
+    vpc_config["vpolycut_min_gap_closed_increase"] = prompt_user(;
+        message = "VPolycut Minimum Increase Of Disjunctive Gap Closed to be counted as not stagnating",
+        validation = (x) ->
+            (
+                !isnothing(tryparse(Float64, x)) && 0 <= parse(Float64, x) &&
+                parse(Float64, x) <= 1
+            ),
+        error_message = "Not a Float between 0 and 1",
+        default = "0.01"
+    )
+    vpc_config["vpolycut_min_gap_closed_increase"] = parse(
+        Float64, vpc_config["vpolycut_min_gap_closed_increase"]
+    )
+
+    vpc_config["vpolycut_max_consecutive_stagnation"] = prompt_user(;
+        message = "VPolycut maximum number of consecutive cut generations without improvement",
+        validation = (x) -> !isnothing(tryparse(Int, x)),
+        error_message = "Not an integer.",
+        default = "10"
+    )
+    vpc_config["vpolycut_max_consecutive_stagnation"] = parse(
+        Int, vpc_config["vpolycut_max_consecutive_stagnation"]
+    )
+
     config_file = joinpath(experiment_path, "vpc_config.toml")
     open(config_file, "w") do io
         TOML.print(io, vpc_config)

@@ -3,6 +3,8 @@ results
 logs
 experiment_runs
 experiment_data/miplibbench
+experiment_data/miplibbenchsolutions
+experiment_data/indicator_instances
 temp
 .DS_Store
 statprof

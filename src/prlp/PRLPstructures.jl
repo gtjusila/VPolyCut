@@ -24,6 +24,7 @@ end
     rays::Vector{Ray} = []
     lpi::CPtr{SCIP.SCIP_LPI} = CPtr(SCIP.SCIP_LPI)
     allow_warm_start::Bool = true
+    beta::SCIP.SCIP_Real = 1.0
 
     # State
     lp_constructed::Bool = false

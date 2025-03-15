@@ -1,8 +1,9 @@
 function prompt_user(;
-    message::String="",
-    validation::Function=(input) -> true,
-    error_message::String="",
-    default::String="")
+    message::String = "",
+    validation::Function = (input) -> true,
+    parse::Function = (input) -> input,
+    error_message::String = "",
+    default::String = "")
     input = ""
     while (true)
         print(message * " ($(default))" * ": ")
@@ -12,7 +13,7 @@ function prompt_user(;
             input = default
         end
         if (validation(input))
-            return input
+            return parse(input)
         else
             println(error_message)
         end

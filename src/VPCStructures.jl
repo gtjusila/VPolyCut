@@ -23,12 +23,25 @@ is passed during the creation of the VPCSeparator.
     cut_limit::Int = -2
     "Directory to write cut log"
     log_directory::String = ""
+    "Max rounds to participate in"
+    max_round::Int = 1
+    "Minimum number of restart before VPC should be included"
+    min_restart::Int = 0
     "Number of leaves in the disjunction"
     n_leaves::Int = 2
+    "Apply Beta Scaling"
+    apply_beta_scaling::Bool = true
     "PRLP allow warm start"
     prlp_allow_warm_start::Bool = true
     "PRLP solve method"
     prlp_solve_method::Int = 1
+    "PRLP maximum consecutive fail"
+    prlp_max_consecutive_fail::Int = 5
+    "PRLP minimum increase to be non stagnating"
+    prlp_min_increase_non_stagnating::Float64 = 0.0
+    "PRLP maximum number of stagnating objective"
+    prlp_max_consecutive_stagnation::Int = 10
+
     "Test if disjunctive_lower_bound is better than LP Objective"
     test_disjunctive_lower_bound::Bool = true
     "Time Limit"
@@ -41,9 +54,10 @@ end
 
     called::Int = 0
     cbar_test::Bool = true
-    disjunctive_lower_bound::Float64 = 0.0
+    disjunctive_lower_bound::SCIP.SCIP_Real = 0.0
+    disjunctive_lower_bound_history::Vector{SCIP.SCIP_Real} = []
 
-    lp_objective::Float64 = 0.0
+    lp_objective::SCIP.SCIP_Real = 0.0
 
     num_basis_restart::Int = 0
     num_cuts::Int = 0
@@ -62,8 +76,10 @@ end
     prlp_separation_time::Float64 = 0.0
     prlp_solves_data::Vector{Any} = []
     prlp_solve_method::String = "PRIMAL_SIMPLEX"
+    prlp_percent_disjunctive_gap_closed_history::Vector{SCIP.SCIP_Real} = []
 
     root_lp_iterations::Int64 = 0
+    total_time_taken::Float64 = 0.0
     objective_tried::Int = 0
 end
 
@@ -85,6 +101,22 @@ An enum for possible termination status of the VPCSeparator
     TIME_LIMIT_EXCEEDED_BRANCHANDBOUND
     TIME_LIMIT_EXCEEDED_COLLECTION
     TIME_LIMIT_EXCEEDED_PRLP
+    TREE_HAS_NO_LEAF
+end
+
+@kwdef mutable struct VPCSharedData
+    cutpool::Union{Nothing,CutPool} = nothing
+    disjunction::Union{Nothing,Disjunction} = nothing
+    disjunctive_lower_bound::SCIP.SCIP_Real = 0.0
+    lp_obj::Float64 = 0.0
+    lp_obj_nonbasic::Float64 = 0.0
+    original_points::Vector{Point} = []
+    nonbasic_space::Union{Nothing,NonBasicSpace} = nothing
+    point_ray_collection::Union{Nothing,PointRayCollection} = nothing
+    prlp::Union{Nothing,PRLP} = nothing
+    scipd::SCIP.SCIPData
+    separating_solutions::Union{Nothing,Vector{Vector{SCIP.SCIP_Real}}} = nothing
+    start_time::Float64 = 0.0
 end
 
 """
@@ -97,12 +129,13 @@ Constructors:
 """
 @kwdef mutable struct VPCSeparator <: SCIP.AbstractSeparator
     # Shared Data among the functions
-    "SCIP Data"
-    scipd::SCIP.SCIPData
+    "Shared VPC Data"
+    shared_data::VPCSharedData
     "SEPA Parameters"
     parameters::VPCParameters
     "SEPA statistics"
     statistics::VPCStatistics = VPCStatistics()
+
     "should be skipped?"
     should_be_skipped::Bool = false
 
@@ -112,8 +145,8 @@ Constructors:
 end
 
 # Constructor
-function VPCSeparator(scipd::SCIP.SCIPData, params::VPCParameters)
-    obj = VPCSeparator(; scipd = scipd, parameters = params)
+function VPCSeparator(params::VPCParameters)
+    obj = VPCSeparator(; parameters = params)
     return obj
 end
 
@@ -126,7 +159,10 @@ function include_vpolyhedral_sepa(
     maxbounddist::Real = 0.0,
     delay::Bool = false
 )
-    sepa = VPCSeparator(scipd, parameters)
+    sepa = VPCSeparator(;
+        shared_data = VPCSharedData(; scipd = scipd),
+        parameters
+    )
     SCIP.include_sepa(
         scipd.scip[], scipd.sepas, sepa; priority = priority,
         freq = freq, maxbounddist = maxbounddist,
