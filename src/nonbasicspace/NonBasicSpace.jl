@@ -11,6 +11,7 @@ struct NonBasicSpace
     origin_point::Point
     constraint_matrix::ConstraintMatrix
     variable_pointers::Vector{Ptr{SCIP.SCIP_VAR}}
+    auxiliary_objective::Vector{SCIP.SCIP_Real}
 end
 
 """
@@ -38,6 +39,7 @@ function NonBasicSpace(scip::SCIP.SCIPData)::NonBasicSpace
     origin_point = get_solution_vector(scip)
     constraint_matrix = ConstraintMatrix(scip)
     variable_pointers = collect_variable_pointers(scip)
+    auxiliary_objective = get_auxiliary_objective(scip)
 
     @info "Finished Constructing NonBasicSpace"
     return NonBasicSpace(
@@ -45,7 +47,8 @@ function NonBasicSpace(scip::SCIP.SCIPData)::NonBasicSpace
         Set(complemented_columns),
         origin_point,
         constraint_matrix,
-        variable_pointers
+        variable_pointers,
+        auxiliary_objective
     )
 end
 
@@ -90,4 +93,61 @@ function revert_cut_vector_to_original_space(
     end
 
     return new_cut_vector
+end
+
+"""
+    get_auxiliary_objective(scip::SCIP.SCIPData)
+
+Give an objective such that the current SCIP basic feasible solution is the unique minimizer over the polyhedron for this objective
+"""
+function get_auxiliary_objective(scip::SCIP.SCIPData)
+    # Formula from deepseek :)
+    # Should eventually be proven but seems correct
+    nlpcols = Int64(SCIP.SCIPgetNLPCols(scip))
+    lp_cols = SCIP.SCIPgetLPCols(scip)
+    lp_cols = unsafe_wrap(Vector{Ptr{SCIP.SCIP_Col}}, lp_cols, nlpcols)
+
+    objective = zeros(nlpcols)
+    var_ptrs = []
+    for (idx, col) in enumerate(lp_cols)
+        push!(var_ptrs, SCIP.SCIPcolGetVar(col))
+        if SCIP.SCIPcolGetBasisStatus(col) == SCIP.SCIP_BASESTAT_LOWER
+            objective[idx] = 1
+        elseif SCIP.SCIPcolGetBasisStatus(col) == SCIP.SCIP_BASESTAT_UPPER
+            objective[idx] = -1
+        end
+
+        nnonz = SCIP.SCIPcolGetNNonz(col)
+        nonzero_rows = SCIP.SCIPcolGetRows(col)
+        nonzero_rows = unsafe_wrap(Vector{Ptr{SCIP.SCIP_Row}}, nonzero_rows, nnonz)
+        nonzero_vals = SCIP.SCIPcolGetVals(col)
+        nonzero_vals = unsafe_wrap(Vector{SCIP.SCIP_Real}, nonzero_vals, nnonz)
+        for (row_idx, row) in enumerate(nonzero_rows)
+            if SCIP.SCIProwGetBasisStatus(row) == SCIP.SCIP_BASESTAT_UPPER
+                objective[idx] += -nonzero_vals[row_idx]
+            elseif SCIP.SCIProwGetBasisStatus(row) == SCIP.SCIP_BASESTAT_LOWER
+                objective[idx] += nonzero_vals[row_idx]
+            end
+        end
+    end
+
+    # Verify this
+    solution1 = get_solution_vector(scip)
+    objvalue = dot(solution1.coordinates[1:length(objective)], objective)
+
+    @info "Objective $(objvalue)"
+
+    SCIP.@SCIP_CALL SCIP.SCIPstartDive(scip)
+    for (idx, var) in enumerate(var_ptrs)
+        SCIP.@SCIP_CALL SCIP.SCIPchgVarObjDive(scip, var, objective[idx])
+    end
+    lperror = Ref{SCIP.SCIP_Bool}(0)
+    cutoff = Ref{SCIP.SCIP_Bool}(0)
+    SCIP.SCIPsolveDiveLP(scip, -1, lperror, cutoff)
+    @info "Obj $(SCIP.SCIPgetLPObjval(scip))"
+    solution2 = get_solution_vector(scip)
+    @assert solution1.coordinates == solution2.coordinates
+    SCIP.@SCIP_CALL SCIP.SCIPendDive(scip)
+
+    return objective
 end
