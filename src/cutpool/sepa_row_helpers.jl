@@ -77,6 +77,6 @@ function add_diving_row!(
     #SCIP.@SCIP_CALL SCIP.SCIPprintRow(scip, new_row[], C_NULL)
     SCIP.@SCIP_CALL SCIP.SCIPaddRowDive(scip, new_row[])
     #SCIP.@SCIP_CALL SCIP.SCIPaddPoolCut(scip, new_row[])
-    #SCIP.@SCIP_CALL SCIP.SCIPreleaseRow(scip, new_row)
+    SCIP.@SCIP_CALL SCIP.SCIPreleaseRow(scip, new_row)
     return new_row
 end
