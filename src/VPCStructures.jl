@@ -43,7 +43,7 @@ is passed during the creation of the VPCSeparator.
     prlp_max_consecutive_stagnation::Int = 10
 
     "Test if disjunctive_lower_bound is better than LP Objective"
-    test_disjunctive_lower_bound::Bool = true
+    test_disjunctive_lower_bound::Bool = false
     "Time Limit"
     time_limit::Float64 = typemax(64)
 end
