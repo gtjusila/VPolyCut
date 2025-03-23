@@ -24,12 +24,12 @@ function get_point_ray_collection(
         @debug "Collecting Point and Ray from term $i"
         SCIP.SCIPnewProbingNode(scip)
         #Change objective
-        @assert length(nb_space.variable_pointers) == length(nb_space.auxiliary_objective)
-        for i in 1:length(nb_space.variable_pointers)
-            SCIP.@SCIP_CALL SCIP.SCIPchgVarObjProbing(
-                scip, nb_space.variable_pointers[i], nb_space.auxiliary_objective[i]
-            )
-        end
+        #@assert length(nb_space.variable_pointers) == length(nb_space.auxiliary_objective)
+        #for i in 1:length(nb_space.variable_pointers)
+        #    SCIP.@SCIP_CALL SCIP.SCIPchgVarObjProbing(
+        #        scip, nb_space.variable_pointers[i], nb_space.auxiliary_objective[i]
+        #    )
+        #end
         try
             apply_bound_changes(term, scip)
 

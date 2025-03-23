@@ -109,8 +109,10 @@ function get_auxiliary_objective(scip::SCIP.SCIPData)
 
     objective = zeros(nlpcols)
     var_ptrs = []
+    statuses = []
     for (idx, col) in enumerate(lp_cols)
         push!(var_ptrs, SCIP.SCIPcolGetVar(col))
+        push!(statuses, SCIP.SCIPcolGetBasisStatus(col))
         if SCIP.SCIPcolGetBasisStatus(col) == SCIP.SCIP_BASESTAT_LOWER
             objective[idx] = 1
         elseif SCIP.SCIPcolGetBasisStatus(col) == SCIP.SCIP_BASESTAT_UPPER
@@ -146,8 +148,39 @@ function get_auxiliary_objective(scip::SCIP.SCIPData)
     SCIP.SCIPsolveDiveLP(scip, -1, lperror, cutoff)
     @info "Obj $(SCIP.SCIPgetLPObjval(scip))"
     solution2 = get_solution_vector(scip)
-    @assert solution1.coordinates == solution2.coordinates
+    nlpcols = Int64(SCIP.SCIPgetNLPCols(scip))
+    lp_cols = SCIP.SCIPgetLPCols(scip)
+    lp_cols = unsafe_wrap(Vector{Ptr{SCIP.SCIP_Col}}, lp_cols, nlpcols)
+    statuses2 = []
+    for col in lp_cols
+        push!(statuses2, SCIP.SCIPcolGetBasisStatus(col))
+    end
+
+    for i in 1:length(statuses)
+        if (statuses[i] != statuses2[i])
+            @error "i = $i. Nonmatching status $(statuses[i]) not equal $(statuses2[i])"
+            throw(LPError())
+        else
+            @info "Status match. $(solution1[i]) $(solution2[i])"
+        end
+    end
+    #@assert solution1.coordinates == solution2.coordinates
+    @assert equal(solution1.coordinates, solution2.coordinates; comp = is_EQ)
     SCIP.@SCIP_CALL SCIP.SCIPendDive(scip)
 
     return objective
+end
+
+function equal(v1::AbstractVector, v2::AbstractVector; comp::Function = (x, y) -> x == y)
+    if length(v1) != length(v2)
+        return false
+    end
+    for i in 1:length(v1)
+        if !comp(v1[i], v2[i])
+            @info "Differ on $(i)-th component"
+            @info "$(v1[i]) vs $(v2[i])"
+            return false
+        end
+    end
+    return true
 end
