@@ -158,10 +158,7 @@ function get_auxiliary_objective(scip::SCIP.SCIPData)
 
     for i in 1:length(statuses)
         if (statuses[i] != statuses2[i])
-            @error "i = $i. Nonmatching status $(statuses[i]) not equal $(statuses2[i])"
             throw(LPError())
-        else
-            @info "Status match. $(solution1[i]) $(solution2[i])"
         end
     end
     #@assert solution1.coordinates == solution2.coordinates

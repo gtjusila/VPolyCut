@@ -478,11 +478,6 @@ function PRLPtryObjective(
         return PRLPgetSolution(prlp)
     end
 
-    # If solution is not available, check if on_fail is set
-    if !isnothing(objective.on_fail)
-        throw(objective.on_fail)
-    end
-
     return nothing
 end
 

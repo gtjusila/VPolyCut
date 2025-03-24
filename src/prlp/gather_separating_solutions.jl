@@ -50,6 +50,21 @@ function gather_separating_solutions(
             @debug "Found cut. Total cut found so far: $(length(separating_solutions)). Cut limit is $(cut_limit)."
         else
             consecutive_fail += 1
+            if objective.label == "feasibility"
+                if PRLPgetLastTerminationStatus(prlp) == LPI_INFEASIBLE
+                    sepa.termination_status = PRLP_PROVED_INFEASIBLE
+                    break
+                end
+                if PRLPgetLastTerminationStatus(prlp) == LPI_TIME_LIMIT_EXCEEDED
+                    sepa.termination_status = FAILED_TO_PROVE_PRLP_FEASIBILITY
+                    break
+                end
+                throw("Feasibility PRLP Failed for unknown reason")
+            end
+            if objective.label == "pstar_feasibility"
+                sepa.termination_status = FAILED_TO_TIGHTEN_PSTAR
+                break
+            end
         end
 
         # Get new LP relaxation objective
