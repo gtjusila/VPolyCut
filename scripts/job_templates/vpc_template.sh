@@ -1,7 +1,5 @@
 #!/bin/bash
 #SBATCH --job-name=vpolyhedral_experiment
-#SBATCH --output={{{EXPERIMENT_PATH}}}/slurm_output/output_%A_%a.out
-#SBATCH --error={{{EXPERIMENT_PATH}}}/slurm_output/error_%A_%a.err
 #SBATCH --array=1-{{{N}}}
 #SBATCH --time=02:15:00
 #SBATCH --partition=big
@@ -10,23 +8,34 @@
 #SBATCH --cpus-per-task=1
 #SBATCH --mem=16G
 
-# Load necessary modules (if any)
-# module load julia
-export JULIA_DEPOT_PATH="/scratch/htc/gtjusila/julia"
+set -euo pipefail
 
+# -------- 1. environment --------
+export JULIA_DEPOT_PATH="/scratch/htc/gtjusila/julia"
 id=$SLURM_ARRAY_TASK_ID
 
-# Use awk to search for the line where the id matches
-line=$(awk -F'\t' -v id="$id" '$1 == id {print; exit}' {{{EXPERIMENT_PATH}}}/experiment_list.tsv)
+# -------- 2. look up the row in the TSV --------
+line=$(awk -F'\t' -v id="$id" '$1 == id {print; exit}' \
+        {{{EXPERIMENT_PATH}}}/experiment_list.tsv)
 
-# Check if the line was found
 if [ -z "$line" ]; then
-    echo "Error: No matching line found in config.tsv for id: $id"
+    echo "Error: No matching line found in experiment_list.tsv for id: $id"
     exit 1
 fi
 
-# Extract fields from the line (assuming tab-delimited)
-IFS=$'\t' read -r id instance_path output_path solution_path<<< "$line"
+IFS=$'\t' read -r _ instance_path output_path solution_path <<< "$line"
 
-# Run the Julia script with the extracted parameters
-julia --project /home/htc/gtjusila/Project/VPolyCut/scripts/vpc.jl -i="$instance_path" -o="$output_path" -s="$solution_path" -c="{{{CONFIG_PATH}}}" 
+# -------- 3. redirect stdout & stderr to output_path --------
+mkdir -p "$output_path"
+
+log_base="${output_path}/slurm_${SLURM_ARRAY_JOB_ID}_${SLURM_ARRAY_TASK_ID}"
+exec >"${log_base}.out" 2>"${log_base}.err"
+
+echo "Logs for this task are now in ${log_base}.{out,err}"
+
+# -------- 4. run the Julia experiment --------
+julia --project /home/htc/gtjusila/Project/VPolyCut/scripts/vpc.jl \
+      -i="$instance_path" \
+      -o="$output_path" \
+      -s="$solution_path" \
+      -c="{{{CONFIG_PATH}}}"
