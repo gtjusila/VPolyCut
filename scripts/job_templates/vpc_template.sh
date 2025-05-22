@@ -4,10 +4,10 @@
 #SBATCH --error={{{EXPERIMENT_PATH}}}/slurm_output/error_%A_%a.err
 #SBATCH --array=1-{{{N}}}
 #SBATCH --time=02:15:00
-#SBATCH --partition=small
+#SBATCH --partition=big
 #SBATCH --nodes=1
 #SBATCH --ntasks=1
-#SBATCH --cpus-per-task=8
+#SBATCH --cpus-per-task=1
 #SBATCH --mem=16G
 
 # Load necessary modules (if any)
