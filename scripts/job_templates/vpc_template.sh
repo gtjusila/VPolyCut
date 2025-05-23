@@ -1,6 +1,8 @@
 #!/bin/bash
 #SBATCH --job-name=vpolyhedral_experiment
 #SBATCH --array=1-{{{N}}}
+#SBATCH --output=/dev/null
+#SBATCH --error=/dev/null
 #SBATCH --constraint=Gold6338
 #SBATCH --time=02:15:00
 #SBATCH --partition=big
