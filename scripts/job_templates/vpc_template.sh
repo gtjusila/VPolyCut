@@ -13,7 +13,7 @@ set -euo pipefail
 
 # -------- 1. environment --------
 export JULIA_DEPOT_PATH="/scratch/htc/gtjusila/julia"
-export JULIA_CPU_TARGET="generic;icelake-server;"
+export JULIA_CPU_TARGET="generic;icelake-server"
 id=$SLURM_ARRAY_TASK_ID
 
 cd /home/htc/gtjusila/Project/VPolyCut/
