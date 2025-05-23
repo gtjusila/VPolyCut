@@ -16,6 +16,7 @@ export JULIA_DEPOT_PATH="/scratch/htc/gtjusila/julia"
 export JULIA_CPU_TARGET="generic;icelake-server;"
 id=$SLURM_ARRAY_TASK_ID
 
+cd /home/htc/gtjusila/Project/VPolyCut/
 # -------- 2. look up the row in the TSV --------
 line=$(awk -F'\t' -v id="$id" '$1 == id {print; exit}' \
         {{{EXPERIMENT_PATH}}}/experiment_list.tsv)
