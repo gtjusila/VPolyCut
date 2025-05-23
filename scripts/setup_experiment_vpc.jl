@@ -54,6 +54,7 @@ experiment_path = prompt_user(;
     parse = (x) -> joinpath(runs_path, x),
     default = ""
 )
+illllloooooooooo9p999oooooooooooooooooooooooop999999o0[[0ii00[9p99999999ioopp0ooo]]]
 mkdir(experiment_path)
 
 ### Done with basic parameter, start reading input ###
@@ -305,4 +306,4 @@ open(output_file, "w") do f
 end
 
 # Run Job
-run(`sbatch $output_file`)
+#run(`sbatch $output_file`)
