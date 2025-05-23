@@ -1,6 +1,7 @@
 #!/bin/bash
 #SBATCH --job-name=vpolyhedral_experiment
 #SBATCH --array=1-{{{N}}}
+#SBATCH --constraint=Gold6338
 #SBATCH --time=02:15:00
 #SBATCH --partition=big
 #SBATCH --nodes=1
@@ -12,6 +13,7 @@ set -euo pipefail
 
 # -------- 1. environment --------
 export JULIA_DEPOT_PATH="/scratch/htc/gtjusila/julia"
+export JULIA_CPU_TARGET="icelake-server"
 id=$SLURM_ARRAY_TASK_ID
 
 # -------- 2. look up the row in the TSV --------
@@ -27,6 +29,7 @@ IFS=$'\t' read -r _ instance_path output_path solution_path <<< "$line"
 
 # -------- 3. redirect stdout & stderr to output_path --------
 mkdir -p "$output_path"
+echo "Parsed output_path: '$output_path'"
 
 log_base="${output_path}/slurm_${SLURM_ARRAY_JOB_ID}_${SLURM_ARRAY_TASK_ID}"
 exec >"${log_base}.out" 2>"${log_base}.err"
