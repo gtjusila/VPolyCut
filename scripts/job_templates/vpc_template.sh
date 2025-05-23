@@ -15,7 +15,7 @@ set -euo pipefail
 
 # -------- 1. environment --------
 export JULIA_DEPOT_PATH="/scratch/htc/gtjusila/julia"
-export JULIA_CPU_TARGET="generic;icelake-server"
+export JULIA_CPU_TARGET="generic;icelake-server;broadwell"
 id=$SLURM_ARRAY_TASK_ID
 
 cd /home/htc/gtjusila/Project/VPolyCut/
@@ -34,7 +34,7 @@ IFS=$'\t' read -r _ instance_path output_path solution_path <<< "$line"
 mkdir -p "$output_path"
 echo "Parsed output_path: '$output_path'"
 
-log_base="${output_path}/slurm_${SLURM_ARRAY_JOB_ID}_${SLURM_ARRAY_TASK_ID}"
+log_base="${output_path}/slurm_job"
 exec >"${log_base}.out" 2>"${log_base}.err"
 
 echo "Logs for this task are now in ${log_base}.{out,err}"
