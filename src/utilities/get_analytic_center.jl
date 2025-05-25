@@ -40,6 +40,5 @@ function get_analytic_center(scip::SCIP.SCIPData)
     SCIP.set_parameter(scip, "lp/checkfarkas", check_farkas)
     SCIP.set_parameter(scip, "numerics/barrierconvtol", barrrier_convergence_tolerance)
     SCIP.SCIPendDive(scip)
-    println("Analytic Center: ", sol)
     return sol
 end
