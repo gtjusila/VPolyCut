@@ -9,7 +9,7 @@ function get_disjunction_by_branchandbound(
     scipd = sepa.shared_data.scipd
     n_leaves = sepa.parameters.n_leaves
     log_path = joinpath(sepa.parameters.log_directory, "branch_and_bound.log")
-    time_limit = 0.5 * sepa.parameters.time_limit
+    time_limit = sepa.parameters.branch_and_bound_time_limit
 
     # First we generate a branch and bound tree with n_leaves
     branchandbound = BranchAndBound(
@@ -19,7 +19,7 @@ function get_disjunction_by_branchandbound(
     execute_branchandbound(branchandbound; log_path = log_path)
     end_lp_iter_count = SCIP.SCIPgetNLPIterations(scipd)
 
-    sepa.statistics.point_ray_collection_lp_iterations =
+    sepa.statistics.branch_and_bound_lp_iterations =
         end_lp_iter_count - starting_lp_iter_count
 
     # Collect the leaves

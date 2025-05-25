@@ -46,6 +46,12 @@ is passed during the creation of the VPCSeparator.
     test_disjunctive_lower_bound::Bool = false
     "Time Limit"
     time_limit::Float64 = typemax(64)
+    "Branch and Bound Time Limit"
+    branch_and_bound_time_limit::Float64 = typemax(64)
+    "Point Ray Collection Time Limit"
+    point_ray_collection_time_limit::Float64 = typemax(64)
+    "PRLP Time Limit"
+    prlp_time_limit::Float64 = typemax(64)
 end
 
 @kwdef mutable struct VPCStatistics
@@ -98,6 +104,7 @@ An enum for possible termination status of the VPCSeparator
     LP_ERROR
     NO_CUTS_FOUND
     NOT_RUN
+    SCIP_COPY_ERROR
     TIME_LIMIT_EXCEEDED_BRANCHANDBOUND
     TIME_LIMIT_EXCEEDED_COLLECTION
     TIME_LIMIT_EXCEEDED_PRLP
@@ -105,6 +112,8 @@ An enum for possible termination status of the VPCSeparator
 end
 
 @kwdef mutable struct VPCSharedData
+    analytic_center::Union{Nothing,Point} = nothing
+    projected_analytic_center::Union{Nothing,Point} = nothing
     cutpool::Union{Nothing,CutPool} = nothing
     disjunction::Union{Nothing,Disjunction} = nothing
     disjunctive_lower_bound::SCIP.SCIP_Real = 0.0

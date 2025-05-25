@@ -14,8 +14,8 @@ function get_point_ray_collection(
     scip = sepa.shared_data.scipd
     disjunction = sepa.shared_data.disjunction
     nb_space = sepa.shared_data.nonbasic_space
-    time_limit = sepa.parameters.time_limit
-    start_time = sepa.shared_data.start_time
+    time_limit = sepa.parameters.point_ray_collection_time_limit
+    start_time = time()
 
     starting_lp_iter_count = SCIP.SCIPgetNLPIterations(scip)
     point_ray_collection = PointRayCollection()

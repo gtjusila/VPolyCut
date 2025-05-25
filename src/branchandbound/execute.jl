@@ -12,7 +12,6 @@ end
 function _execute_branchandbound(branchandbound::BranchAndBound)::Bool
     start_time = time()
     scip = get_scip(branchandbound)
-    starting_lp_iter_count = SCIP.SCIPgetNLPIterations(scip)
 
     # Step 1: Initialization
     # We do everything in probing mode
@@ -112,7 +111,6 @@ function _execute_branchandbound(branchandbound::BranchAndBound)::Bool
     end
 
     SCIP.SCIPendProbing(scip)
-    end_lp_iter_count = SCIP.SCIPgetNLPIterations(scip)
 
     # Step 6: Terminate
     # If x is void then ILP is infeasible

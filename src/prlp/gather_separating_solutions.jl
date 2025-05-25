@@ -11,14 +11,16 @@ function gather_separating_solutions(
     max_consecutive_fail = sepa.parameters.prlp_max_consecutive_fail
     min_increase = sepa.parameters.prlp_min_increase_non_stagnating
     max_stagnating_rounds = sepa.parameters.prlp_max_consecutive_stagnation
-    time_limit = sepa.parameters.time_limit
-    start_time = sepa.shared_data.start_time
+    time_limit = sepa.parameters.prlp_time_limit
+    start_time = time()
 
     @debug "Remaining Time for Separation: $(time_limit - (time() - start_time))"
 
     # Initialize Variables
     separating_solutions = []
-    objective_pool = ObjectivePool(prlp, point_ray_collection)
+    objective_pool = ObjectivePool(
+        prlp, point_ray_collection, [shared_data.projected_analytic_center]
+    )
     consecutive_fail = 0
     disjunctive_gap = shared_data.disjunctive_lower_bound - shared_data.lp_obj
     gap_closed_history::Vector{SCIP.SCIP_Real} = []

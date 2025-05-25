@@ -122,6 +122,10 @@ function _exec_lp(sepa::VPCSeparator)
             @debug "Tree has no leaf"
             sepa.termination_status = TREE_HAS_NO_LEAF
             sepa.should_be_skipped = true
+        elseif error isa SCIPCopyError
+            @debug "SCIP Copy error"
+            sepa.termination_status = SCIP_COPY_ERROR
+            sepa.should_be_skipped = true
         else
             rethrow(error)
         end
@@ -151,6 +155,10 @@ function vpolyhedralcut_separation(sepa::VPCSeparator)
     shared.lp_obj = SCIP.SCIPgetSolOrigObj(scip, C_NULL)
     shared.lp_obj_nonbasic = SCIP.SCIPgetLPObjval(scip)
     shared.nonbasic_space = NonBasicSpace(scip)
+    shared.analytic_center = get_analytic_center(scip)
+    shared.projected_analytic_center = project_point_to_nonbasic_space(
+        shared.nonbasic_space, shared.analytic_center
+    )
 
     # Capture LP Objective statistic
     statistics.lp_objective = shared.lp_obj

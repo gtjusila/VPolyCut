@@ -243,6 +243,27 @@ if !use_existing_config
         parse = (x) -> parse(Int, x),
         default = "64"
     )
+    vpc_config["vpc_branch_and_bound_time_limit"] = prompt_user(;
+        message = "VPolycut Branch and Bound Time Limit",
+        validation = (x) -> !isnothing(tryparse(Int, x)),
+        error_message = "Not an integer.",
+        parse = (x) -> parse(Int, x),
+        default = "900"
+    )
+    vpc_config["vpc_point_collection_time_limit"] = prompt_user(;
+        message = "VPolycut Point Ray Collection Time Limit",
+        validation = (x) -> !isnothing(tryparse(Int, x)),
+        error_message = "Not an integer.",
+        parse = (x) -> parse(Int, x),
+        default = "900"
+    )
+    vpc_config["vpc_prlp_time_limit"] = prompt_user(;
+        message = "VPolycut PRLP Time Limit",
+        validation = (x) -> !isnothing(tryparse(Int, x)),
+        error_message = "Not an integer.",
+        parse = (x) -> parse(Int, x),
+        default = "900"
+    )
 
     vpc_config["vpc_prlp_solve_method"] = prompt_user(;
         message = "PRLP Solve Method (1: PRIMAL SIMPLEX, 2:DUAL SIMPLEX, 3: BARRIER)",

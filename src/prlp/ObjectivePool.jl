@@ -132,11 +132,13 @@ mutable struct ObjectivePool
     point_ray_collection::PointRayCollection
     p_star_index::Int64
     remaining_indices::Vector{Int64}
+    other_objectives::Vector{Point}
 end
 
 function ObjectivePool(
     prlp::PRLP,
-    point_ray_collection::PointRayCollection
+    point_ray_collection::PointRayCollection,
+    other_objectives::Vector{Point}
 )::ObjectivePool
     n_points = length(get_points(point_ray_collection))
     n_rays = length(get_rays(point_ray_collection))
@@ -145,7 +147,9 @@ function ObjectivePool(
     ray_indices = collect(1:n_rays)
     sort!(ray_indices; by = i -> abs(rays[i].objective_coefficient))
     ray_indices .+= n_points
-    return ObjectivePool(prlp, point_ray_collection, -1, [point_indices; ray_indices])
+    return ObjectivePool(
+        prlp, point_ray_collection, -1, [point_indices; ray_indices], other_objectives
+    )
 end
 
 # Utility methods for ObjectivePool
@@ -169,18 +173,22 @@ function Base.iterate(op::ObjectivePool, state = 1)
     if state == 2
         return all_ones_objective(op.prlp), 3
     end
-    if state == 3
+    p = length(op.other_objectives)
+    if state > 2 && state < 3 + p
+        return pstar_objective(op.other_objectives[state - 2]), state + 1
+    end
+    if state == 3 + p
         points = get_points(op.point_ray_collection)
         op.p_star_index = argmin(1:length(points)) do i
             return get_objective_value(points[i])
         end
         return pstar_objective(points[op.p_star_index]), 4
     end
-    if state == 4
+    if state == 4 + p
         PRLPtighten(op.prlp, op.p_star_index)
         return pstar_feasibility_objective(op.prlp), 5
     end
-    if state >= 5
+    if state >= 5 + p
         clean_indices(op)
         if (isempty(op.remaining_indices))
             return nothing
