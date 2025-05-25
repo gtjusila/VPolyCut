@@ -76,6 +76,7 @@ function main()
     JuMP.set_attribute(model, "separating/gmi/dynamiccuts", false)
     JuMP.set_attribute(model, "separating/gmi/maxsupprel", 1.0)
     JuMP.set_attribute(model, "separating/gmi/forcecuts", true)
+    JuMP.set_attribute(model, "separating/gmi/maxsepacutsroot", 2000)
 
     # Read Problem
     instance_path = abspath(parameter["instance"])
