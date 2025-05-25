@@ -2,12 +2,13 @@ using ArgParse
 using SCIP
 using JuMP
 using JSON
+using TOML
 using VPolyhedralCut.SCIPJLUtils
 
 function main()
     ### Command Line Argument ###
     args_setting = ArgParseSettings(;
-        description="Solve the LP relaxation of the instance, do 1 round of gomory cuts and get the gap closed information. Output will be a results.json file containing gap information and scip solving statistic"
+        description = "Solve the LP relaxation of the instance, do 1 round of gomory cuts and get the gap closed information. Output will be a results.json file containing gap information and scip solving statistic"
     )
     @add_arg_table args_setting begin
         "--instance", "-i"
@@ -16,25 +17,57 @@ function main()
         "--output_dir", "-o"
         help = "A directory where to writ results.json and scip_solving_statistic.txt"
         required = true
+        "--config", "-c"
+        help = "Parameters for the VPolyhedralCut algorithm"
+        required = true
+        "--solution", "-s"
+        help = "Solution"
+        default = ""
     end
     parameter = ArgParse.parse_args(args_setting)
-    println(parameter)
+
+    # Setup output directory
+    output_path = abspath(parameter["output_dir"])
+    log_path = joinpath(output_path, "vpc_logs.log")
+    config = TOML.parsefile(parameter["config"])
 
     # Use VPolyhedralCut.SCIPJLUtils to create SCIP Optimizer object
     model = setup_scip_safe_jump_model()
     scip = get_scip_data_from_model(model)
 
     # Setup SCIP object parameter
-    set_heuristics_emphasis_off(model)
-    set_separators_emphasis_off(model)
-    set_cut_selection_off(model)
-    set_strong_branching_lookahead_off(model)
-
-    JuMP.set_attribute(model, "limits/restarts", 0)
-    JuMP.set_attribute(model, "limits/nodes", 1)
-    JuMP.set_attribute(model, "limits/time", 3600) # Time Limit is usually not an issue for gomory runs
-    JuMP.set_attribute(model, "separating/maxroundsroot", 1)
-    #JuMP.set_attribute(model, "display/verblevel", 0)
+    if (!config["scip_enable_heuristic"])
+        set_heuristics_emphasis_off(model)
+    end
+    if (!config["scip_enable_conflict_analysis"])
+        JuMP.set_attribute(model, "conflict/enable", false)
+    end
+    if (config["scip_disable_scip_cuts"])
+        set_separators_emphasis_off(model)
+    end
+    if (!config["scip_enable_cut_selection"])
+        set_cut_selection_off(model)
+    end
+    if (!config["scip_enable_strong_branching_lookahead"])
+        set_strong_branching_lookahead_off(model)
+    end
+    if (!config["scip_enable_root_node_propagation"])
+        set_root_node_propagation_off(model)
+    end
+    if !config["scip_allow_restart"]
+        JuMP.set_attribute(model, "limits/restarts", 0)
+        JuMP.set_attribute(model, "estimation/restarts/restartpolicy", 'n')
+        JuMP.set_attribute(model, "presolving/maxrestarts", 0)
+    end
+    JuMP.set_attribute(model, "limits/nodes",
+        config["scip_node_limit"]
+    )
+    JuMP.set_attribute(model, "limits/time",
+        config["scip_time_limit"]
+    )
+    JuMP.set_attribute(
+        model, "separating/maxroundsroot", config["scip_max_root_cutting_plane_rounds"]
+    )
 
     # Turn on gomory cut
     JuMP.set_attribute(model, "separating/gmi/freq", 0)
@@ -61,6 +94,10 @@ function main()
     result["scip_status"] = SCIP.SCIPgetStatus(scip)
     result["initial_lp_obj"] = SCIP.SCIPgetFirstLPDualboundRoot(scip)
     result["final_lp_obj"] = SCIP.SCIPgetDualboundRoot(scip)
+    result["node_count"] = SCIP.SCIPgetNNodes(scip)
+    result["final_gap"] = SCIP.SCIPgetGap(scip)
+    result["solve_time"] = SCIP.SCIPgetSolvingTime(scip)
+    result["num_runs"] = SCIP.SCIPgetNRuns(scip)
 
     output_path = abspath(parameter["output_dir"])
     result_path = joinpath(output_path, "results.json")

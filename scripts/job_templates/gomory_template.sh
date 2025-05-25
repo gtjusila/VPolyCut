@@ -1,32 +1,46 @@
 #!/bin/bash
-#SBATCH --job-name=vpolyhedral_experiment
-#SBATCH --output={{{EXPERIMENT_PATH}}}/slurm_output/output_%A_%a.out
-#SBATCH --error={{{EXPERIMENT_PATH}}}/slurm_output/error_%A_%a.err
+#SBATCH --job-name=gomory_experiment
 #SBATCH --array=1-{{{N}}}
+#SBATCH --output=/dev/null
+#SBATCH --error=/dev/null
+#SBATCH --constraint=Gold6338
 #SBATCH --time=02:15:00
-#SBATCH --partition=small
+#SBATCH --partition=big
 #SBATCH --nodes=1
 #SBATCH --ntasks=1
-#SBATCH --cpus-per-task=8
-#SBATCH --mem=16G
+#SBATCH --cpus-per-task=1
+#SBATCH --mem=24G
 
-# Load necessary modules (if any)
-# module load julia
+set -euo pipefail
+
+# -------- 1. environment --------
 export JULIA_DEPOT_PATH="/scratch/htc/gtjusila/julia"
-
+export JULIA_CPU_TARGET="generic;icelake-server;broadwell"
 id=$SLURM_ARRAY_TASK_ID
 
-# Use awk to search for the line where the id matches
-line=$(awk -F'\t' -v id="$id" '$1 == id {print; exit}' {{{EXPERIMENT_PATH}}}/experiment_list.tsv)
+cd /home/htc/gtjusila/Project/VPolyCut/
+# -------- 2. look up the row in the TSV --------
+line=$(awk -F'\t' -v id="$id" '$1 == id {print; exit}' \
+        {{{EXPERIMENT_PATH}}}/experiment_list.tsv)
 
-# Check if the line was found
 if [ -z "$line" ]; then
-    echo "Error: No matching line found in config.tsv for id: $id"
+    echo "Error: No matching line found in experiment_list.tsv for id: $id"
     exit 1
 fi
 
-# Extract fields from the line (assuming tab-delimited)
-IFS=$'\t' read -r id instance_path output_path <<< "$line"
+IFS=$'\t' read -r _ instance_path output_path solution_path <<< "$line"
 
-# Run the Julia script with the extracted parameters
-julia --project /home/htc/gtjusila/Project/VPolyCut/scripts/gomory.jl -i="$instance_path" -o="$output_path" 
+# -------- 3. redirect stdout & stderr to output_path --------
+mkdir -p "$output_path"
+echo "Parsed output_path: '$output_path'"
+
+log_base="${output_path}/slurm_job"
+exec >"${log_base}.out" 2>"${log_base}.err"
+
+echo "Logs for this task are now in ${log_base}.{out,err}"
+
+# -------- 4. run the Julia experiment --------
+julia --project /home/htc/gtjusila/Project/VPolyCut/scripts/gomory.jl \
+      -i="$instance_path" \
+      -o="$output_path" \
+      -c="{{{CONFIG_PATH}}}"
