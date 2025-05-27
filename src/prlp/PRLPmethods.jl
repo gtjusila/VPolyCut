@@ -433,7 +433,10 @@ function lpi_termination_status(lpi::CPtr{SCIP.SCIP_LPI})::TerminationStatus
     if is_true(SCIP.SCIPlpiExistsPrimalRay(lpi))
         return LPI_UNBOUNDED
     end
-    @error "Undandled termination status. Status code $(SCIP.SCIPlpiGetInternalStatus(lpi))"
+    if is_true(SCIP.SCIPlpiIsPrimalInfeasible(lpi))
+        return LPI_INFEASIBLE
+    end
+    @error "Unhandled termination status. Status code $(SCIP.SCIPlpiGetInternalStatus(lpi))"
     return LPI_NOT_SOLVED
 end
 

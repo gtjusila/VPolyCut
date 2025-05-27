@@ -12,7 +12,7 @@ const RealVector = Vector{SCIP.SCIP_Real}
     DUAL_SIMPLEX = 2
     BARRIER = 3
 end
-@enum TerminationStatus LPI_OPTIMAL LPI_TIME_LIMIT_EXCEEDED LPI_NOT_SOLVED LPI_UNBOUNDED
+@enum TerminationStatus LPI_OPTIMAL LPI_TIME_LIMIT_EXCEEDED LPI_NOT_SOLVED LPI_UNBOUNDED LPI_INFEASIBLE
 
 @kwdef mutable struct PRLP
     solve_algorithm::PRLPsolveAlgorithm = PRIMAL_SIMPLEX

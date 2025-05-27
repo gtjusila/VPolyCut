@@ -347,4 +347,4 @@ open(output_file, "w") do f
 end
 
 # Run Job
-#run(`sbatch $output_file`)
+run(`sbatch $output_file`)
