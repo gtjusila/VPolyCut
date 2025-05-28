@@ -45,6 +45,8 @@ function main()
     end
     if (config["scip_disable_scip_cuts"])
         set_separators_emphasis_off(model)
+    else
+        JuMP.set_attribute(model, "separating/gmi/freq", -1)
     end
     if (!config["scip_enable_cut_selection"])
         set_cut_selection_off(model)
