@@ -24,6 +24,18 @@ function PRLPinvalidateSolution(prlp::PRLP)
 end
 
 """
+    PRLPnnonz(prlp::PRLP)
+Return the number of non-zero in the contrstraint matrix of the PRLP
+"""
+function PRLPnnonz(prlp::PRLP)::Int64
+    if !prlp.lp_constructed
+        throw("LP must be constructed before getting number of non-zeros")
+    end
+    nnonz = Ref{Cint}(0)
+    SCIP.@SCIP_CALL SCIP.SCIPlpiGetNNonz(prlp.lpi, nnonz)
+    return nnonz[]
+end
+"""
     PRLPinvalidate(prlp::PRLP)
 
 If PRLP is constructed, frees the LP and sets `lp_constructed` to false. Otherwise, do nothing.

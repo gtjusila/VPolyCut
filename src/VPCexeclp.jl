@@ -155,6 +155,7 @@ function vpolyhedralcut_separation(sepa::VPCSeparator)
     shared.lp_obj = SCIP.SCIPgetSolOrigObj(scip, C_NULL)
     shared.lp_obj_nonbasic = SCIP.SCIPgetLPObjval(scip)
     shared.nonbasic_space = NonBasicSpace(scip)
+    estimate_prlp_nonzero(sepa)
     #shared.analytic_center = get_analytic_center(scip)
     #shared.projected_analytic_center = project_point_to_nonbasic_space(
     #    shared.nonbasic_space, shared.analytic_center

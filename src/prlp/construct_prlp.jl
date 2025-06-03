@@ -40,5 +40,7 @@ function construct_prlp(
     PRLPconstructLP(prlp)
     @debug "PRLP Constructed"
 
+    # Record number of nonzeros 
+    sepa.statistics.prlp_nnonzeros = PRLPnnonz(prlp)
     return prlp
 end

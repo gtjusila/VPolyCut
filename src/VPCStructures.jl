@@ -83,6 +83,8 @@ end
     prlp_solves_data::Vector{Any} = []
     prlp_solve_method::String = "PRIMAL_SIMPLEX"
     prlp_percent_disjunctive_gap_closed_history::Vector{SCIP.SCIP_Real} = []
+    prlp_nnonzeros::Int = 0
+    prlp_nnonzeros_estimate::Int = 64
 
     root_lp_iterations::Int64 = 0
     total_time_taken::Float64 = 0.0
