@@ -51,12 +51,15 @@ function get_point_ray_collection(
                 point_ray_collection,
                 corner_point
             )
-
+            @debug "Nonzeros in corner point: $(SparseArrays.nnz(corner_point))"
             # Add rays to point ray collection
             # Rays have been complemented
+            total_nonzeros = 0
             for ray in get_lp_rays(corner_polyhedron)
+                total_nonzeros += SparseArrays.nnz(ray)
                 add_ray(point_ray_collection, ray)
             end
+            @debug "Total nonzeros in rays: $total_nonzeros"
 
             if time_limit < time() - start_time
                 throw(TimeLimitExceededCollection())

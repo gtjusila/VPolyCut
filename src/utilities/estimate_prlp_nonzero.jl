@@ -6,6 +6,8 @@ function estimate_prlp_nonzero(sepa::VPCSeparator)
     estimate = SparseArrays.nnz(corner_polyhedron.lp_sol)
     @debug "Estimated number of nonzeros in PRLP: $estimate"
     for ray in get_lp_rays(corner_polyhedron)
+        @debug "Ray length: $(length(ray))"
+        @debug "Ray nonzeros: $(SparseArrays.nnz(ray))"
         estimate += SparseArrays.nnz(ray)
     end
     @debug "Estimated number of nonzeros in PRLP after rays: $estimate"
