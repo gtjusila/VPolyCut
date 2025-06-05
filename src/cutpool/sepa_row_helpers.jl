@@ -35,7 +35,7 @@ function add_sepa_row!(
     end
 
     #SCIP.@SCIP_CALL SCIP.SCIPprintRow(scip, new_row[], C_NULL)
-    SCIP.@SCIP_CALL SCIP.SCIPaddRow(scip, new_row[], false, infeasible)
+    SCIP.@SCIP_CALL SCIP.SCIPaddRow(scip, new_row[], sepa.parameters.force_cut, infeasible)
     #SCIP.@SCIP_CALL SCIP.SCIPaddPoolCut(scip, new_row[])
     #SCIP.@SCIP_CALL SCIP.SCIPreleaseRow(scip, new_row)
     return new_row

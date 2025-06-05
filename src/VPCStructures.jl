@@ -21,6 +21,8 @@ is passed during the creation of the VPCSeparator.
     call_limit::Int = 1
     "Maximum number of cuts to generate in a round. -1 for no limit, -2 for the number of fractional variable in LP Solution"
     cut_limit::Int = -2
+    "Should cut be forced"
+    force_cut::Bool = false
     "Directory to write cut log"
     log_directory::String = ""
     "Max rounds to participate in"

@@ -86,6 +86,7 @@ function main()
         prlp_solve_method = config["vpc_prlp_solve_method"],
         prlp_allow_warm_start = config["vpc_prlp_allow_warm_start"],
         cut_limit = config["vpc_max_cut_per_round"],
+        force_cut = config["vpc_force_cut"],
         prlp_max_consecutive_fail = config["vpc_prlp_max_consecutive_fail"],
         prlp_min_increase_non_stagnating = config["vpc_prlp_min_gap_closed_increase"],
         prlp_max_consecutive_stagnation = config["vpc_prlp_max_consecutive_stagnation"]

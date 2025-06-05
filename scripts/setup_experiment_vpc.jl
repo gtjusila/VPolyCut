@@ -212,6 +212,13 @@ if !use_existing_config
         parse = (x) -> x == "true",
         default = "false"
     )
+    vpc_config["vpc_force_cut"] = prompt_user(;
+        message = "Force VPolyCut (true/false)",
+        validation = (x) -> x == "true" || x == "false",
+        error_message = "Neither true nor false.",
+        parse = (x) -> x == "true",
+        default = "false"
+    )
 
     vpc_config["vpc_max_participating_round"] = prompt_user(;
         message = "Maximum number of cutting plane round to participate in",
