@@ -3,14 +3,14 @@
 #SBATCH --array=1-{{{N}}}
 #SBATCH --output=/dev/null
 #SBATCH --error=/dev/null
-#SBATCH --constraint=Gold5122
+#SBATCH --constraint=Gold6338
 #SBATCH --time=02:15:00
-#SBATCH --partition=opt_int
+#SBATCH --partition=big
 #SBATCH --nodes=1
 #SBATCH --ntasks=1
 #SBATCH --cpus-per-task=1
 #SBATCH --mem=24G
-
+#SBATCH --mem=24G
 set -euo pipefail
 
 # -------- 1. environment --------
