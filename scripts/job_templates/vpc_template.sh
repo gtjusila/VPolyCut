@@ -5,7 +5,7 @@
 #SBATCH --error=/dev/null
 #SBATCH --constraint=Gold5122
 #SBATCH --time=02:15:00
-#SBATCH --partition=big
+#SBATCH --partition=opt_int
 #SBATCH --nodes=1
 #SBATCH --ntasks=1
 #SBATCH --cpus-per-task=1
