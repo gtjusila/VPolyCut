@@ -72,10 +72,8 @@ function main()
     # Turn on gomory cut
     JuMP.set_attribute(model, "separating/gmi/freq", 0)
     JuMP.set_attribute(model, "separating/gmi/priority", 9999)
-    JuMP.set_attribute(model, "separating/gmi/maxsuppabs", 5000)
-    JuMP.set_attribute(model, "separating/gmi/dynamiccuts", false)
-    JuMP.set_attribute(model, "separating/gmi/maxsupprel", 1.0)
     JuMP.set_attribute(model, "separating/gmi/forcecuts", true)
+    JuMP.set_attribute(model, "separating/gmi/separaterows", false)
     JuMP.set_attribute(model, "separating/gmi/maxsepacutsroot", 2000)
 
     # Read Problem
