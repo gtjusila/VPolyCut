@@ -460,10 +460,8 @@ Try to optimize the given objective. If the solution is found, return the soluti
 function PRLPtryObjective(
     prlp::PRLP, objective::ObjectiveFunction
 )::Union{Vector{SCIP.SCIP_Real},Nothing}
-    # Warm start if:
-    # 1. last solve is not good (otherwise LP solver could warmstart on its own)
-    # 2. Objective is savable 
-    # 3. Warm start is allowed
+    # Warm start if 1. last solve is not good (otherwise LP solver could warmstart on its own)
+    # 2. Objective is savable and 3. Warm start is allowed
     if !prlp.last_solve_good && objective.savable && prlp.allow_warm_start
         @debug "Last solve was not good. Trying to restore basis"
         PRLPrestoreBasis(prlp)
@@ -473,7 +471,6 @@ function PRLPtryObjective(
     PRLPsetTimeLimit(prlp, objective.time_limit)
     PRLPsetObjective(prlp, objective.direction)
     prlp.last_solve_good = false
-
     PRLPsolve(prlp)
     PRLPrecordSolveStats(prlp, objective.label)
 
@@ -481,10 +478,24 @@ function PRLPtryObjective(
     if is_true(SCIP.SCIPlpiIsOptimal(prlp.lpi))
         prlp.last_solve_good = true
         # if warmstart is allowed and basis is savable, save the basis
+        # test only store first basis
         if objective.savable && prlp.allow_warm_start
+            #objective.label == "pstar_feasibility"
             PRLPstoreBasis(prlp)
         end
     end
+
+    # Return the solution if available
+    if PRLPisSolutionAvailable(prlp)
+        return PRLPgetSolution(prlp)
+    end
+
+    # If solution is not available, check if on_fail is set
+    if !isnothing(objective.on_fail)
+        throw(objective.on_fail)
+    end
+
+    return nothing
 end
 
 """

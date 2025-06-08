@@ -152,15 +152,9 @@ function vpolyhedralcut_separation(sepa::VPCSeparator)
     shared.start_time = time()
 
     # Step 1: Construct NonBasicSpace and get LP Objective 
-    #shared.lp_obj = SCIP.SCIPgetSolOrigObj(scip, C_NULL)
+    shared.lp_obj = SCIP.SCIPgetSolOrigObj(scip, C_NULL)
     shared.lp_obj_nonbasic = SCIP.SCIPgetLPObjval(scip)
     shared.nonbasic_space = NonBasicSpace(scip)
-    shared.lp_obj = dot(
-        shared.nonbasic_space.origin_point[1:length(
-            shared.nonbasic_space.variable_pointers
-        )],
-        shared.nonbasic_space.auxiliary_objective
-    )
     #shared.analytic_center = get_analytic_center(scip)
     #shared.projected_analytic_center = project_point_to_nonbasic_space(
     #    shared.nonbasic_space, shared.analytic_center

@@ -1,5 +1,4 @@
 using SCIP
-
 """
     ObjectiveFunction
 
@@ -14,6 +13,10 @@ struct ObjectiveFunction
     Time limit to solve the PRLP
     """
     time_limit::Float64
+    """
+    On fail exception
+    """
+    on_fail::Union{Exception,Nothing}
     """
     label
     """
@@ -30,6 +33,7 @@ function feasibility_objective(prlp::PRLP)::ObjectiveFunction
     return ObjectiveFunction(
         zeros(SCIP.SCIP_Real, prlp.dimension),
         120,
+        FailedToProvePRLPFeasibility(),
         "feasibility",
         false
     )
@@ -39,6 +43,7 @@ function all_ones_objective(prlp::PRLP)::ObjectiveFunction
     return ObjectiveFunction(
         ones(SCIP.SCIP_Real, prlp.dimension),
         10,
+        nothing,
         "all_ones",
         false
     )
@@ -58,6 +63,7 @@ function pstar_objective(
     return ObjectiveFunction(
         as_dense_vector(p_star),
         10,
+        nothing,
         "pstar",
         false
     )
@@ -69,6 +75,7 @@ function pstar_feasibility_objective(
     return ObjectiveFunction(
         zeros(SCIP.SCIP_Real, prlp.dimension),
         120,
+        PStarNotTight(),
         "pstar_feasibility",
         true
     )
@@ -89,6 +96,7 @@ function point_objective(
     return ObjectiveFunction(
         as_dense_vector(point),
         10,
+        nothing,
         "point$(index)",
         true
     )
@@ -109,11 +117,11 @@ function ray_objective(
     return ObjectiveFunction(
         as_dense_vector(ray),
         10,
+        nothing,
         "ray$(index)",
         true
     )
 end
-
 """
     ObjectivePool
 
