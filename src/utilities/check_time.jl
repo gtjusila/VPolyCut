@@ -11,7 +11,7 @@ function check_time_limit_exceeded_and_raise(scip::SCIP.SCIPData)
     solvingtime = SCIP.SCIPgetSolvingTime(scip)
     if is_infinity(time_limit) == false
         if solvingtime >= time_limit[]
-            throw(TimeLimiExceeded())
+            throw(TimeLimitExceeded())
         end
     end
 end

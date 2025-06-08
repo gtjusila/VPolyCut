@@ -1,10 +1,10 @@
 vpc_max_participating_round = 1
-scip_enable_strong_branching_lookahead = false
+scip_enable_strong_branching_lookahead = true 
 scip_allow_restart = false
-scip_node_limit = 1
+scip_node_limit =1
 vpc_frequency = 0
-vpc_delayed = false
-scip_enable_conflict_analysis = false
+vpc_delayed = false 
+scip_enable_conflict_analysis = true
 vpc_prlp_solve_method = 1
 vpc_max_cut_per_round = -2
 scip_enable_root_node_propagation = false
