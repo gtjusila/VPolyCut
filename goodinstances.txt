@@ -13,7 +13,6 @@ p200x1188c
 pg5_34
 nw04
 pg
-rd-rplusc-21
 roi5alpha10n8
 roi2alpha3n4
 supportcase12
