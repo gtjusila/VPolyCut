@@ -25,3 +25,4 @@ scip_disable_scip_cuts = false
 scip_time_limit = 7200
 vpc_prlp_max_consecutive_stagnation = 99999
 vpc_force_cut = false
+random_seed = 25

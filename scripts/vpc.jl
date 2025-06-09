@@ -108,6 +108,13 @@ function main()
     end
     # Solve
 
+    # If random_seed is given 
+    if haskey(config, "random_seed")
+        @info "Permuting Instance"
+        SCIP.@SCIP_CALL SCIP.SCIPpermuteProb(
+            scip, config["random_seed"], true, true, true, true, true
+        )
+    end
     @info "Starting solve"
     SCIP.@SCIP_CALL SCIP.SCIPsolve(scip)
 

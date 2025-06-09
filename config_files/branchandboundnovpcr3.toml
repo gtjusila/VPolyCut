@@ -1,4 +1,4 @@
-vpc_max_participating_round = 1
+vpc_max_participating_round = 0
 scip_enable_strong_branching_lookahead = true 
 scip_allow_restart = true 
 scip_node_limit = -1 
@@ -25,3 +25,4 @@ scip_disable_scip_cuts = false
 scip_time_limit = 7200
 vpc_prlp_max_consecutive_stagnation = 99999
 vpc_force_cut = false
+random_seed =644 
