@@ -209,7 +209,7 @@ function clean_indices(op::ObjectivePool)
     row_activity = PRLPgetRowActivity(op.prlp)
     filter!(op.remaining_indices) do i
         if i <= length(op.prlp.points)
-            return !is_EQ(row_activity[i], 1.0)
+            return !is_EQ(row_activity[i], op.prlp.beta)
         else
             return !is_zero(row_activity[i])
         end
