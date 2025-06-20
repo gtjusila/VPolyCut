@@ -155,10 +155,10 @@ function vpolyhedralcut_separation(sepa::VPCSeparator)
     shared.lp_obj = SCIP.SCIPgetSolOrigObj(scip, C_NULL)
     shared.lp_obj_nonbasic = SCIP.SCIPgetLPObjval(scip)
     shared.nonbasic_space = NonBasicSpace(scip)
-    #shared.analytic_center = get_analytic_center(scip)
-    #shared.projected_analytic_center = project_point_to_nonbasic_space(
-    #    shared.nonbasic_space, shared.analytic_center
-    #)
+    shared.analytic_center = get_analytic_center(scip)
+    shared.projected_analytic_center = project_point_to_nonbasic_space(
+        shared.nonbasic_space, shared.analytic_center
+    )
 
     # Capture LP Objective statistic
     statistics.lp_objective = shared.lp_obj
@@ -246,9 +246,14 @@ function test_disjunctive_lower_bound(sepa::VPCSeparator)
         x -> get_objective_value(x), get_points(shared.point_ray_collection)
     )
     disjunctive_lower_bound = get_objective_value(pstar)
+    max_efficacy = norm(
+        (shared.undoprojection[pstar.coordinates] - shared.nonbasic_space.origin_point.coordinates)[1:length(
+            sepa.shared_data.nonbasic_space.variable_pointers
+        )], 2
+    )
     statistics.disjunctive_lower_bound = disjunctive_lower_bound
     shared.disjunctive_lower_bound = disjunctive_lower_bound
-    @info "Disjunctive Lower bound $(disjunctive_lower_bound)"
+    @info "Disjunctive Lower bound $(disjunctive_lower_bound) with efficacy $(max_efficacy)"
     if is_LE(disjunctive_lower_bound, shared.lp_obj) &&
         sepa.parameters.test_disjunctive_lower_bound
         @debug "Disjunctive Lower Bound is not strictly larger than the current LP"

@@ -111,7 +111,7 @@ function PRLPconstructLP(prlp::PRLP)
         prlp.lpi,
         prlp.dimension,
         zeros(SCIP.SCIP_Real, prlp.dimension),
-        -SCIP.SCIPlpiInfinity(prlp.lpi) * ones(SCIP.SCIP_Real, prlp.dimension),
+        0 * ones(SCIP.SCIP_Real, prlp.dimension),
         SCIP.SCIPlpiInfinity(prlp.lpi) * ones(SCIP.SCIP_Real, prlp.dimension),
         ["x_$(i)" for i in 1:(prlp.dimension)],
         0,

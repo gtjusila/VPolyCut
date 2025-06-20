@@ -22,7 +22,7 @@ function BranchAndBound(
 )::BranchAndBound
     return BranchAndBound(
         scip,
-        BestFirstQueue(; scip = scip);
+        BFSQueue();
         max_leaves = max_leaves,
         branching_rule = branching_rule,
         time_limit = time_limit

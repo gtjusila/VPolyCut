@@ -182,11 +182,11 @@ function Base.iterate(op::ObjectivePool, state = 1)
         op.p_star_index = argmin(1:length(points)) do i
             return get_objective_value(points[i])
         end
-        return pstar_objective(points[op.p_star_index]), 4
+        return pstar_objective(points[op.p_star_index]), state + 1
     end
     if state == 4 + p
         PRLPtighten(op.prlp, op.p_star_index)
-        return pstar_feasibility_objective(op.prlp), 5
+        return pstar_feasibility_objective(op.prlp), state + 1
     end
     if state >= 5 + p
         clean_indices(op)

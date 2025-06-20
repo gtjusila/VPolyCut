@@ -120,6 +120,9 @@ end
     cutpool::Union{Nothing,CutPool} = nothing
     disjunction::Union{Nothing,Disjunction} = nothing
     disjunctive_lower_bound::SCIP.SCIP_Real = 0.0
+    undoprojection::Dict{SparseVector{SCIP.SCIP_Real},SparseVector{SCIP.SCIP_Real}} = Dict{
+        SparseVector{SCIP.SCIP_Real},SparseVector{SCIP.SCIP_Real}
+    }()
     lp_obj::Float64 = 0.0
     lp_obj_nonbasic::Float64 = 0.0
     original_points::Vector{Point} = []

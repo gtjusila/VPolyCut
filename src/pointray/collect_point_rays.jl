@@ -47,6 +47,9 @@ function get_point_ray_collection(
             corner_point = project_point_to_nonbasic_space(
                 nb_space, corner_polyhedron.lp_sol
             )
+            @info "Corner Point: $(corner_polyhedron.lp_sol.coordinates)"
+            sepa.shared_data.undoprojection[corner_point.coordinates] =
+                corner_polyhedron.lp_sol.coordinates
             add_point(
                 point_ray_collection,
                 corner_point

@@ -19,7 +19,7 @@ function gather_separating_solutions(
     # Initialize Variables
     separating_solutions = []
     objective_pool = ObjectivePool(
-        prlp, point_ray_collection, Vector{Point}([])
+        prlp, point_ray_collection, Vector{Point}([shared_data.projected_analytic_center])
     )
     consecutive_fail = 0
     disjunctive_gap = shared_data.disjunctive_lower_bound - shared_data.lp_obj
