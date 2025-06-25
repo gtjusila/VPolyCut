@@ -249,6 +249,37 @@ function PRLPsolveWithBarrier(prlp::PRLP)
 end
 
 """
+    PRLPsolveWithBarrier(prlp::PRLP)
+
+Solve the PRLP using the barrier method. The LP must be constructed before solving.
+"""
+function PRLPsolveWithBarrierWithCrossover(prlp::PRLP)
+    if !prlp.lp_constructed
+        throw("LP must be constructed before solving")
+    end
+    if is_false(SCIP.SCIPlpiHasBarrierSolve())
+        throw("LP Solver does not support barrier solve")
+    end
+    start_time = time()
+    SCIP.@SCIP_CALL SCIP.SCIPlpiSolveBarrier(prlp.lpi, true)
+    end_time = time()
+    prlp.last_solve_time = end_time - start_time
+    prlp.last_simplex_iterations = -1
+
+    # For barrier method we only get solution if LP is optimal
+    if is_true(SCIP.SCIPlpiIsOptimal(prlp.lpi))
+        prlp.solution_available = true
+        prlp.solution_vector = zeros(SCIP.SCIP_Real, prlp.dimension)
+        obj_val = Ref{SCIP.SCIP_Real}(0)
+        SCIP.@SCIP_CALL SCIP.SCIPlpiGetSol(prlp.lpi, obj_val, pointer(prlp.solution_vector),
+            C_NULL,
+            C_NULL, C_NULL
+        )
+        prlp.solution_objective = obj_val[]
+    end
+end
+
+"""
     PRLPsolveWithPrimalSimplex(prlp::PRLP)
 
 Solve the PRLP using the primal simplex method. The LP must be constructed before solving.
@@ -337,6 +368,8 @@ function PRLPsolve(prlp::PRLP)
         PRLPsolveWithBarrier(prlp)
     elseif prlp.solve_algorithm == DUAL_SIMPLEX
         PRLPsolveWithDualSimplex(prlp)
+    elseif prlp.solve_algorithm == BARRIER_WITH_CROSSOVER
+        PRLPsolveWithBarrierWithCrossover(prlp)
     else
         throw("Unknown solving algorithm")
     end
